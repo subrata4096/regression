@@ -4,25 +4,34 @@ import numpy as np
 from matplotlib import pyplot as plt
 import sys
 
-#inputColumnNames = ['module:input:0:numRanks','module:input:0:nx']
-inputColumnNames = ['in1', 'in2', 'in3']
+inputColumnNames = ['module:input:0:numRanks','module:input:0:nx']
+#inputColumnNames = ['in1', 'in2', 'in3']
+measuredColumnNames = ['module:measure:PAPI:PAPI_L2_TC_MR','module:measure:PAPI:PAPI_TOT_INS']
 #measuredColumnNames = ['module:measure:RAPL:Elapsed','module:measure:RAPL:EDP_S0']
-measuredColumnNames = ['m1','m2']
+#measuredColumnNames = ['m1','m2']
+outputColumnNames = ['module:output:0:TotalAbsDiff','module:output:1:numCycles']
 #outputColumnNames = ['module:output:0:TotalAbsDiff','module:output:1:numCycles']
-outputColumnNames = ['o1','o2']
+#outputColumnNames = ['o1','o2']
 
 def getRowKey(row):
 	s = ""
-	for k in row:	
-		s = s + ":" + str(k)
+	for k in row:
+		if(s== ""):
+			s = str(k)
+		else:	
+			s = s + ":" + str(k)
 	return s
+
 
 def getAveragePerExperiments(inArr, dataArr):
 	dataArr = np.transpose(dataArr)
 	#print inArr
 	#print dataArr
+
+	# here we want to get an average of the values that corresponds to same input combinations. May be these are values from multiple experiments..
 	inDict =  dict()
 	i = -1
+	#first create a map where key is the input combination and values are list of output arrays
 	for row in inArr:
 		i = i + 1
 		rowKey = getRowKey(row)
@@ -31,12 +40,30 @@ def getAveragePerExperiments(inArr, dataArr):
 		else:
 			inDict[rowKey] = []
 			inDict[rowKey].append(dataArr[i])
-	inDict = map(lambda t: list(t), (inDict[key]  for key in inDict.keys()))
 	print inDict
-	#np.average(x) for x in inDict
-	#arrs = [arr for arr in (inDict[key]  for key in inDict.keys())]
-	#A = map(lambda t: list(t), arrs)
-	#print A			
+	#dataDict = map(lambda t: list(t), (inDict[key]  for key in inDict.keys()))
+	#dataDict = [a.tolist() for a in (inDict[key]  for key in inDict.keys())]
+	h1 = []
+	for key in inDict.keys() :
+		h2 = []
+		for s in inDict[key]:
+			h2.append(list(s))
+		h1.append(h2)
+	#print h1
+	#dDict = [l.tolist() for l in dataDict]
+	# get the average...
+	A = [np.average(x, axis=0) for x in h1]
+	# convert a list of 1D arrays to a 2D array
+	A = map(lambda t: list(t), A)
+	newDataArr = np.array(A)
+	#print newDataArr
+	
+	inList = [key.split(':') for key in inDict.keys()]
+	newInputArr = np.array(inList,dtype=float)
+
+	newDataArr = np.transpose(newDataArr)
+
+	return newInputArr, newDataArr			
 		
 
 def readDataFile(fName,field_type):
@@ -47,7 +74,8 @@ def readDataFile(fName,field_type):
 		indexes = getColumnIndexes(fName,measuredColumnNames)
 	elif(field_type == 'output'):
 		indexes = getColumnIndexes(fName,outputColumnNames)
-		
+	
+	print indexes	
 	realdata = np.loadtxt(fName, dtype=float,delimiter='\t', usecols=indexes, converters=None,skiprows=1)
 	data = np.transpose( realdata)
 	#print data
@@ -58,7 +86,7 @@ def getColumnIndexes(fName, columnNames):
 	d = np.genfromtxt(fName, dtype=str,delimiter='\t')
 		
 	names = d[0]
-	#print names
+	print names
 	indexes = []
 	i = 0
 	for name in names:
@@ -73,6 +101,7 @@ def doFitForTarget(inArr,targetArr, tname):
 
 	#first add a column of 1s so that it can be used as constant for linear regression
 	idx = len(inArr[0])
+	#inArrWithConst = inArr
 	inArrWithConst = np.insert(inArr,idx, 1, axis=1)
 	#print inArrWithConst
 
@@ -88,11 +117,11 @@ def doFitForTarget(inArr,targetArr, tname):
 	print clf.coef_
 	#print np.dot(inArrWithConst, clf.coef_) # reconstruct the output
 	# show it on the plot
-	plt.plot(inArr, targetArr, label='true data')
+	plt.plot(inArr[:,0], targetArr, label='true data')
 	#plt.plot(testY, predSvr, 'co', label='SVR')
 	#plt.plot(testY, predLog, 'mo', label='LogReg')
 	plt.legend()
-	#plt.show()
+	plt.show()
 
 def scikit_scripts(inArr,measuredArr,outArr):
 	i = 0
@@ -125,8 +154,16 @@ if __name__ == "__main__":
 	#print "measured"
 	#print measuredDataArr
  	outputDataArr = readDataFile(dataFile,'output')
-        
-	getAveragePerExperiments(inputDataArr,outputDataArr)	
-	p = getArrayWithUniqueInputs(inputDataArr)
-	print p
-	scikit_scripts(inputDataArr,measuredDataArr,outputDataArr)
+
+	#get an average of values for unique input combinations...        
+	uniqueInputArr, averagedMeasuredArr = getAveragePerExperiments(inputDataArr,measuredDataArr)	
+	uniqueInputArr, averagedOutputArr = getAveragePerExperiments(inputDataArr,outputDataArr)
+	
+	#get the an array with only unique input combinations (array with unique rows)
+	#uniqueInputArr = getArrayWithUniqueInputs(inputDataArr)
+	print "\n\n ----- "
+	print uniqueInputArr
+	print "\n\n ----- "
+        print averagedMeasuredArr
+	print "\n\n ----- "
+	scikit_scripts(uniqueInputArr,averagedMeasuredArr,averagedOutputArr)
