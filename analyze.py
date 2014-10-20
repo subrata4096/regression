@@ -3,13 +3,16 @@ from sklearn import linear_model
 import numpy as np
 from matplotlib import pyplot as plt
 import sys
+from regressFit import *
 
-inputColumnNames = ['module:input:0:numRanks','module:input:0:nx']
+#inputColumnNames = ['module:input:0:numRanks','module:input:0:nx']
+inputColumnNames = ['module:input:0:dt','module:input:0:lat']
 #inputColumnNames = ['in1', 'in2', 'in3']
-measuredColumnNames = ['module:measure:PAPI:PAPI_L2_TC_MR','module:measure:PAPI:PAPI_TOT_INS']
+#measuredColumnNames = ['module:measure:PAPI:PAPI_L2_TC_MR','module:measure:PAPI:PAPI_TOT_INS']
+measuredColumnNames = ['module:measure:PAPI:PAPI_TOT_INS','module:measure:time:time']
 #measuredColumnNames = ['module:measure:RAPL:Elapsed','module:measure:RAPL:EDP_S0']
 #measuredColumnNames = ['m1','m2']
-outputColumnNames = ['module:output:0:TotalAbsDiff','module:output:1:numCycles']
+#outputColumnNames = ['module:output:0:TotalAbsDiff','module:output:1:numCycles']
 #outputColumnNames = ['module:output:0:TotalAbsDiff','module:output:1:numCycles']
 #outputColumnNames = ['o1','o2']
 
@@ -40,7 +43,7 @@ def getAveragePerExperiments(inArr, dataArr):
 		else:
 			inDict[rowKey] = []
 			inDict[rowKey].append(dataArr[i])
-	print inDict
+	#print inDict
 	#dataDict = map(lambda t: list(t), (inDict[key]  for key in inDict.keys()))
 	#dataDict = [a.tolist() for a in (inDict[key]  for key in inDict.keys())]
 	h1 = []
@@ -86,7 +89,7 @@ def getColumnIndexes(fName, columnNames):
 	d = np.genfromtxt(fName, dtype=str,delimiter='\t')
 		
 	names = d[0]
-	print names
+	#print names
 	indexes = []
 	i = 0
 	for name in names:
@@ -99,29 +102,11 @@ def getColumnIndexes(fName, columnNames):
 def doFitForTarget(inArr,targetArr, tname):
 	#print targetArr
 
-	#first add a column of 1s so that it can be used as constant for linear regression
-	idx = len(inArr[0])
-	#inArrWithConst = inArr
-	inArrWithConst = np.insert(inArr,idx, 1, axis=1)
-	#print inArrWithConst
-
-
-	#print inArr.shape, targetArr.shape
-	#print "For output:  ", targetArr, " ------------------------------"
 	print "For output:  ", tname
-	#clf = linear_model.Lasso(normalize=True)
-	#clf = linear_model.LinearRegression( normalize=True)
-	clf = linear_model.LinearRegression(fit_intercept=False) #fit_intercept=False is very important. prevents the LinearRegression object from working with x - x.mean(axis=0)
-        clf.fit (inArrWithConst,targetArr)
-        print clf.score(inArrWithConst,targetArr)
-	print clf.coef_
-	#print np.dot(inArrWithConst, clf.coef_) # reconstruct the output
-	# show it on the plot
-	plt.plot(inArr[:,0], targetArr, label='true data')
-	#plt.plot(testY, predSvr, 'co', label='SVR')
-	#plt.plot(testY, predLog, 'mo', label='LogReg')
-	plt.legend()
-	plt.show()
+	doLinearRegression(inArr,targetArr)
+	#doPolyRegression(inArr, targetArr)
+	#doLinearRegWithCV(inArr, targetArr)
+	doRidgeWithCV(inArr, targetArr)
 
 def scikit_scripts(inArr,measuredArr,outArr):
 	i = 0
@@ -153,17 +138,18 @@ if __name__ == "__main__":
  	measuredDataArr = readDataFile(dataFile,'measured')
 	#print "measured"
 	#print measuredDataArr
- 	outputDataArr = readDataFile(dataFile,'output')
+ 	#outputDataArr = readDataFile(dataFile,'output')
 
 	#get an average of values for unique input combinations...        
 	uniqueInputArr, averagedMeasuredArr = getAveragePerExperiments(inputDataArr,measuredDataArr)	
-	uniqueInputArr, averagedOutputArr = getAveragePerExperiments(inputDataArr,outputDataArr)
+	#uniqueInputArr, averagedOutputArr = getAveragePerExperiments(inputDataArr,outputDataArr)
+        averagedOutputArr = []
 	
 	#get the an array with only unique input combinations (array with unique rows)
 	#uniqueInputArr = getArrayWithUniqueInputs(inputDataArr)
-	print "\n\n ----- "
-	print uniqueInputArr
-	print "\n\n ----- "
-        print averagedMeasuredArr
-	print "\n\n ----- "
+	#print "\n\n ----- "
+	#print uniqueInputArr
+	#print "\n\n ----- "
+        #print averagedMeasuredArr
+	#print "\n\n ----- "
 	scikit_scripts(uniqueInputArr,averagedMeasuredArr,averagedOutputArr)
