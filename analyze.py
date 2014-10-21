@@ -5,11 +5,12 @@ from matplotlib import pyplot as plt
 import sys
 from regressFit import *
 
+inputColumnNames = ['module:input:0:numRanks','module:input:0:nx']
 #inputColumnNames = ['module:input:0:numRanks','module:input:0:nx']
-inputColumnNames = ['module:input:0:dt','module:input:0:lat']
+#inputColumnNames = ['module:input:0:dt','module:input:0:lat']
 #inputColumnNames = ['in1', 'in2', 'in3']
-#measuredColumnNames = ['module:measure:PAPI:PAPI_L2_TC_MR','module:measure:PAPI:PAPI_TOT_INS']
-measuredColumnNames = ['module:measure:PAPI:PAPI_TOT_INS','module:measure:time:time']
+measuredColumnNames = ['module:measure:PAPI:PAPI_L2_TC_MR','module:measure:PAPI:PAPI_TOT_INS','module:measure:RAPL:Elapsed']
+#measuredColumnNames = ['module:measure:PAPI:PAPI_TOT_INS','module:measure:time:time']
 #measuredColumnNames = ['module:measure:RAPL:Elapsed','module:measure:RAPL:EDP_S0']
 #measuredColumnNames = ['m1','m2']
 #outputColumnNames = ['module:output:0:TotalAbsDiff','module:output:1:numCycles']
@@ -102,11 +103,11 @@ def getColumnIndexes(fName, columnNames):
 def doFitForTarget(inArr,targetArr, tname):
 	#print targetArr
 
-	print "For output:  ", tname
-	doLinearRegression(inArr,targetArr)
-	#doPolyRegression(inArr, targetArr)
+	print "\n******For output:  ", tname
+	#doLinearRegression(inArr,targetArr)
+	doPolyRegression(inArr, targetArr,tname)
 	#doLinearRegWithCV(inArr, targetArr)
-	doRidgeWithCV(inArr, targetArr)
+	#doRidgeWithCV(inArr, targetArr)
 
 def scikit_scripts(inArr,measuredArr,outArr):
 	i = 0
