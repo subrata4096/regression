@@ -34,7 +34,7 @@ def doLinearRegression(inArr, targetArr):
 	#clf = LinearRegression(fit_intercept=False) #fit_intercept=False is very important. prevents the LinearRegression object from working with x - x.mean(axis=0)
 	clf = LinearRegression(fit_intercept=True)
         clf.fit (inArrWithConst,targetArr)
-        print "R2 score: ",clf.score(inArrWithConst,targetArr)
+        #print "R2 score: ",clf.score(inArrWithConst,targetArr)
         #print "Coeff: ",clf.coef_
 	doCrossValidation(2,clf,inArr,targetArr)
 	#print clf.predict([[16, 3.615]])
@@ -47,6 +47,7 @@ def doLinearRegression(inArr, targetArr):
         #plt.plot(testY, predLog, 'mo', label='LogReg')
         #plt.legend()     
         #plt.show()
+	return clf
 
 def doLinearRegWithCV(inArr,targetArr):
 	print "--------------------------------------------------------"     
@@ -106,8 +107,8 @@ def doPolyRegression(inArr, targetArr,tname):
 	#model = model.fit(inArr[:, np.newaxis], targetArr)
 	polyReg.fit(inArr, targetArr)
 
-	score = polyReg.score(inArr, targetArr)
-	print "R2 score: ", score
+	#score = polyReg.score(inArr, targetArr)
+	#print "R2 score: ", score
 	#print "poly coeff:", polyReg.named_steps['linear'].coef_
 	#Do cross validation (using leave p-out technique)
 	doCrossValidation(2,polyReg,inArr,targetArr)
@@ -130,3 +131,4 @@ def doPolyRegression(inArr, targetArr,tname):
 	#ax.set_zlabel(tname)
 	#ax.w_zaxis.set_ticklabels([])
 	#plt.show()
+	return polyReg
