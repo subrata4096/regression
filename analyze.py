@@ -6,10 +6,15 @@ from matplotlib import pyplot as plt
 import sys
 from regressFit import *
 
+
+inputColumnNames = []
+measuredColumnNames = []
+outputColumnNames = []
+
 #inputColumnNames = ['module:input:0:numRanks','module:input:0:nx']
 #inputColumnNames = ['module:input:0:numRanks','module:input:0:nx']
-#inputColumnNames = ['module:input:0:ii','module:pub_input::dt','module:pub_input::eKinetic','module:pub_input::ePotential','module:pub_input::iStep','module:pub_input::lat','module:pub_input::momStdDev','module:pub_input::posStdDev']
-inputColumnNames = ['module:input:0:ii','module:pub_input::dt','module:pub_input::iStep','module:pub_input::lat']
+inputColumnNames = ['module:input:0:ii','module:pub_input::dt','module:pub_input::eKinetic','module:pub_input::ePotential','module:pub_input::iStep','module:pub_input::lat','module:pub_input::momStdDev','module:pub_input::posStdDev']
+#inputColumnNames = ['module:input:0:ii','module:pub_input::dt','module:pub_input::iStep','module:pub_input::lat']
 #inputColumnNames = ['module:pub_input::dt','module:pub_input::lat','module:input:0:iStep']
 #inputColumnNames = ['module:pub_input::dt','module:pub_input::lat']
 #inputColumnNames = ['module:input:0:dt','module:input:0:lat']
@@ -130,8 +135,10 @@ def doFitForTarget(inArr,targetArr, tname):
 	reg = doPolyRegression(in_train, tar_train,tname)
 	print "R2 score: ",reg.score(in_test, tar_test)
 
-	#doLinearRegWithCV(in_train, tar_train)
-	#doRidgeWithCV(in_train, tar_train)
+	reg = doRidgeWithCV(in_train, tar_train)
+	print "R2 score: ",reg.score(in_test, tar_test)
+
+	#reg = doLinearRegWithCV(in_train, tar_train)
         #print "Coeff: ",clf.coef_
 
 def scikit_scripts(inArr,measuredArr,outArr):
@@ -158,7 +165,11 @@ def getArrayWithUniqueInputs(a):
 
 if __name__ == "__main__":
 	dataFile = sys.argv[1]
-        
+	print "DataFile: " , dataFile , "\n"        
+	print "Input variables", inputColumnNames
+	print "Meassured variables", measuredColumnNames
+	print "Output variables", outputColumnNames
+
  	inputDataArr = readDataFile(dataFile,'input')
 	inputDataArr = np.transpose(inputDataArr)
  	measuredDataArr = readDataFile(dataFile,'measured')

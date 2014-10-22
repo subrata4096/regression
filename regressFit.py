@@ -71,11 +71,12 @@ def doRidgeWithCV(inArr,targetArr):
 	reg = Ridge(alpha=0.01,solver='cholesky')
 	reg.fit(inArr,targetArr)
 	#print reg.cv_values_
-	print "R2 score: ",reg.score(inArr,targetArr)
+	#print "R2 score: ",reg.score(inArr,targetArr)
 	#print "Coeff: ",reg.coef_
 	#print reg.alpha_
 	#print reg.predict([16, 3.615])
 	#print reg.predict([8, 15])
+	return reg 
 
 def doPolyRegression(inArr, targetArr,tname):
 	print "--------------------------------------------------------"     
@@ -102,7 +103,8 @@ def doPolyRegression(inArr, targetArr,tname):
         #print clf.predict(p)
         #print clf.predict([8, 15])
 	
-	polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', LinearRegression(fit_intercept=False))])
+	#polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', LinearRegression(fit_intercept=False))])
+	polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', Ridge())])
 	#polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', LinearRegression(normalize=True))])
 	#model = model.fit(inArr[:, np.newaxis], targetArr)
 	polyReg.fit(inArr, targetArr)
