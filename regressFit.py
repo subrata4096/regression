@@ -36,6 +36,7 @@ def doLinearRegression(inArr, targetArr):
         clf.fit (inArrWithConst,targetArr)
         print "R2 score: ",clf.score(inArrWithConst,targetArr)
         #print "Coeff: ",clf.coef_
+	doCrossValidation(2,clf,inArr,targetArr)
 	#print clf.predict([[16, 3.615]])
         #print clf.predict([[8, 15]])
 	#print clf.intercept_
