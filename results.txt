@@ -1,0 +1,203 @@
+COMD:
+
+===>  CoMD/Simulation.tsv
+
+inputColumnNames = ['module:input:0:dt','module:input:0:lat']
+measuredColumnNames = ['module:measure:PAPI:PAPI_TOT_INS','module:measure:time:time']
+
+******For output:   module:measure:PAPI:PAPI_TOT_INS
+Standard deviation:  5612014.39125
+Standard deviation divided by mean:  1.23042724981
+--------------------------------------------------------
+Linear
+R2 score:  0.854595467346
+--------------------------------------------------------
+PolyRegression
+R2 score:  0.99648090652
+target shape (30,)
+2-way cross validation scores:  [ 0.99299216  0.99409693]
+
+******For output:   module:measure:time:time
+Standard deviation:  1132.16031829
+Standard deviation divided by mean:  0.439590828845
+--------------------------------------------------------
+Linear
+R2 score:  0.479882029061
+--------------------------------------------------------
+PolyRegression
+R2 score:  0.757604819696
+target shape (30,)
+2-way cross validation scores:  [ 0.6539066   0.33765891]
+
+===>  CoMD/Simulation/Sum\ Atoms.tsv
+
+inputColumnNames = ['module:pub_input::dt','module:pub_input::lat','module:input:0:iStep']
+measuredColumnNames = ['module:measure:PAPI:PAPI_TOT_INS','module:measure:time:time']
+
+******For output:   module:measure:PAPI:PAPI_TOT_INS
+Standard deviation:  5150609.03977
+Standard deviation divided by mean:  0.617037320337
+--------------------------------------------------------
+Linear
+R2 score:  0.774020490811
+--------------------------------------------------------
+PolyRegression
+R2 score:  0.98644018655
+target shape (312,)
+2-way cross validation scores:  [ 0.98526998  0.98543194]
+
+******For output:   module:measure:time:time
+Standard deviation:  0.00434527366575
+Standard deviation divided by mean:  0.697911252062
+--------------------------------------------------------
+Linear
+R2 score:  0.731252014972
+--------------------------------------------------------
+PolyRegression
+R2 score:  0.908291548324
+target shape (312,)
+2-way cross validation scores:  [ 0.88920369  0.91074826]
+
+=====> CoMD/Simulation/TimeStep/Forces.tsv
+
+inputColumnNames = ['module:input:0:ii','module:pub_input::dt','module:pub_input::eKinetic','module:pub_input::ePotential','module:pub_input::iStep','module:pub_input::lat','module:pub_input::momStdDev','module:pub_input::posStdDev']
+measuredColumnNames = ['module:measure:PAPI:PAPI_TOT_INS','module:measure:time:time']
+
+******For output:   module:measure:PAPI:PAPI_TOT_INS
+Standard deviation:  780948973.762
+Standard deviation divided by mean:  0.955118499536
+--------------------------------------------------------
+Linear
+R2 score:  0.91574442039
+--------------------------------------------------------
+PolyRegression
+R2 score:  -0.0340297543053
+target shape (2976,)
+2-way cross validation scores:  [-0.0472313  -0.45805429]
+
+******For output:   module:measure:time:time
+Standard deviation:  45.9318071948
+Standard deviation divided by mean:  0.0912456172039
+--------------------------------------------------------
+Linear
+R2 score:  0.0317920180469
+--------------------------------------------------------
+PolyRegression
+R2 score:  0.00197254408459
+target shape (2976,)
+2-way cross validation scores:  [ 0.00102705 -0.05356998]
+
+====> CoMD/Simulation/TimeStep/AdvanceVel1.tsv
+
+inputColumnNames = ['module:input:0:ii','module:pub_input::dt','module:pub_input::eKinetic','module:pub_input::ePotential','module:pub_input::iStep','module:pub_input::lat','module:pub_input::momStdDev','module:pub_input::posStdDev']
+measuredColumnNames = ['module:measure:PAPI:PAPI_TOT_INS','module:measure:time:time']
+
+******For output:   module:measure:PAPI:PAPI_TOT_INS
+Standard deviation:  6607895.15935
+Standard deviation divided by mean:  0.896723433091
+--------------------------------------------------------
+Linear
+R2 score:  0.927214251622
+--------------------------------------------------------
+PolyRegression
+R2 score:  0.0717700107331
+target shape (2976,)
+2-way cross validation scores:  [ 0.05485001 -4.57970773]
+
+******For output:   module:measure:time:time
+Standard deviation:  0.734610621025
+Standard deviation divided by mean:  0.0455129764031
+--------------------------------------------------------
+Linear
+R2 score:  0.00741398805317
+--------------------------------------------------------
+PolyRegression
+R2 score:  0.000496863102489
+target shape (2976,)
+2-way cross validation scores:  [-0.04211649 -0.00256889]
+
+
+====> CoMD/Simulation/TimeStep/AdvanceVel2.tsv
+inputColumnNames = ['module:input:0:ii','module:pub_input::dt','module:pub_input::eKinetic','module:pub_input::ePotential','module:pub_input::iStep','module:pub_input::lat','module:pub_input::momStdDev','module:pub_input::posStdDev']
+measuredColumnNames = ['module:measure:PAPI:PAPI_TOT_INS','module:measure:time:time']
+
+******For output:   module:measure:PAPI:PAPI_TOT_INS
+Standard deviation:  6589426.48356
+Standard deviation divided by mean:  0.775450655904
+--------------------------------------------------------
+Linear
+R2 score:  0.926865912726
+--------------------------------------------------------
+PolyRegression
+R2 score:  0.0738065989623
+target shape (2976,)
+2-way cross validation scores:  [ 0.05906425 -4.81167359]
+
+******For output:   module:measure:time:time
+Standard deviation:  2.81297521075
+Standard deviation divided by mean:  0.0647874761994
+--------------------------------------------------------
+Linear
+R2 score:  0.0186226097302
+--------------------------------------------------------
+PolyRegression
+R2 score:  0.00114503335688
+target shape (2976,)
+2-way cross validation scores:  [ 0.00091033 -0.04387052]
+
+====> CoMD/Simulation/TimeStep/AdvPos.tsv
+inputColumnNames = ['module:input:0:ii','module:pub_input::dt','module:pub_input::eKinetic','module:pub_input::ePotential','module:pub_input::iStep','module:pub_input::lat','module:pub_input::momStdDev','module:pub_input::posStdDev']
+measuredColumnNames = ['module:measure:PAPI:PAPI_TOT_INS','module:measure:time:time']
+
+******For output:   module:measure:PAPI:PAPI_TOT_INS
+Standard deviation:  6631193.01229
+Standard deviation divided by mean:  0.830371091441
+--------------------------------------------------------
+Linear
+R2 score:  0.928051707023
+--------------------------------------------------------
+PolyRegression
+R2 score:  0.0802103504889
+target shape (2976,)
+2-way cross validation scores:  [ 0.06415835 -5.14789556]
+
+******For output:   module:measure:time:time
+Standard deviation:  0.0396389236945
+Standard deviation divided by mean:  0.22140667371
+--------------------------------------------------------
+Linear
+R2 score:  0.0346965112938
+--------------------------------------------------------
+PolyRegression
+R2 score:  0.00474273993431
+target shape (2976,)
+2-way cross validation scores:  [-0.02326856 -0.09770763]
+
+
+====> CoMD/Simulation/TimeStep/Redistribute.tsv
+inputColumnNames = ['module:input:0:ii','module:pub_input::dt','module:pub_input::eKinetic','module:pub_input::ePotential','module:pub_input::iStep','module:pub_input::lat','module:pub_input::momStdDev','module:pub_input::posStdDev']
+measuredColumnNames = ['module:measure:PAPI:PAPI_TOT_INS','module:measure:time:time']
+
+******For output:   module:measure:PAPI:PAPI_TOT_INS
+Standard deviation:  150640027.257
+Standard deviation divided by mean:  0.86087202832
+--------------------------------------------------------
+Linear
+R2 score:  0.925534010328
+--------------------------------------------------------
+PolyRegression
+R2 score:  0.0508408268658
+target shape (2976,)
+2-way cross validation scores:  [ 0.03567902 -3.41123854]
+
+******For output:   module:measure:time:time
+Standard deviation:  0.962124458614
+Standard deviation divided by mean:  0.2386766732
+--------------------------------------------------------
+Linear
+R2 score:  0.158790332412
+--------------------------------------------------------
+PolyRegression
+R2 score:  0.00706238007185
+target shape (2976,)
+2-way cross validation scores:  [ 0.00231731 -0.28519958]

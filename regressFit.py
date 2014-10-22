@@ -5,9 +5,21 @@ from sklearn.linear_model import RidgeCV
 from sklearn.linear_model import Ridge
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import Pipeline
+from sklearn.cross_validation import LeavePOut
 import numpy as np
 import pylab as plt
 from mpl_toolkits.mplot3d import Axes3D
+
+
+def doCrossValidation(k,model, inArr, targetArr):
+	#print inArr
+	#print targetArr
+	#lpo = LeavePOut(inArr, p=2)
+	#for train, test in lpo:
+	#	print("%s %s" % (train, test))
+	print "target shape", targetArr.shape
+	scores = cross_validation.cross_val_score(model, inArr, targetArr, cv=k)
+	print str(k) + "-way cross validation scores: ", scores
 
 def doLinearRegression(inArr, targetArr):
 	print "--------------------------------------------------------"     
@@ -23,7 +35,7 @@ def doLinearRegression(inArr, targetArr):
 	clf = LinearRegression(fit_intercept=True)
         clf.fit (inArrWithConst,targetArr)
         print "R2 score: ",clf.score(inArrWithConst,targetArr)
-        print "Coeff: ",clf.coef_
+        #print "Coeff: ",clf.coef_
 	#print clf.predict([[16, 3.615]])
         #print clf.predict([[8, 15]])
 	#print clf.intercept_
@@ -58,7 +70,7 @@ def doRidgeWithCV(inArr,targetArr):
 	reg.fit(inArr,targetArr)
 	#print reg.cv_values_
 	print "R2 score: ",reg.score(inArr,targetArr)
-	print "Coeff: ",reg.coef_
+	#print "Coeff: ",reg.coef_
 	#print reg.alpha_
 	#print reg.predict([16, 3.615])
 	#print reg.predict([8, 15])
@@ -89,26 +101,31 @@ def doPolyRegression(inArr, targetArr,tname):
         #print clf.predict([8, 15])
 	
 	polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', LinearRegression(fit_intercept=False))])
+	#polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', LinearRegression(normalize=True))])
 	#model = model.fit(inArr[:, np.newaxis], targetArr)
 	polyReg.fit(inArr, targetArr)
 
 	score = polyReg.score(inArr, targetArr)
 	print "R2 score: ", score
+	#print "poly coeff:", polyReg.named_steps['linear'].coef_
+	#Do cross validation (using leave p-out technique)
+	doCrossValidation(2,polyReg,inArr,targetArr)
 
-	predicted = polyReg.predict(inArr)
-	print predicted
+	# recreate all the fitted data point from the predictor
+	#predicted = polyReg.predict(inArr)
+	#print predicted
 
 	# Plot outputs
-	fig = plt.figure(1, figsize=(8, 6))
-	ax = Axes3D(fig, elev=-150, azim=110)
-	ax.scatter(inArr[:,0],inArr[:,1],targetArr, c='b', marker='o')   #inArr[:,0] elements of first variable [0 1 2 3]
-	ax.scatter(inArr[:,0],inArr[:,1],predicted, c='r',marker='^')   #inArr[:,0] elements of first variable [0 1 2 3]
+	#fig = plt.figure(1, figsize=(8, 6))
+	#ax = Axes3D(fig, elev=-150, azim=110)
+	#ax.scatter(inArr[:,0],inArr[:,1],targetArr, c='b', marker='o')   #inArr[:,0] elements of first variable [0 1 2 3]
+	#ax.scatter(inArr[:,0],inArr[:,1],predicted, c='r',marker='^')   #inArr[:,0] elements of first variable [0 1 2 3]
 	
-	ax.set_title("Two input variables vs meassurement")
-	ax.set_xlabel("numRanks")
+	#ax.set_title("Two input variables vs meassurement")
+	#ax.set_xlabel("numRanks")
 	#ax.w_xaxis.set_ticklabels([])
-	ax.set_ylabel("nx")
+	#ax.set_ylabel("nx")
 	#ax.w_yaxis.set_ticklabels([])
-	ax.set_zlabel(tname)
+	#ax.set_zlabel(tname)
 	#ax.w_zaxis.set_ticklabels([])
-	plt.show()
+	#plt.show()

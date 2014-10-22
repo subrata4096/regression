@@ -5,12 +5,15 @@ from matplotlib import pyplot as plt
 import sys
 from regressFit import *
 
-inputColumnNames = ['module:input:0:numRanks','module:input:0:nx']
 #inputColumnNames = ['module:input:0:numRanks','module:input:0:nx']
+#inputColumnNames = ['module:input:0:numRanks','module:input:0:nx']
+inputColumnNames = ['module:input:0:ii','module:pub_input::dt','module:pub_input::eKinetic','module:pub_input::ePotential','module:pub_input::iStep','module:pub_input::lat','module:pub_input::momStdDev','module:pub_input::posStdDev']
+#inputColumnNames = ['module:pub_input::dt','module:pub_input::lat','module:input:0:iStep']
+#inputColumnNames = ['module:pub_input::dt','module:pub_input::lat']
 #inputColumnNames = ['module:input:0:dt','module:input:0:lat']
 #inputColumnNames = ['in1', 'in2', 'in3']
-measuredColumnNames = ['module:measure:PAPI:PAPI_L2_TC_MR','module:measure:PAPI:PAPI_TOT_INS','module:measure:RAPL:Elapsed']
-#measuredColumnNames = ['module:measure:PAPI:PAPI_TOT_INS','module:measure:time:time']
+#measuredColumnNames = ['module:measure:PAPI:PAPI_L2_TC_MR','module:measure:PAPI:PAPI_TOT_INS','module:measure:RAPL:Elapsed']
+measuredColumnNames = ['module:measure:PAPI:PAPI_TOT_INS','module:measure:time:time']
 #measuredColumnNames = ['module:measure:RAPL:Elapsed','module:measure:RAPL:EDP_S0']
 #measuredColumnNames = ['m1','m2']
 #outputColumnNames = ['module:output:0:TotalAbsDiff','module:output:1:numCycles']
@@ -99,15 +102,25 @@ def getColumnIndexes(fName, columnNames):
 		i = i + 1
 	#print indexes
 	return indexes
+
+def calculateStatisticOfTarget(targetArr):
+        mean = np.mean(targetArr)
+        stddev = np.std(targetArr)
+        stdPerMean = mean/stddev
+        print "Standard deviation: ", stddev
+        print "Standard deviation divided by mean: ", stdPerMean
    
 def doFitForTarget(inArr,targetArr, tname):
 	#print targetArr
 
 	print "\n******For output:  ", tname
-	#doLinearRegression(inArr,targetArr)
+    	calculateStatisticOfTarget(targetArr)
+
+	doLinearRegression(inArr,targetArr)
 	doPolyRegression(inArr, targetArr,tname)
 	#doLinearRegWithCV(inArr, targetArr)
 	#doRidgeWithCV(inArr, targetArr)
+
 
 def scikit_scripts(inArr,measuredArr,outArr):
 	i = 0
@@ -145,7 +158,9 @@ if __name__ == "__main__":
 	uniqueInputArr, averagedMeasuredArr = getAveragePerExperiments(inputDataArr,measuredDataArr)	
 	#uniqueInputArr, averagedOutputArr = getAveragePerExperiments(inputDataArr,outputDataArr)
         averagedOutputArr = []
-	
+	#print uniqueInputArr
+	#print "\n------"
+	#print averagedMeasuredArr
 	#get the an array with only unique input combinations (array with unique rows)
 	#uniqueInputArr = getArrayWithUniqueInputs(inputDataArr)
 	#print "\n\n ----- "
