@@ -3,13 +3,15 @@ from sklearn import cross_validation
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import RidgeCV
 from sklearn.linear_model import Ridge
+from sklearn.linear_model import Lasso
+from sklearn.linear_model import ElasticNet
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import Pipeline
 from sklearn.cross_validation import LeavePOut
 import numpy as np
 import pylab as plt
 from mpl_toolkits.mplot3d import Axes3D
-
+from micAnalysis import *
 
 def doCrossValidation(k,model, inArr, targetArr):
 	#print inArr
@@ -78,9 +80,9 @@ def doRidgeWithCV(inArr,targetArr):
 	#print reg.predict([8, 15])
 	return reg 
 
-def doPolyRegression(inArr, targetArr,tname):
+def doPolyRegression(inArr, targetArr,tname,fitUse="LinearRegression"):
 	print "--------------------------------------------------------"     
-	print "PolyRegression"     
+	print "PolyRegression", "using: ", fitUse
 
 	#inArr = np.array([[0, 0], [1,11], [2,12],[3,13]])
 	#targetArr = np.array([0,3,6,12])
@@ -99,21 +101,34 @@ def doPolyRegression(inArr, targetArr,tname):
 	#p = PolynomialFeatures(2).fit_transform(x)
 	#print clf.predict(p)
 	#x=[[8, 15]]
-        #p = PolynomialFeatures(2).fit_transform(x)
+        #p = PolynomialFeatures(2).fit_transform(inArr)
         #print clf.predict(p)
         #print clf.predict([8, 15])
+	#doMICAnalysisOfInputVariables(p, targetArr)
 	
-	#polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', LinearRegression(fit_intercept=False))])
-	polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', Ridge())])
+	polyReg = 0
+	if(fitUse == "LinearRegression"):
+		#polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', LinearRegression(fit_intercept=False))])
+		#polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', LinearRegression())])
+		polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', LinearRegression(normalize=True))]) #works great
+	elif(fitUse == "RidgeRegression"):
+		#polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', Ridge(normalize=True))]) #performs bad
+		#polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', Ridge(alpha = 0.01))]) #no effect
+		#polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', Ridge(alpha = 1000))]) 
+		polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', Ridge())])
+	elif(fitUse == "Lasso"):
+		polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', Lasso(max_iter=10000,normalize=True))])
+	elif(fitUse == "ElasticNet"):
+		polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', ElasticNet())])
 	#polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', LinearRegression(normalize=True))])
 	#model = model.fit(inArr[:, np.newaxis], targetArr)
 	polyReg.fit(inArr, targetArr)
-
+	
 	#score = polyReg.score(inArr, targetArr)
 	#print "R2 score: ", score
-	#print "poly coeff:", polyReg.named_steps['linear'].coef_
+	print "poly coeff:", polyReg.named_steps['linear'].coef_
 	#Do cross validation (using leave p-out technique)
-	doCrossValidation(2,polyReg,inArr,targetArr)
+	#doCrossValidation(2,polyReg,inArr,targetArr)
 
 	# recreate all the fitted data point from the predictor
 	#predicted = polyReg.predict(inArr)

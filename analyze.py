@@ -1,11 +1,12 @@
 #!/usr/bin/python
 from sklearn import linear_model
 from sklearn import cross_validation
+from sklearn import preprocessing
 import numpy as np
 from matplotlib import pyplot as plt
 import sys
 from regressFit import *
-
+from micAnalysis import *
 
 inputColumnNames = []
 measuredColumnNames = []
@@ -13,6 +14,7 @@ outputColumnNames = []
 
 #inputColumnNames = ['module:input:0:numRanks','module:input:0:nx']
 #inputColumnNames = ['module:input:0:numRanks','module:input:0:nx']
+#inputColumnNames = ['module:input:0:balance','module:input:0:cost','module:input:0:dataStruct','module:input:0:dtfixed','module:input:0:dtmax','module:input:0:host','module:input:0:its','module:input:0:numNodes','module:input:0:numRanks', 'module:input:0:numReg','module:input:0:numZones', 'module:input:0:nx','module:input:0:powercap','module:input:0:rank','module:input:0:real_prec','module:input:0:system','module:input:1:FOM','module:input:1:MaxAbsDiff','module:input:1:MaxRelDiff','module:input:1:TotalAbsDiff','module:input:1:iter','module:input:1:numElem','module:input:1:numNode','module:input:1:phase','module:input:1:u_cut']
 inputColumnNames = ['module:input:0:ii','module:pub_input::dt','module:pub_input::eKinetic','module:pub_input::ePotential','module:pub_input::iStep','module:pub_input::lat','module:pub_input::momStdDev','module:pub_input::posStdDev']
 #inputColumnNames = ['module:input:0:ii','module:pub_input::dt','module:pub_input::iStep','module:pub_input::lat']
 #inputColumnNames = ['module:pub_input::dt','module:pub_input::lat','module:input:0:iStep']
@@ -121,22 +123,42 @@ def doFitForTarget(inArr,targetArr, tname):
 	#print targetArr
 
 	print "\n******For output:  ", tname
-	
+
+	#just use one input for MIC testing purpose
+        #inArr = inArr[:,1]
+	#inArr = inArr[:,None]
+	#print inArr	
+
     	calculateStatisticOfTarget(targetArr)
 	in_train, in_test, tar_train, tar_test = cross_validation.train_test_split(inArr, targetArr, test_size=0.20, random_state=42)
 
+	#Do MIC analysis based on Science 2011 paper
+	doMICAnalysisOfInputVariables(inArr, targetArr)
+	
 	#print in_train
 	#print tar_train
 	#print in_test
 	#print tar_test
-	reg = doLinearRegression(in_train,tar_train)
-	print "R2 score: ",reg.score(in_test, tar_test)
+	#reg = doLinearRegression(in_train,tar_train)
+	#print "R2 score: ",reg.score(in_test, tar_test)
 
-	reg = doPolyRegression(in_train, tar_train,tname)
-	print "R2 score: ",reg.score(in_test, tar_test)
+	#scaled_in_train = preprocessing.scale(in_train)
+	#scaled_tar_train = preprocessing.scale(tar_train)
+	
+	#scaled_in_test = preprocessing.scale(in_test)
+	#scaled_tar_test = preprocessing.scale(tar_test)
 
-	reg = doRidgeWithCV(in_train, tar_train)
-	print "R2 score: ",reg.score(in_test, tar_test)
+	reg1 = doPolyRegression(in_train, tar_train,tname,fitUse="LinearRegression")
+	print "R2 score: ",reg1.score(in_test, tar_test)
+	reg2 = doPolyRegression(in_train, tar_train,tname,fitUse="RidgeRegression")
+	print "R2 score: ",reg2.score(in_test, tar_test)
+	#reg3 = doPolyRegression(in_train, tar_train,tname,fitUse="Lasso")
+	#print "R2 score: ",reg3.score(in_test, tar_test)
+	#reg4 = doPolyRegression(in_train, tar_train,tname,fitUse="ElasticNet")
+	#print "R2 score: ",reg4.score(in_test, tar_test)
+
+	#reg = doRidgeWithCV(in_train, tar_train)
+	#print "R2 score: ",reg.score(in_test, tar_test)
 
 	#reg = doLinearRegWithCV(in_train, tar_train)
         #print "Coeff: ",clf.coef_
@@ -175,12 +197,12 @@ if __name__ == "__main__":
  	measuredDataArr = readDataFile(dataFile,'measured')
 	#print "measured"
 	#print measuredDataArr
- 	#outputDataArr = readDataFile(dataFile,'output')
+ 	outputDataArr = readDataFile(dataFile,'output')
 
 	#get an average of values for unique input combinations...        
-	uniqueInputArr, averagedMeasuredArr = getAveragePerExperiments(inputDataArr,measuredDataArr)	
-	#uniqueInputArr, averagedOutputArr = getAveragePerExperiments(inputDataArr,outputDataArr)
         averagedOutputArr = []
+	uniqueInputArr, averagedMeasuredArr = getAveragePerExperiments(inputDataArr,measuredDataArr)	
+	#junkInputArr, averagedOutputArr = getAveragePerExperiments(inputDataArr,outputDataArr)
 	#print uniqueInputArr
 	#print "\n------"
 	#print averagedMeasuredArr
