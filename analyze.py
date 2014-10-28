@@ -15,6 +15,7 @@ outputColumnNames = []
 #inputColumnNames = ['module:input:0:numRanks','module:input:0:nx']
 #inputColumnNames = ['module:input:0:numRanks','module:input:0:nx']
 #inputColumnNames = ['module:input:0:balance','module:input:0:cost','module:input:0:dataStruct','module:input:0:dtfixed','module:input:0:dtmax','module:input:0:host','module:input:0:its','module:input:0:numNodes','module:input:0:numRanks', 'module:input:0:numReg','module:input:0:numZones', 'module:input:0:nx','module:input:0:powercap','module:input:0:rank','module:input:0:real_prec','module:input:0:system','module:input:1:FOM','module:input:1:MaxAbsDiff','module:input:1:MaxRelDiff','module:input:1:TotalAbsDiff','module:input:1:iter','module:input:1:numElem','module:input:1:numNode','module:input:1:phase','module:input:1:u_cut']
+#inputColumnNames = ['module:pub_input::iStep','module:pub_input::lat']
 inputColumnNames = ['module:input:0:ii','module:pub_input::dt','module:pub_input::eKinetic','module:pub_input::ePotential','module:pub_input::iStep','module:pub_input::lat','module:pub_input::momStdDev','module:pub_input::posStdDev']
 #inputColumnNames = ['module:input:0:ii','module:pub_input::dt','module:pub_input::iStep','module:pub_input::lat']
 #inputColumnNames = ['module:pub_input::dt','module:pub_input::lat','module:input:0:iStep']
@@ -29,6 +30,8 @@ measuredColumnNames = ['module:measure:PAPI:PAPI_TOT_INS','module:measure:time:t
 #outputColumnNames = ['module:output:0:TotalAbsDiff','module:output:1:numCycles']
 #outputColumnNames = ['o1','o2']
 
+regressionDict = {}
+
 def getRowKey(row):
 	s = ""
 	for k in row:
@@ -40,6 +43,7 @@ def getRowKey(row):
 
 
 def getAveragePerExperiments(inArr, dataArr):
+	#return inArr, dataArr
 	dataArr = np.transpose(dataArr)
 	#print inArr
 	#print dataArr
@@ -56,7 +60,7 @@ def getAveragePerExperiments(inArr, dataArr):
 		else:
 			inDict[rowKey] = []
 			inDict[rowKey].append(dataArr[i])
-	#print inDict
+	#print inDict.keys()
 	#dataDict = map(lambda t: list(t), (inDict[key]  for key in inDict.keys()))
 	#dataDict = [a.tolist() for a in (inDict[key]  for key in inDict.keys())]
 	h1 = []
@@ -69,6 +73,9 @@ def getAveragePerExperiments(inArr, dataArr):
 	#dDict = [l.tolist() for l in dataDict]
 	# get the average...
 	A = [np.average(x, axis=0) for x in h1]
+	#meanA = [np.mean(x, axis=0) for x in h1]
+	#stdDevA = [np.std(x, axis=0) for x in h1]
+	#print "mean:", meanA, " stddev:", stdDevA 
 	# convert a list of 1D arrays to a 2D array
 	A = map(lambda t: list(t), A)
 	newDataArr = np.array(A)
@@ -113,11 +120,13 @@ def getColumnIndexes(fName, columnNames):
 	return indexes
 
 def calculateStatisticOfTarget(targetArr):
-        mean = np.mean(targetArr)
-        stddev = np.std(targetArr)
-        stdPerMean = mean/stddev
+	scaled_target = preprocessing.scale(targetArr)
+        mean = np.mean(scaled_target)
+        stddev = np.std(scaled_target)
+        #stdPerMean = mean/stddev
         print "Standard deviation: ", stddev
-        print "Standard deviation divided by mean: ", stdPerMean
+        print "Mean: ", mean
+        #print "Standard deviation divided by mean: ", stdPerMean
    
 def doFitForTarget(inArr,targetArr, tname):
 	#print targetArr
@@ -130,7 +139,7 @@ def doFitForTarget(inArr,targetArr, tname):
 	#print inArr	
 
     	calculateStatisticOfTarget(targetArr)
-	in_train, in_test, tar_train, tar_test = cross_validation.train_test_split(inArr, targetArr, test_size=0.20, random_state=42)
+	in_train, in_test, tar_train, tar_test = cross_validation.train_test_split(inArr, targetArr, test_size=0.10, random_state=42)
 
 	#Do MIC analysis based on Science 2011 paper
 	doMICAnalysisOfInputVariables(inArr, targetArr)
@@ -148,10 +157,10 @@ def doFitForTarget(inArr,targetArr, tname):
 	#scaled_in_test = preprocessing.scale(in_test)
 	#scaled_tar_test = preprocessing.scale(tar_test)
 
-	reg1 = doPolyRegression(in_train, tar_train,tname,fitUse="LinearRegression")
-	print "R2 score: ",reg1.score(in_test, tar_test)
-	reg2 = doPolyRegression(in_train, tar_train,tname,fitUse="RidgeRegression")
-	print "R2 score: ",reg2.score(in_test, tar_test)
+	#reg = doPolyRegression(in_train, tar_train,tname,fitUse="LinearRegression")
+	#print "R2 score: ",reg.score(in_test, tar_test)
+	reg = doPolyRegression(in_train, tar_train,tname,fitUse="RidgeRegression")
+	print "R2 score: ",reg.score(in_test, tar_test)
 	#reg3 = doPolyRegression(in_train, tar_train,tname,fitUse="Lasso")
 	#print "R2 score: ",reg3.score(in_test, tar_test)
 	#reg4 = doPolyRegression(in_train, tar_train,tname,fitUse="ElasticNet")
@@ -162,18 +171,44 @@ def doFitForTarget(inArr,targetArr, tname):
 
 	#reg = doLinearRegWithCV(in_train, tar_train)
         #print "Coeff: ",clf.coef_
+	return reg
+
+def check_anomaly(production_inArr, targetArr,tname):
+	reg = regressionDict[tname]
+	#print "Input arr: ", production_inArr
+	predicted = reg.predict(production_inArr)
+	#print tname, " R2 score: ",reg.score(production_inArr, targetArr)
+	#print tname, " prediction: ",reg.predict(production_inArr)
+	#print tname, " Actual: ", targetArr
+	error = (targetArr[0] - predicted[0])*1.0/float(targetArr[0])
+	print "Percentage error: " , error
+
+def anomaly_detection(inArr, measuredArr, outArr):
+	i = 0
+        for targetArr in measuredArr:
+                t = measuredColumnNames[i]
+                check_anomaly(inArr,targetArr,t)
+                i = i + 1
+
+        i = 0
+        for targetArr in outArr:
+                t = outputColumnNames[i]
+                check_anomaly(inArr,targetArr,t)
+                i = i + 1
 
 def scikit_scripts(inArr,measuredArr,outArr):
 	i = 0
 	for targetArr in measuredArr:
 		t = measuredColumnNames[i]
-		doFitForTarget(inArr,targetArr,t)
+		reg = doFitForTarget(inArr,targetArr,t)
+		regressionDict[t] = reg
 		i = i + 1
 
 	i = 0
 	for targetArr in outArr:
 		t = outputColumnNames[i]
-		doFitForTarget(inArr,targetArr,t)
+		reg = doFitForTarget(inArr,targetArr,t)
+		regressionDict[t] = reg
 		i = i + 1
 			
 
@@ -187,6 +222,7 @@ def getArrayWithUniqueInputs(a):
 
 if __name__ == "__main__":
 	dataFile = sys.argv[1]
+	productionDataFile = sys.argv[2]
 	print "DataFile: " , dataFile , "\n"        
 	print "Input variables", inputColumnNames
 	print "Meassured variables", measuredColumnNames
@@ -214,3 +250,12 @@ if __name__ == "__main__":
         #print averagedMeasuredArr
 	#print "\n\n ----- "
 	scikit_scripts(uniqueInputArr,averagedMeasuredArr,averagedOutputArr)
+
+
+	prodInputArr = readDataFile(productionDataFile,'input')
+        prodInputArr = np.transpose(prodInputArr)
+        prodMeasureArr = readDataFile(productionDataFile,'measured')
+        prodOutputArr = readDataFile(productionDataFile,'output')
+        prodOutputArr = []
+	prodInputArr, prodMeasureArr = getAveragePerExperiments(prodInputArr, prodMeasureArr)
+	anomaly_detection(prodInputArr, prodMeasureArr, prodOutputArr)
