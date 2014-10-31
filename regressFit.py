@@ -109,8 +109,8 @@ def doPolyRegression(inArr, targetArr,tname,fitUse="LinearRegression"):
 	polyReg = 0
 	if(fitUse == "LinearRegression"):
 		#polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', LinearRegression(fit_intercept=False))])
-		#polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', LinearRegression())])
-		polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', LinearRegression(normalize=True))]) #works great
+		polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', LinearRegression())])
+		#polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', LinearRegression(normalize=True))]) #works great
 	elif(fitUse == "RidgeRegression"):
 		#polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', Ridge(normalize=True))]) #performs bad
 		#polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', Ridge(alpha = 0.01))]) #no effect

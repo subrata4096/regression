@@ -18,7 +18,7 @@ def doMICAnalysisOfInputVariables(inArr, targetArr):
 	for i in range(numOfColumns):
 		x = inArr[:,i]
 		x_scaled = preprocessing.scale(x)
-		print "x: ", x_scaled
+		#print "x: ", x_scaled
 		#print "targetArr: ", targetArr 
 		mine = MINE(alpha=0.6, c=15)
 		mine.compute_score(x_scaled, targetArr)
