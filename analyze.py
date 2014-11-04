@@ -7,32 +7,11 @@ from matplotlib import pyplot as plt
 import sys
 from regressFit import *
 from micAnalysis import *
+from fields import *
 
-inputColumnNames = []
-measuredColumnNames = []
-outputColumnNames = []
-
-#inputColumnNames = ['module:input:0:numRanks','module:input:0:nx']
-#inputColumnNames = ['module:input:0:numRanks','module:input:0:nx']
-inputColumnNames = ['module:input:0:balance','module:input:0:cost','module:input:0:dtfixed','module:input:0:dtmax','module:input:0:its','module:input:0:numNodes','module:input:0:numRanks','module:input:0:numReg','module:input:0:numZones','module:input:0:nx','module:input:0:powercap','module:input:0:rank','module:input:0:real_prec']
-#inputColumnNames = ['module:input:0:balance','module:input:0:cost','module:input:0:dtfixed','module:input:0:dtmax','module:input:0:host','module:input:0:its','module:input:0:numNodes','module:input:0:numRanks', 'module:input:0:numReg','module:input:0:numZones', 'module:input:0:nx','module:input:0:powercap','module:input:0:rank','module:input:0:real_prec','module:input:0:system','module:input:1:MaxAbsDiff','module:input:1:MaxRelDiff','module:input:1:TotalAbsDiff','module:input:1:iter','module:input:1:numElem','module:input:1:numNode','module:input:1:phase','module:input:1:u_cut']
-#inputColumnNames = ['module:pub_input::iStep','module:pub_input::lat']
-#inputColumnNames = ['module:input:0:ii','module:pub_input::dt','module:pub_input::eKinetic','module:pub_input::ePotential','module:pub_input::iStep','module:pub_input::lat','module:pub_input::momStdDev','module:pub_input::posStdDev']
-#inputColumnNames = ['module:input:0:ii','module:pub_input::dt','module:pub_input::iStep','module:pub_input::lat']
-#inputColumnNames = ['module:pub_input::dt','module:pub_input::lat','module:input:0:iStep']
-#inputColumnNames = ['module:pub_input::dt','module:pub_input::lat']
-#inputColumnNames = ['module:input:0:dt','module:input:0:lat']
-#inputColumnNames = ['in1', 'in2', 'in3']
-#measuredColumnNames = ['module:measure:PAPI:PAPI_L2_TC_MR','module:measure:PAPI:PAPI_TOT_INS','module:measure:RAPL:Elapsed']
-measuredColumnNames = ['module:measure:PAPI:PAPI_L2_TC_MR','module:measure:PAPI:PAPI_TOT_INS','module:measure:RAPL:EDP_S0','module:measure:RAPL:EDP_S1','module:measure:RAPL:Elapsed','module:measure:RAPL:Energy_CPU_S0','module:measure:RAPL:Energy_CPU_S1','module:measure:RAPL:Energy_DRAM_S0','module:measure:RAPL:Energy_DRAM_S1','module:measure:RAPL:Power_CPU_S0','module:measure:RAPL:Power_CPU_S1','module:measure:RAPL:Power_DRAM_S0','module:measure:RAPL:Power_DRAM_S1']
-#measuredColumnNames = ['module:measure:PAPI:PAPI_TOT_INS','module:measure:time:time']
-#measuredColumnNames = ['module:measure:time:time','module:input:1:u_cut']
-#measuredColumnNames = ['module:measure:RAPL:Elapsed','module:measure:RAPL:EDP_S0']
-#measuredColumnNames = ['m1','m2']
-#outputColumnNames = ['module:output:0:TotalAbsDiff','module:output:1:numCycles']
-#outputColumnNames = ['module:output:0:TotalAbsDiff','module:output:1:numCycles']
-outputColumnNames = ['module:output:0:FOM','module:output:0:MaxAbsDiff','module:output:0:MaxRelDiff','module:output:0:TotalAbsDiff','module:output:1:numCycles']
-#outputColumnNames = ['o1','o2','o3']
+global inputColumnNames
+global measuredColumnNames
+global outputColumnNames
 
 regressionDict = {}
 
@@ -188,11 +167,18 @@ def doFitForTarget(inArr,targetArr, tname):
 	#print inArr	
 
     	calculateStatisticOfTarget(targetArr)
-	in_train, in_test, tar_train, tar_test = cross_validation.train_test_split(inArr, targetArr, test_size=0.20, random_state=42)
 
 	#Do MIC analysis based on Science 2011 paper
-	doMICAnalysisOfInputVariables(inArr, targetArr)
-	
+        selected_inArr = doMICAnalysisOfInputVariables(inArr, targetArr)
+	#print "sel list" , selected_inArr
+
+
+	if(len(selected_inArr) == 0):
+		print "No input captures the target:",tname
+		return None
+
+	in_train, in_test, tar_train, tar_test = cross_validation.train_test_split(selected_inArr, targetArr, test_size=0.20, random_state=42)
+
 	#print in_train
 	#print tar_train
 	#print in_test
@@ -224,6 +210,9 @@ def doFitForTarget(inArr,targetArr, tname):
 
 def check_anomaly(production_inArr, targetArr,tname):
 	reg = regressionDict[tname]
+	if(reg == None):
+		print "target", tname, " can not be predicted by the captured inputs"
+		return
 	#print "Input arr: ", production_inArr
 	predicted = reg.predict(production_inArr)
 	#print tname, " R2 score: ",reg.score(production_inArr, targetArr)
