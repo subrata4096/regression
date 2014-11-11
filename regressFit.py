@@ -80,7 +80,7 @@ def doRidgeWithCV(inArr,targetArr):
 	#print reg.predict([8, 15])
 	return reg 
 
-def doPolyRegression(inArr, targetArr,tname,fitUse="LinearRegression"):
+def doPolyRegression(inArr, targetArr,tname,deg,fitUse="LinearRegression"):
 	print "--------------------------------------------------------"     
 	print "PolyRegression", "using: ", fitUse
 
@@ -108,19 +108,22 @@ def doPolyRegression(inArr, targetArr,tname,fitUse="LinearRegression"):
 	
 	polyReg = 0
 	if(fitUse == "LinearRegression"):
-		#polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', LinearRegression(fit_intercept=False))])
-		polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', LinearRegression())])
-		#polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', LinearRegression(normalize=True))]) #works great
+		#polyReg = Pipeline([('poly', PolynomialFeatures(degree=deg)),('linear', LinearRegression(fit_intercept=False))])
+		polyReg = Pipeline([('poly', PolynomialFeatures(degree=deg)),('linear', LinearRegression())])
+		#polyReg = Pipeline([('poly', PolynomialFeatures(degree=deg)),('linear', LinearRegression(normalize=True))]) #works great
+		#polyReg = Pipeline([('poly', PolynomialFeatures(degree=deg)),('linear', Lasso(normalize=True))])
+		#polyReg = Pipeline([('poly', PolynomialFeatures(degree=deg)),('linear', Lasso())])
 	elif(fitUse == "RidgeRegression"):
-		#polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', Ridge(normalize=True))]) #performs bad
-		#polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', Ridge(alpha = 0.01))]) #no effect
-		#polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', Ridge(alpha = 1000))]) 
-		polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', Ridge())])
+		#polyReg = Pipeline([('poly', PolynomialFeatures(degree=deg)),('linear', Ridge(normalize=True))]) #performs bad
+		#polyReg = Pipeline([('poly', PolynomialFeatures(degree=deg)),('linear', Ridge(alpha = 0.01))]) #no effect
+		#polyReg = Pipeline([('poly', PolynomialFeatures(degree=deg)),('linear', Ridge(alpha = 1000))]) 
+		polyReg = Pipeline([('poly', PolynomialFeatures(degree=deg)),('linear', Ridge())])
 	elif(fitUse == "Lasso"):
-		polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', Lasso(max_iter=10000,normalize=True))])
+		#polyReg = Pipeline([('poly', PolynomialFeatures(degree=deg)),('linear', Lasso(max_iter=10000,normalize=True))])
+		polyReg = Pipeline([('poly', PolynomialFeatures(degree=deg)),('linear', Lasso())])
 	elif(fitUse == "ElasticNet"):
-		polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', ElasticNet())])
-	#polyReg = Pipeline([('poly', PolynomialFeatures(degree=2)),('linear', LinearRegression(normalize=True))])
+		polyReg = Pipeline([('poly', PolynomialFeatures(degree=deg)),('linear', ElasticNet())])
+	#polyReg = Pipeline([('poly', PolynomialFeatures(degree=deg)),('linear', LinearRegression(normalize=True))])
 	#model = model.fit(inArr[:, np.newaxis], targetArr)
 	polyReg.fit(inArr, targetArr)
 	

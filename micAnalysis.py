@@ -10,7 +10,7 @@ global inputColumnNames
 global measuredColumnNames
 global outputColumnNames
 
-mic_score_threshold = 0.70
+mic_score_threshold = 0.00
 
 def print_stats(mine,i):
     print inputColumnNames[i], "\tMIC", mine.mic(), "\tmic threshold: \t" , mic_score_threshold
@@ -19,7 +19,9 @@ def print_stats(mine,i):
     #print "MCN (eps=0)", mine.mcn(0)
     #print "MCN (eps=1-MIC)", mine.mcn_general()
 
-def doMICAnalysisOfInputVariables(inArr, targetArr):
+def doMICAnalysisOfInputVariables(inArr, targetArr, targetQuality = None):
+	if(targetQuality == None):
+		return inArr
 	#print inArr
 	selected_inArr = []
 	#selected_inArr.append([])
@@ -34,6 +36,8 @@ def doMICAnalysisOfInputVariables(inArr, targetArr):
 		mine = MINE(alpha=0.6, c=15)
 		mine.compute_score(x_scaled, targetArr)
 		print_stats(mine,i)
+		if(targetQuality != None):
+			targetQuality.append(float(mine.mic()))
 		#l = list(x)
 		#selected_inArr = np.concatenate((selected_inArr, np.array(l)), axis=0)
 		#print k
@@ -44,4 +48,5 @@ def doMICAnalysisOfInputVariables(inArr, targetArr):
 		
 	selected_inArr = np.array(selected_inArr).transpose()
 	#print selected_inArr
-	return selected_inArr
+        return inArr
+	#return selected_inArr
