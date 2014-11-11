@@ -20,6 +20,26 @@ global regressionDict
 targetDataQuality = {}
 
 def identifyGoodTargets(targetDataQuality):
+	print "\n ==================== Identify good targets ==================\n"
+	for key in targetDataQuality.keys():
+		#print key
+		som = targetDataQuality[key]["som"]
+		if(som > 0.3):
+			print key, ":- too much variation"
+			continue
+		
+		hasGoodMicScore = False
+		miclist = targetDataQuality[key]["mic"]
+		for m in miclist:
+			if(m < 0.85):
+				continue
+			else:
+				hasGoodMicScore = True
+		if(hasGoodMicScore):
+			print key, ":- good target"
+		else:
+			print key, ":- not good mic score"
+			
 	return
 
 if __name__ == "__main__":
@@ -73,3 +93,4 @@ if __name__ == "__main__":
                 i = i + 1
 
 	#print targetDataQuality
+	identifyGoodTargets(targetDataQuality)

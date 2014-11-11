@@ -61,6 +61,7 @@ def calculateVariability(inArr, dArr):
         stdDevA = [np.std(x, axis=0) for x in h1]
         variance = [np.var(x, axis=0) for x in h1]
         stdOverMean = [np.std(x, axis=0)/np.mean(x, axis=0) for x in h1]
+        #stdOverMean = [np.std(x, axis=0) for x in h1]
         #print "mean:", meanA 
         #print "stddev:", stdDevA 
         #print "var:", variance
