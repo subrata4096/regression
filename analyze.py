@@ -10,6 +10,7 @@ from micAnalysis import *
 from drawPlot import *
 from detectAnomaly import *
 from fields import *
+from pickleDump import *
 
 global inputColumnNames
 global measuredColumnNames
@@ -240,16 +241,20 @@ def doFitForTarget(inArr,targetArr, tname):
         #print "Coeff: ",clf.coef_
 	#doPlot(inArr,targetArr,4,tname,reg)
 	#do3dPlot(inArr,targetArr,4,9,tname,reg)
+	#do3dPlot(inArr,targetArr,0,9,tname,reg)
 
 	return reg
 
 
-def scikit_scripts(inArr,measuredArr,outArr):
+def scikit_scripts(dataFile,inArr,measuredArr,outArr):
 	i = 0
 	for targetArr in measuredArr:
 		t = measuredColumnNames[i]
 		reg = doFitForTarget(inArr,targetArr,t)
-		regressionDict[t] = reg
+		#regressionDict[t] = reg
+		fname = dumpModel(dataFile,t,reg)
+                regLoad = loadModel(fname)
+		regressionDict[t] = regLoad
 		i = i + 1
 
 	i = 0
@@ -271,7 +276,7 @@ def getArrayWithUniqueInputs(a):
 if __name__ == "__main__":
 	dataFile = sys.argv[1]
 	productionDataFile = ""
-	#productionDataFile = sys.argv[2]
+	productionDataFile = sys.argv[2]
 	print "DataFile: " , dataFile , "\n"        
 	print "Input variables", inputColumnNames
 	print "Meassured variables", measuredColumnNames
@@ -302,7 +307,7 @@ if __name__ == "__main__":
 	#print "\n\n ----- "
         #print averagedMeasuredArr
 	#print "\n\n ----- "
-	scikit_scripts(uniqueInputArr,averagedMeasuredArr,averagedOutputArr)
+	scikit_scripts(dataFile,uniqueInputArr,averagedMeasuredArr,averagedOutputArr)
 
 	if(productionDataFile != ""):
 		prodInputArr = readDataFile(productionDataFile,'input')
