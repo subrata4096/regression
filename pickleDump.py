@@ -8,12 +8,18 @@ def dumpModel(tsvFName,target, model):
         onlyName = os.path.splitext(os.path.basename(tsvFName))[0]
         #print onlyName,  target
         outName  = onlyName + "_" + target + ".pkl"
+        outName2  = onlyName + "_" + target + ".cpkl"
         fullpath = os.path.join(locDir, outName)
+        fullpath2 = os.path.join(locDir, outName2)
         print fullpath
 	with open(fullpath, 'wb') as fid:
-    		cPickle.dump(model, fid)
+    		pickle.dump(model, fid)
 
         fid.close()    
+	with open(fullpath2, 'wb') as fid:
+                cPickle.dump(model, fid)
+
+        fid.close()
 	return fullpath
 # load it again
 def loadModel(pklFName):
