@@ -15,17 +15,50 @@ import pylab as plt
 from mpl_toolkits.mplot3d import Axes3D
 from micAnalysis import *
 
+import sys
+from regressFit import *
+from micAnalysis import *
+from drawPlot import *
+from detectAnomaly import *
+from fields import *
+from analyze import *
+from pickleDump import *
+
+global inputColumnNames
+global measuredColumnNames
+global outputColumnNames
+global regressionDict
+
+def getSortedArrayBasedOnColumn(inArr,columnIndex):
+	sortedArr = inArr[inArr[:,columnIndex].argsort()]
+	print "Sorted array, based on column = ", columnIndex
+	print sortedArr
+	return  sortedArr
+
 def getSamplesFromBootstrap(inArr):
 	numSamples = inArr.shape[0]
 	bs = cross_validation.Bootstrap(numSamples, 10, 0.5, random_state=0)
-	testList = []
-	for test_index, other_index in bs:
-  		print("TRAIN:", test_index, "TEST:", other_index)
+	testTrainPairMap = {}
+	bootStrapIndex = 0;
+	for train_index, test_index in bs:
+		bootStrapIndex = bootStrapIndex + 1
+		trainList = []
+		testDataPoints = []
+  		print("TRAIN:", train_index, "TEST:", test_index)
+		for idx in train_index:
+			#print idx
+			trainList.append(inArr[idx])
+			trainArr = np.array(trainList)
 		for idx in test_index:
-			print idx
-			testList.append(inArr[idx])
-	testArr = np.array(testList)
-	print testArr
+			testDataPoints.append(inArr[idx])
+		
+		testTrainPairMap[bootStrapIndex] = (trainArr,testDataPoints)
+			
+	#print testTrainPairMap
+	for key in testTrainPairMap.keys():
+		print "Key = ", key, "  value = ", testTrainPairMap[key] 
+
+	return testTrainPairMap
 
 def getStandardizedValues(inArr):
 
@@ -64,8 +97,10 @@ def getStandardizedEuclideanDistance(refArr, otherArr):
 
 #X = [[0, 1], [1, 1]]
 #getStandardizedEuclideanDistance(X,[[0, 0]])
-A = np.array([[0, 0], [1,11], [2,12],[3,13]])
+A = np.array([[1,11], [0,0], [2,13],[3,12]])
 print "Reference arr: A = ", A 
+getSortedArrayBasedOnColumn(A,1)
+getSortedArrayBasedOnColumn(A,0)
 getSamplesFromBootstrap(A)
 B = [[1.5,2]]
 C = [[30,40]]
