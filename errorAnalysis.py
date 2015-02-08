@@ -29,15 +29,28 @@ global measuredColumnNames
 global outputColumnNames
 global regressionDict
 
+#merge two arrays side by side (horizontally)
+def getMergedInputAndTargetArray(inArr, targetArr):
+	mergedArr = np.concatenate((inArr, targetArr), axis=1)
+	print mergedArr
+	return mergedArr
+
+#sort an array based on the column index provided
 def getSortedArrayBasedOnColumn(inArr,columnIndex):
 	sortedArr = inArr[inArr[:,columnIndex].argsort()]
 	print "Sorted array, based on column = ", columnIndex
 	print sortedArr
 	return  sortedArr
 
-def getSamplesFromBootstrap(inArr):
+#takes the merged and sorted array where datapoints and targets are side by side
+#create samples through bootstrap resampling(with replacements)
+#returns a map of tupples indexed by bootstap index (number of times resampling was done)
+#each tuple has a merged array for training and a merged list of points for testing
+#resampleNumber => number of times we would resample 
+#percentageInTrainSet => what percentage of the samples will be used as train set (rest as test)
+def getSamplesFromBootstrap(inArr, resampleNumber, percentageInTrainSet):
 	numSamples = inArr.shape[0]
-	bs = cross_validation.Bootstrap(numSamples, 10, 0.5, random_state=0)
+	bs = cross_validation.Bootstrap(numSamples, resampleNumber, percentageInTrainSet, random_state=0)
 	testTrainPairMap = {}
 	bootStrapIndex = 0;
 	for train_index, test_index in bs:
@@ -93,6 +106,49 @@ def getStandardizedEuclideanDistance(refArr, otherArr):
 	distArr = euclidean_distances(refArr, otherArr)
 	print distArr
 	return distArr	
+
+def getObservationsFromMergedSamples(samples,numOfFeatures):
+	totalNumberOfColumns = samples.shape[1]
+        #while splitting horizontally, we should give [numOfFeatures, totalNumberOfColumns] argumnet to hsplit
+	#which will return 3 arrays:
+	# 1. samples[:numOfFeatures] => essntially the data-point part of the merged array 
+	# 2. samples[numOfFeatures : totalNumberOfColumns] => essentially the target array
+	# 3. samples[totalNumberOfColumns:] => essentially an empty array -> we are not interested
+
+	splittedList = np.hsplit(x, np.array([numOfFeatures, totalNumberOfColumns] ))
+	paramArr = splittedList[0]  #or inArr or data point array
+	targetArr = splittedList[1]
+	obs = Observations(paramArr,targetArr)
+	return obs
+	
+def generateTrainingAndTestSetsForDistanceProfiling(inArr,targetArr):
+	numSamples = inArr.shape[0]
+	numFeatures = inArr.shape[1]
+	mergedArr = getMergedInputAndTargetArray(inArr,targetArr)
+
+	featureErrorDataList = []
+	for featureIndex in range(numFeatures):
+		sortedArr = getSortedArrayBasedOnColumn(featureIndex)
+
+		#Each train and test sample is a MERGED array of input and target.
+		#we need to split these later
+
+		# to start with (according to document error_profiling.pdf) we will start with just use one resample
+		trainAndTestSamples = getSamplesFromBootstrap(sortedArr,1,0.1)
+
+		feErr = FeatureErrorData()
+                feErr.name = featureIndex 
+		for key in testAndTestSamples.keys():
+			trainSample,testSamples = testAndTestSamples[key]
+			traingObs = getObservationsFromMergedSamples(trainSample)
+			feErr.TrainingObservations = traingObs
+			for testSample in testSamples:
+				testObs = getObservationsFromMergedSamples(testSample)
+				feErr.TestObservations.append(testObs)
+		
+		#now append this featureErrorData into the list. This is for a target, 
+		#So latter should be attached to the target name
+		featureErrorDataList.append(feErr)                   
 
 
 #X = [[0, 1], [1, 1]]
