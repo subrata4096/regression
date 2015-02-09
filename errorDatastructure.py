@@ -33,18 +33,31 @@ class Observations:
 	def __init__(self,inArr,tarArr):
 		self.ParamArr = inArr
 		self.TargetArr = tarArr
+	def __str__(self):
+		s = str("PARAM Arr: " + np.array_str(self.ParamArr) + " TARGET Arr: " + np.array_str(self.TargetArr))
+		return s
 
 class FeatureErrorData:
 	def __init__(self):
 		self.name = ''
 		self.TrainingObservations = None
 		self.TestObservations = []
+	#def __str__(self):
+	#	s = "Feature id: " + self.name + "\n" + \
+	#		"\t" + "Training obs: " + repr(self.TrainingObservations.str()) + "\n" 
+	#		#+ "\t" + "Test obs: " + "\n"  
+	#		#+ "\t\t" + self.TestObservations.str() + "\n")
+	#	return s
+  
 
 class TargetErrorData:
 	def __init__(self):
 		self.name = ''
 		# featureName vs FeatureErrorData map
 		self.FeatureErrorDataMap = {}
+	#def __str__(self):
+	#	s = "TargetErrorData" + str(self.FeatureErrorDataMap)
+	#	return s
 
 #targetName vs TargetErrorData map
 TargetErrorDataMap = {}

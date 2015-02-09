@@ -23,6 +23,7 @@ from detectAnomaly import *
 from fields import *
 from analyze import *
 from pickleDump import *
+from errorDatastructure import *
 
 global inputColumnNames
 global measuredColumnNames
@@ -42,27 +43,67 @@ def getSortedArrayBasedOnColumn(inArr,columnIndex):
 	print sortedArr
 	return  sortedArr
 
+#print the error data structure map
+def printErrorDataStructureMap(errDSList):
+	for errDS in errDSList:
+		print "Training obs: \n\t" + str(errDS.TrainingObservations)
+		testObs = errDS.TestObservations
+		for o in testObs:
+			print "Test obs: \n\t" + str(o)
+		
+
+#def getSamplesFromBootstrap(inArr, resampleNumber, percentageInTrainSet, useBootstrap):
+#	bs = cross_validation.Bootstrap(numSamples, resampleNumber, percentageInTrainSet, random_state=0)
+#	print bs
+#        testTrainPairMap = {}
+#        bootStrapIndex = 0;
+#        for train_index, test_index in bs:
+#                bootStrapIndex = bootStrapIndex + 1
+#                trainList = []
+#                testDataPoints = []
+#                print("TRAIN:", train_index, "TEST:", test_index)
+#                for idx in train_index:
+#                        #print idx
+#                        trainList.append(inArr[idx])
+#                trainArr = np.array(trainList)
+#                for idx in test_index:
+#                        testDataPoints.append(inArr[idx])
+#
+#                testTrainPairMap[bootStrapIndex] = (trainArr,testDataPoints)
+#
+#        #print testTrainPairMap
+#        for key in testTrainPairMap.keys():
+#                print "Key = ", key, "  value = ", testTrainPairMap[key]
+#
+#        return testTrainPairMap
+
+
 #takes the merged and sorted array where datapoints and targets are side by side
 #create samples through bootstrap resampling(with replacements)
 #returns a map of tupples indexed by bootstap index (number of times resampling was done)
 #each tuple has a merged array for training and a merged list of points for testing
 #resampleNumber => number of times we would resample 
 #percentageInTrainSet => what percentage of the samples will be used as train set (rest as test)
-def getSamplesFromBootstrap(inArr, resampleNumber, percentageInTrainSet):
+def getSamplesFromSortedParams(inArr, resampleNumber, percentageInTrainSet, useBootstrap):
 	numSamples = inArr.shape[0]
-	bs = cross_validation.Bootstrap(numSamples, resampleNumber, percentageInTrainSet, random_state=0)
 	testTrainPairMap = {}
 	bootStrapIndex = 0;
-	for train_index, test_index in bs:
+	if(useBootstrap):
+		print "\n\n== ERROR == ! Please call getSamplesFromBootstrap instead..\n\n"
+	else:
+		trainingSize = (int)(0.5 + (float)(numSamples * percentageInTrainSet))   #0.5 for rounding up of sample size
+		trainSet = [x for x in range(trainingSize)]
+		testSet = [x for x in range(trainingSize,numSamples)]
+		print trainingSize, trainSet, testSet
 		bootStrapIndex = bootStrapIndex + 1
 		trainList = []
 		testDataPoints = []
-  		print("TRAIN:", train_index, "TEST:", test_index)
-		for idx in train_index:
+  		print("TRAIN:", trainSet, "TEST:", testSet)
+		for idx in trainSet:
 			#print idx
 			trainList.append(inArr[idx])
-			trainArr = np.array(trainList)
-		for idx in test_index:
+		trainArr = np.array(trainList)
+		for idx in testSet:
 			testDataPoints.append(inArr[idx])
 		
 		testTrainPairMap[bootStrapIndex] = (trainArr,testDataPoints)
@@ -108,14 +149,17 @@ def getStandardizedEuclideanDistance(refArr, otherArr):
 	return distArr	
 
 def getObservationsFromMergedSamples(samples,numOfFeatures):
-	totalNumberOfColumns = samples.shape[1]
+	#totalNumberOfColumns = samples[0].shape[1]
+	totalNumberOfColumns = samples.shape[0]
+	print "merged sample: " , samples
         #while splitting horizontally, we should give [numOfFeatures, totalNumberOfColumns] argumnet to hsplit
 	#which will return 3 arrays:
 	# 1. samples[:numOfFeatures] => essntially the data-point part of the merged array 
 	# 2. samples[numOfFeatures : totalNumberOfColumns] => essentially the target array
 	# 3. samples[totalNumberOfColumns:] => essentially an empty array -> we are not interested
-
-	splittedList = np.hsplit(x, np.array([numOfFeatures, totalNumberOfColumns] ))
+	
+	print "Num features: ",numOfFeatures, " total columns: " , totalNumberOfColumns
+	splittedList = np.hsplit(samples, np.array([numOfFeatures, totalNumberOfColumns] ))
 	paramArr = splittedList[0]  #or inArr or data point array
 	targetArr = splittedList[1]
 	obs = Observations(paramArr,targetArr)
@@ -128,48 +172,59 @@ def generateTrainingAndTestSetsForDistanceProfiling(inArr,targetArr):
 
 	featureErrorDataList = []
 	for featureIndex in range(numFeatures):
-		sortedArr = getSortedArrayBasedOnColumn(featureIndex)
+		sortedArr = getSortedArrayBasedOnColumn(mergedArr,featureIndex)
 
 		#Each train and test sample is a MERGED array of input and target.
 		#we need to split these later
 
 		# to start with (according to document error_profiling.pdf) we will start with just use one resample
-		trainAndTestSamples = getSamplesFromBootstrap(sortedArr,1,0.1)
+		#trainAndTestSamples = getSamplesFromBootstrap(sortedArr,1,0.66,True)
+
+		#do not use bootstrap resampling. according to document error_profiling.pdf), use first few from
+		#sorted list of params, as training set and far points as test set
+		trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.66,False)
 
 		feErr = FeatureErrorData()
                 feErr.name = featureIndex 
-		for key in testAndTestSamples.keys():
-			trainSample,testSamples = testAndTestSamples[key]
-			traingObs = getObservationsFromMergedSamples(trainSample)
+		for key in trainAndTestSamples.keys():
+			trainSample,testSamples = trainAndTestSamples[key]
+			traingObs = getObservationsFromMergedSamples(trainSample,numFeatures)
 			feErr.TrainingObservations = traingObs
 			for testSample in testSamples:
-				testObs = getObservationsFromMergedSamples(testSample)
+				testObs = getObservationsFromMergedSamples(testSample,numFeatures)
 				feErr.TestObservations.append(testObs)
 		
 		#now append this featureErrorData into the list. This is for a target, 
 		#So latter should be attached to the target name
-		featureErrorDataList.append(feErr)                   
+		featureErrorDataList.append(feErr)   
+
+	return featureErrorDataList                 
 
 
 #X = [[0, 1], [1, 1]]
 #getStandardizedEuclideanDistance(X,[[0, 0]])
-A = np.array([[1,11], [0,0], [2,13],[3,12]])
-print "Reference arr: A = ", A 
-getSortedArrayBasedOnColumn(A,1)
-getSortedArrayBasedOnColumn(A,0)
-getSamplesFromBootstrap(A)
-B = [[1.5,2]]
-C = [[30,40]]
-x = getMeanOfObservations(A)
-getStandardizedEuclideanDistance(x,C)
-print "=============== pairwise ================"
-getPairWiseDistance(A,C)
-D = [[300,400]]
-print "D = [[300,400]]"
-getPairWiseDistance(A,D)
-E = [[3000,4000]]
-print "E = [[3000,4000]]"
-getPairWiseDistance(A,E)
-F = [[30000,40000]]
-print "F = [[30000,40000]]"
-getPairWiseDistance(A,F)
+#A = np.array([[1,11], [0,0], [2,13],[3,12]])
+#print "Reference arr: A = ", A 
+#getSortedArrayBasedOnColumn(A,1)
+#getSortedArrayBasedOnColumn(A,0)
+#getSamplesFromBootstrap(A)
+#B = [[1.5,2]]
+#C = [[30,40]]
+#x = getMeanOfObservations(A)
+#getStandardizedEuclideanDistance(x,C)
+#print "=============== pairwise ================"
+#getPairWiseDistance(A,C)
+#D = [[300,400]]
+#print "D = [[300,400]]"
+#getPairWiseDistance(A,D)
+#E = [[3000,4000]]
+#print "E = [[3000,4000]]"
+#getPairWiseDistance(A,E)
+#F = [[30000,40000]]
+#print "F = [[30000,40000]]"
+#getPairWiseDistance(A,F)
+
+inArr = np.array([[1,11], [0,0], [2,13],[3,12],[4,10],[5,20]])
+tarArr = np.array([[1], [0], [4],[9],[16],[25]])
+errDataStruct = generateTrainingAndTestSetsForDistanceProfiling(inArr,tarArr)
+printErrorDataStructureMap(errDataStruct)
