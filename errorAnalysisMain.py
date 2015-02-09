@@ -20,6 +20,8 @@ global measuredColumnNames
 global outputColumnNames
 global regressionDict
 
+global TargetErrorDataMap
+
 #=> convert target list to 2d list
 #[1 2 3 4] => [[1] [2] [3] [4]] => beacuse that's what following functions expect
 def listTo2DArray(theList):
@@ -28,8 +30,31 @@ def listTo2DArray(theList):
 		list2D.append([item])
 	#print list2D
 	return np.array(list2D)
-		
-def do_error_analysis(dataFile,inArr,measuredArr,outArr):
+	
+#takes, input parameter array, target array and target name
+def getRegressionFunctionForEachTarget(inArr, tarArr,tname):	
+	#fit a polynomial regression of degree 2 using Lasso as underlying linear regression model
+	reg = doPolyRegression(inArr, tarArr,tname,2,fitUse="Lasso")
+	#print reg
+	return reg
+
+#this function will fit the training set for each feature sample for each target and populate the regression function in DS
+def populateRegressionFunctionForEachTarget():	
+	for targetkey in TargetErrorDataMap.keys():
+                tarErrData = TargetErrorDataMap[targetkey]
+		for featureKey in tarErrData.FeatureErrorDataMap.keys():
+			featureErrData = tarErrData.FeatureErrorDataMap[featureKey]
+			trainObs = featureErrData.TrainingObservations	
+			inArr = trainObs.ParamArr
+			testArr = trainObs.TargetArr
+			#fit the regression function based on training params and target
+			regressFunc = getRegressionFunctionForEachTarget(inArr,testArr,targetkey)
+			#print "here:", targetkey, featureKey, regressFunc
+			featureErrData.RegressionFunction = regressFunc
+			#print str(tarErrData)
+				
+
+def populateSamplesInErrorDataStructure(dataFile,inArr,measuredArr,outArr):
 	i = 0
 	for targetArr in measuredArr:
 		t = measuredColumnNames[i]
@@ -78,6 +103,11 @@ if __name__ == "__main__":
 	#outputDataArrT = map(lambda t: list(t), outputDataArr)
 	#print "measuredArrT :", measuredDataArrT
 
-	#do_error_analysis(dataFile,inputDataArr,measuredDataArrT,outputDataArrT)
-	do_error_analysis(dataFile,inputDataArr,measuredDataArr,outputDataArr)
+	#populateSamplesInErrorDataStructure(dataFile,inputDataArr,measuredDataArrT,outputDataArrT)
+	populateSamplesInErrorDataStructure(dataFile,inputDataArr,measuredDataArr,outputDataArr)
+
+	
+	#populate regression function for each target and for samples sorted based on each feature
+	populateRegressionFunctionForEachTarget()
+	
 	printFullErrorDataStructure()

@@ -81,8 +81,8 @@ def doRidgeWithCV(inArr,targetArr):
 	return reg 
 
 def doPolyRegression(inArr, targetArr,tname,deg,fitUse="LinearRegression"):
-	print "--------------------------------------------------------"     
-	print "PolyRegression", "using: ", fitUse
+	#print "--------------------------------------------------------"     
+	#print "PolyRegression", "using: ", fitUse
 
 	#inArr = np.array([[0, 0], [1,11], [2,12],[3,13]])
 	#targetArr = np.array([0,3,6,12])
@@ -129,7 +129,7 @@ def doPolyRegression(inArr, targetArr,tname,deg,fitUse="LinearRegression"):
 	
 	#score = polyReg.score(inArr, targetArr)
 	#print "R2 score: ", score
-	print "poly coeff:", polyReg.named_steps['linear'].coef_
+	#print "poly coeff:", polyReg.named_steps['linear'].coef_
 	#Do cross validation (using leave p-out technique)
 	#doCrossValidation(2,polyReg,inArr,targetArr)
 
@@ -151,4 +151,5 @@ def doPolyRegression(inArr, targetArr,tname,deg,fitUse="LinearRegression"):
 	#ax.set_zlabel(tname)
 	#ax.w_zaxis.set_ticklabels([])
 	#plt.show()
+	#print polyReg
 	return polyReg

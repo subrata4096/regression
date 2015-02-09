@@ -29,10 +29,17 @@ global measuredColumnNames
 global outputColumnNames
 global regressionDict
 
+#this is a global container for error datastructure
+#targetName vs TargetErrorData map
+global TargetErrorDataMap
+TargetErrorDataMap = {}
+
 class Observations:
 	def __init__(self,inArr,tarArr):
 		self.ParamArr = inArr
 		self.TargetArr = tarArr
+		self.PredictedArr = None
+		self.PredictionErrArr = None
 	def __str__(self):
 		s = str("\n\tPARAM Arr: " + np.array_str(self.ParamArr) + "\n\tTARGET Arr: " + np.array_str(self.TargetArr))
 		return s
@@ -42,12 +49,14 @@ class FeatureErrorData:
 		self.name = ''
 		self.TrainingObservations = None
 		self.TestObservations = []
+		self.RegressionFunction = None
 	def __str__(self):
 		s = "\n\t\t-----------------  Feature id: " + str(self.name) + " --------\n"
 		s = s +	"\t\t\t" + "Training obs: " + str(self.TrainingObservations) + "\n" 
 		s = s + "\t\t" + "Test obs: " 
                 for testObs in self.TestObservations:
-                        s = s + "\n\t\t\t" + str(testObs) 
+                        s = s + "\n\t\t\t" + str(testObs)
+		s = s + "\n\t\t RegressionFunc:  " + str(self.RegressionFunction) 
 		return s
   
 #data structure per target for train and test samples
@@ -68,9 +77,6 @@ class TargetErrorData:
 		
 		s = s + "\n"	 
 		return s
-
-#targetName vs TargetErrorData map
-TargetErrorDataMap = {}
 
 
 def printFullErrorDataStructure():
