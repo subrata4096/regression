@@ -106,7 +106,8 @@ def getSamplesFromSortedParams(inArr, resampleNumber, percentageInTrainSet, useB
 		for idx in testSet:
 			testDataPoints.append(inArr[idx])
 		
-		testTrainPairMap[bootStrapIndex] = (trainArr,testDataPoints)
+		testArr = np.array(testDataPoints)
+		testTrainPairMap[bootStrapIndex] = (trainArr,testArr)
 			
 	#print testTrainPairMap
 	for key in testTrainPairMap.keys():
@@ -148,9 +149,7 @@ def getStandardizedEuclideanDistance(refArr, otherArr):
 	print distArr
 	return distArr	
 
-def getObservationsFromMergedSamples(samples,numOfFeatures):
-	#totalNumberOfColumns = samples[0].shape[1]
-	totalNumberOfColumns = samples.shape[0]
+def getObservationsFromMergedSamples(samples,numOfFeatures,totalNumberOfColumns):
 	print "merged sample: " , samples
         #while splitting horizontally, we should give [numOfFeatures, totalNumberOfColumns] argumnet to hsplit
 	#which will return 3 arrays:
@@ -170,6 +169,8 @@ def generateTrainingAndTestSetsForDistanceProfiling(inArr,targetArr):
 	numFeatures = inArr.shape[1]
 	mergedArr = getMergedInputAndTargetArray(inArr,targetArr)
 
+        numTotalColumns = mergedArr.shape[1]
+
 	featureErrorDataList = []
 	for featureIndex in range(numFeatures):
 		sortedArr = getSortedArrayBasedOnColumn(mergedArr,featureIndex)
@@ -188,10 +189,10 @@ def generateTrainingAndTestSetsForDistanceProfiling(inArr,targetArr):
                 feErr.name = featureIndex 
 		for key in trainAndTestSamples.keys():
 			trainSample,testSamples = trainAndTestSamples[key]
-			traingObs = getObservationsFromMergedSamples(trainSample,numFeatures)
+			traingObs = getObservationsFromMergedSamples(trainSample,numFeatures, numTotalColumns)
 			feErr.TrainingObservations = traingObs
 			for testSample in testSamples:
-				testObs = getObservationsFromMergedSamples(testSample,numFeatures)
+				testObs = getObservationsFromMergedSamples(testSample,numFeatures, numTotalColumns)
 				feErr.TestObservations.append(testObs)
 		
 		#now append this featureErrorData into the list. This is for a target, 
