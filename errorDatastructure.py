@@ -49,11 +49,15 @@ class FeatureErrorData:
 	#		#+ "\t\t" + self.TestObservations.str() + "\n")
 	#	return s
   
-
+#data structure per target for train and test samples
+#the internal FeatureErrorDataMap contains list of training samples and test samples for each (sorted)feature 
 class TargetErrorData:
 	def __init__(self):
 		self.name = ''
 		# featureName vs FeatureErrorData map
+		self.FeatureErrorDataMap = {}
+	def __init__(self,targetName):
+		self.name = targetName
 		self.FeatureErrorDataMap = {}
 	#def __str__(self):
 	#	s = "TargetErrorData" + str(self.FeatureErrorDataMap)

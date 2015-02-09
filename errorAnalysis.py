@@ -164,14 +164,16 @@ def getObservationsFromMergedSamples(samples,numOfFeatures,totalNumberOfColumns)
 	obs = Observations(paramArr,targetArr)
 	return obs
 	
-def generateTrainingAndTestSetsForDistanceProfiling(inArr,targetArr):
+# returns data structure TargetErrorData => data structure per target for train and test samples
+def generateTrainingAndTestSetsForDistanceProfilingForEachTarget(inArr,targetArr,targetName):
 	numSamples = inArr.shape[0]
 	numFeatures = inArr.shape[1]
 	mergedArr = getMergedInputAndTargetArray(inArr,targetArr)
 
         numTotalColumns = mergedArr.shape[1]
 
-	featureErrorDataList = []
+	#featureErrorDataList = []
+	targetErrData = TargetErrorData(targetName)
 	for featureIndex in range(numFeatures):
 		sortedArr = getSortedArrayBasedOnColumn(mergedArr,featureIndex)
 
@@ -197,9 +199,11 @@ def generateTrainingAndTestSetsForDistanceProfiling(inArr,targetArr):
 		
 		#now append this featureErrorData into the list. This is for a target, 
 		#So latter should be attached to the target name
-		featureErrorDataList.append(feErr)   
+		#featureErrorDataList.append(feErr)  
+		targetErrData.FeatureErrorDataMap[feErr.name] = feErr 
 
-	return featureErrorDataList                 
+	#return featureErrorDataList                 
+	return targetErrData               
 
 
 #X = [[0, 1], [1, 1]]
@@ -225,7 +229,8 @@ def generateTrainingAndTestSetsForDistanceProfiling(inArr,targetArr):
 #print "F = [[30000,40000]]"
 #getPairWiseDistance(A,F)
 
-inArr = np.array([[1,11], [0,0], [2,13],[3,12],[4,10],[5,20]])
-tarArr = np.array([[1], [0], [4],[9],[16],[25]])
-errDataStruct = generateTrainingAndTestSetsForDistanceProfiling(inArr,tarArr)
-printErrorDataStructureMap(errDataStruct)
+if __name__ == "__main__":
+	inArr = np.array([[1,11], [0,0], [2,13],[3,12],[4,10],[5,20]])
+	tarArr = np.array([[1], [0], [4],[9],[16],[25]])
+	errDataStruct = generateTrainingAndTestSetsForDistanceProfiling(inArr,tarArr)
+	printErrorDataStructureMap(errDataStruct)
