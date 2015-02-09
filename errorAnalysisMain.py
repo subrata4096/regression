@@ -30,7 +30,8 @@ def do_error_analysis(dataFile,inArr,measuredArr,outArr):
                 #regLoad = loadModel(fname)
 		#regressionDict[t] = regLoad
 		# returns data structure TargetErrorData
-		TargetErrorData = generateTrainingAndTestSetsForDistanceProfilingForEachTarget(inArr,targetArr,t)
+		targetErrData = generateTrainingAndTestSetsForDistanceProfilingForEachTarget(inArr,targetArr,t)
+		TargetErrorDataMap[t] = targetErrData
 		i = i + 1
 
 	i = 0
@@ -38,6 +39,8 @@ def do_error_analysis(dataFile,inArr,measuredArr,outArr):
 		t = outputColumnNames[i]
 		#reg = doFitForTarget(inArr,targetArr,t)
 		#regressionDict[t] = reg
+		targetErrData = generateTrainingAndTestSetsForDistanceProfilingForEachTarget(inArr,targetArr,t)
+		TargetErrorDataMap[t] = targetErrData
 		i = i + 1
 			
 

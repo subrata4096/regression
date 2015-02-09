@@ -232,5 +232,5 @@ def generateTrainingAndTestSetsForDistanceProfilingForEachTarget(inArr,targetArr
 if __name__ == "__main__":
 	inArr = np.array([[1,11], [0,0], [2,13],[3,12],[4,10],[5,20]])
 	tarArr = np.array([[1], [0], [4],[9],[16],[25]])
-	errDataStruct = generateTrainingAndTestSetsForDistanceProfiling(inArr,tarArr)
-	printErrorDataStructureMap(errDataStruct)
+	targetErrDataStruct = generateTrainingAndTestSetsForDistanceProfilingForEachTarget(inArr,tarArr,"target-1")
+	printErrorDataStructureMap(targetErrDataStruct)

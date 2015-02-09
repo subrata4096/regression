@@ -42,12 +42,13 @@ class FeatureErrorData:
 		self.name = ''
 		self.TrainingObservations = None
 		self.TestObservations = []
-	#def __str__(self):
-	#	s = "Feature id: " + self.name + "\n" + \
-	#		"\t" + "Training obs: " + repr(self.TrainingObservations.str()) + "\n" 
-	#		#+ "\t" + "Test obs: " + "\n"  
-	#		#+ "\t\t" + self.TestObservations.str() + "\n")
-	#	return s
+	def __str__(self):
+		s = "\n\t\tFeature id: " + self.name + "\n"
+		s = s +	"\t\t\t" + "Training obs: " + str(self.TrainingObservations) + "\n" 
+		s = s + "\t\t" + "Test obs: " 
+                for testObs in self.TestObservations:
+                        s = s + "\n\t\t\t" + str(testObs) 
+		return s
   
 #data structure per target for train and test samples
 #the internal FeatureErrorDataMap contains list of training samples and test samples for each (sorted)feature 
@@ -59,12 +60,29 @@ class TargetErrorData:
 	def __init__(self,targetName):
 		self.name = targetName
 		self.FeatureErrorDataMap = {}
-	#def __str__(self):
-	#	s = "TargetErrorData" + str(self.FeatureErrorDataMap)
-	#	return s
+	def __str__(self):
+		s = "\tTargetErrorData = " + self.name
+		for fKeys in self.FeatureErrorDataMap.keys():
+			fErrData = self.FeatureErrorDataMap[fKeys]
+			s = s + str(fErrData)
+		
+		s = s + "\n"	 
+		return s
 
 #targetName vs TargetErrorData map
 TargetErrorDataMap = {}
+
+
+def printFullErrorDataStructure():
+	print "\n\n******* Target error data map ********"
+	for targetkey in TargetErrorDataMap.keys():
+		tarErrData = TargetErrorDataMap[targetkey]
+		print "For target = ", str(tarErrData)
+        #for errDS in errDSList:
+        #        print "Training obs: \n\t" + str(errDS.TrainingObservations)
+        #        testObs = errDS.TestObservations
+        #        for o in testObs:
+        #                print "Test obs: \n\t" + str(o)
 	
 if __name__ == "__main__":
 	o = FeatureErrorData()
