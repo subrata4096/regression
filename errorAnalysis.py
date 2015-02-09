@@ -32,6 +32,8 @@ global regressionDict
 
 #merge two arrays side by side (horizontally)
 def getMergedInputAndTargetArray(inArr, targetArr):
+	print inArr
+	print targetArr
 	mergedArr = np.concatenate((inArr, targetArr), axis=1)
 	print mergedArr
 	return mergedArr

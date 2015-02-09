@@ -34,7 +34,7 @@ class Observations:
 		self.ParamArr = inArr
 		self.TargetArr = tarArr
 	def __str__(self):
-		s = str("PARAM Arr: " + np.array_str(self.ParamArr) + " TARGET Arr: " + np.array_str(self.TargetArr))
+		s = str("\n\tPARAM Arr: " + np.array_str(self.ParamArr) + "\n\tTARGET Arr: " + np.array_str(self.TargetArr))
 		return s
 
 class FeatureErrorData:
@@ -43,7 +43,7 @@ class FeatureErrorData:
 		self.TrainingObservations = None
 		self.TestObservations = []
 	def __str__(self):
-		s = "\n\t\tFeature id: " + self.name + "\n"
+		s = "\n\t\t-----------------  Feature id: " + str(self.name) + " --------\n"
 		s = s +	"\t\t\t" + "Training obs: " + str(self.TrainingObservations) + "\n" 
 		s = s + "\t\t" + "Test obs: " 
                 for testObs in self.TestObservations:

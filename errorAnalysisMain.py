@@ -20,6 +20,15 @@ global measuredColumnNames
 global outputColumnNames
 global regressionDict
 
+#=> convert target list to 2d list
+#[1 2 3 4] => [[1] [2] [3] [4]] => beacuse that's what following functions expect
+def listTo2DArray(theList):
+	list2D = []
+	for item in theList:
+		list2D.append([item])
+	#print list2D
+	return np.array(list2D)
+		
 def do_error_analysis(dataFile,inArr,measuredArr,outArr):
 	i = 0
 	for targetArr in measuredArr:
@@ -30,7 +39,11 @@ def do_error_analysis(dataFile,inArr,measuredArr,outArr):
                 #regLoad = loadModel(fname)
 		#regressionDict[t] = regLoad
 		# returns data structure TargetErrorData
-		targetErrData = generateTrainingAndTestSetsForDistanceProfilingForEachTarget(inArr,targetArr,t)
+		#print "targetArr :", targetArr
+		targetArrT = listTo2DArray(targetArr) #=> convert target list to 2d list
+		#targetArrT = map(lambda t: list(t), targetArr)
+		#print "targetArrT :", targetArrT
+		targetErrData = generateTrainingAndTestSetsForDistanceProfilingForEachTarget(inArr,targetArrT,t)
 		TargetErrorDataMap[t] = targetErrData
 		i = i + 1
 
@@ -39,7 +52,9 @@ def do_error_analysis(dataFile,inArr,measuredArr,outArr):
 		t = outputColumnNames[i]
 		#reg = doFitForTarget(inArr,targetArr,t)
 		#regressionDict[t] = reg
-		targetErrData = generateTrainingAndTestSetsForDistanceProfilingForEachTarget(inArr,targetArr,t)
+		#targetArrT = map(lambda t: list(t), targetArr)
+		targetArrT = listTo2DArray(targetArr) #=> convert target list to 2d list 
+		targetErrData = generateTrainingAndTestSetsForDistanceProfilingForEachTarget(inArr,targetArrT,t)
 		TargetErrorDataMap[t] = targetErrData
 		i = i + 1
 			
@@ -59,5 +74,10 @@ if __name__ == "__main__":
 	#print measuredDataArr
  	outputDataArr = readDataFile(dataFile,'output')
 
-	do_error_analysis(dataFile,inputDataArr,measuredDataArr,outputDataArr)
+	#measuredDataArrT = map(lambda t: list(t), measuredDataArr)
+	#outputDataArrT = map(lambda t: list(t), outputDataArr)
+	#print "measuredArrT :", measuredDataArrT
 
+	#do_error_analysis(dataFile,inputDataArr,measuredDataArrT,outputDataArrT)
+	do_error_analysis(dataFile,inputDataArr,measuredDataArr,outputDataArr)
+	printFullErrorDataStructure()
