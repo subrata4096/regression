@@ -60,10 +60,14 @@ def populateRegressionFunctionForEachTarget():
 def populatePredictionsForTestSamples():
 	for targetkey in TargetErrorDataMap.keys():
                 tarErrData = TargetErrorDataMap[targetkey]
-                for featureKey in tarErrData.FeatureErrorDataMap.keys():
-                        featureErrData = tarErrData.FeatureErrorDataMap[featureKey]
+                for featureIndex in tarErrData.FeatureErrorDataMap.keys():
+                        featureErrData = tarErrData.FeatureErrorDataMap[featureIndex]
                         testObsList = featureErrData.TestObservations
                         regressFunc = featureErrData.RegressionFunction
+			
+			trainSetPoints = featureErrData.TrainingObservations.ParamArr
+			meanPoint,StdDev = getMeanAndStandardDevOfTrainingSetOfTrainingSetForAFeature(featureIndex,trainSetPoints)
+			
 			for testObs in testObsList:
 				if(testObs.observeType == "TRAIN"):     
                                 	#We will use ONLY "TEST" observations to predict and then calculate error
@@ -78,6 +82,9 @@ def populatePredictionsForTestSamples():
 				error = (targetArr[0] - predicted[0])*1.0/float(targetArr[0]) if (targetArr[0] != 0) else (targetArr[0] - predicted[0])*1.0
 				#now also store this error in the same DataStructure. Will be used for distance based profiling
 				testObs.PredictionErrArr = error
+				#calculate the distance of this target from the center of training set, so that we can have a profile of error varying with distance
+				distance = getDistanceOfFeaturesFromTrainingSet(meanPoint,StdDev,featureIndex,inArr)
+				testObs.distanceToTargetArr = distance
 
 def populateSamplesInErrorDataStructure(dataFile,inArr,measuredArr,outArr):
 	i = 0

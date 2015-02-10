@@ -44,11 +44,13 @@ class Observations:
 		self.TargetArr = tarArr
 		self.PredictedArr = None
 		self.PredictionErrArr = None
+		self.distanceToTargetArr = None
 	def __str__(self):
 		s = str("\n\tObservationType:" + self.observeType + "\tPARAM Arr: " + np.array_str(self.ParamArr) + "\tTARGET Arr: " + np.array_str(self.TargetArr))
 		if(self.PredictionErrArr != None):
 			s = s + "\tPREDICTED Arr: " + np.array_str(self.PredictedArr)
 			s = s + "\tPREDICTION ERROR: " + str(self.PredictionErrArr)
+			s = s + "\tDISTANCE: " + str(self.distanceToTargetArr)
 		return s
 
 class FeatureErrorData:

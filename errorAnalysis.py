@@ -140,6 +140,29 @@ def getPairWiseDistance(refArr, otherArr):
 	print "mean  m = ", m
 	return distArr
 
+#Greg: you didnot specify the distance metric we will use. I think it was (distance to center of training set)/(standard deviation of training set).
+def getMeanAndStandardDevOfTrainingSetOfTrainingSetForAFeature(featureIndex,trainArr):
+	#get the feature/param column corresponding to this feature index
+	featureColumn = trainArr[:,featureIndex]
+	meanPoint = np.mean(featureColumn)
+	StdDev = np.std(featureColumn)	
+	print "##########################---------------> Training feature, meanpt, stddev", featureColumn, meanPoint, StdDev
+	return meanPoint,StdDev
+
+#Greg: you didnot specify the distance metric we will use. I think it was (distance to center of training set)/(standard deviation of training set).
+def getDistanceOfFeaturesFromTrainingSet(meanPoint,stdDev,featureIndex,testParamArr):
+	#get the feature/param corresponding to this feature index
+	targetPoint = testParamArr[featureIndex]
+	distance = 0.0 
+        if(stdDev != 0):
+		diff = abs(float(targetPoint - meanPoint))
+		#distance = diff
+		distance = diff/stdDev
+	else:
+		distance = abs(float(targetPoint - meanPoint))
+	print "##########################---------------> Target, Distance", targetPoint, distance
+	return distance
+
 def getStandardizedEuclideanDistance(refArr, otherArr):
 
 	#standardized Euclidean distance, meaning that it is the Euclidean distance calculated on standardized data. 
