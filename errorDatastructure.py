@@ -35,13 +35,20 @@ global TargetErrorDataMap
 TargetErrorDataMap = {}
 
 class Observations:
-	def __init__(self,inArr,tarArr):
+	#while creating the observations, specify observationType, TRAIN or TEST. 
+	# depending on this type, observation data is populated differently
+	# also, PredictedArr and PredictionErrArr is only calculated for observationType=TEST
+	def __init__(self,inArr,tarArr,observationType):
+                self.observeType = observationType   #TRAIN or TEST. Certain operations are valid on TRAIN and certain are valid on TEST
 		self.ParamArr = inArr
 		self.TargetArr = tarArr
 		self.PredictedArr = None
 		self.PredictionErrArr = None
 	def __str__(self):
-		s = str("\n\tPARAM Arr: " + np.array_str(self.ParamArr) + "\n\tTARGET Arr: " + np.array_str(self.TargetArr))
+		s = str("\n\tObservationType:" + self.observeType + "\tPARAM Arr: " + np.array_str(self.ParamArr) + "\tTARGET Arr: " + np.array_str(self.TargetArr))
+		if(self.PredictionErrArr != None):
+			s = s + "\tPREDICTED Arr: " + np.array_str(self.PredictedArr)
+			s = s + "\tPREDICTION ERROR: " + str(self.PredictionErrArr)
 		return s
 
 class FeatureErrorData:
@@ -52,11 +59,13 @@ class FeatureErrorData:
 		self.RegressionFunction = None
 	def __str__(self):
 		s = "\n\t\t-----------------  Feature id: " + str(self.name) + " --------\n"
-		s = s +	"\t\t\t" + "Training obs: " + str(self.TrainingObservations) + "\n" 
-		s = s + "\t\t" + "Test obs: " 
+		s = s + "- - - - - - - - - - - - - - - - - - \n"
+		s = s +	"\t\t" + "TRAIN OBSERVATIONS: " + str(self.TrainingObservations) + "\n" 
+		s = s + "\t\t" + "TEST OBSERVATIONS: " 
                 for testObs in self.TestObservations:
                         s = s + "\n\t\t\t" + str(testObs)
-		s = s + "\n\t\t RegressionFunc:  " + str(self.RegressionFunction) 
+		#s = s + "\n\t\t RegressionFunc:  " + str(self.RegressionFunction) 
+		s = s + "\n- - - - - - - - - - - - - - - - - - "
 		return s
   
 #data structure per target for train and test samples
@@ -83,7 +92,7 @@ def printFullErrorDataStructure():
 	print "\n\n******* Target error data map ********"
 	for targetkey in TargetErrorDataMap.keys():
 		tarErrData = TargetErrorDataMap[targetkey]
-		print "For target = ", str(tarErrData)
+		print "\n*****************For target = ", str(tarErrData)
         #for errDS in errDSList:
         #        print "Training obs: \n\t" + str(errDS.TrainingObservations)
         #        testObs = errDS.TestObservations

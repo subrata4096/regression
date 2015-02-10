@@ -32,17 +32,17 @@ global regressionDict
 
 #merge two arrays side by side (horizontally)
 def getMergedInputAndTargetArray(inArr, targetArr):
-	print inArr
-	print targetArr
+	#print inArr
+	#print targetArr
 	mergedArr = np.concatenate((inArr, targetArr), axis=1)
-	print mergedArr
+	#print mergedArr
 	return mergedArr
 
 #sort an array based on the column index provided
 def getSortedArrayBasedOnColumn(inArr,columnIndex):
 	sortedArr = inArr[inArr[:,columnIndex].argsort()]
-	print "Sorted array, based on column = ", columnIndex
-	print sortedArr
+	#print "Sorted array, based on column = ", columnIndex
+	#print sortedArr
 	return  sortedArr
 
 #print the error data structure map
@@ -96,11 +96,11 @@ def getSamplesFromSortedParams(inArr, resampleNumber, percentageInTrainSet, useB
 		trainingSize = (int)(0.5 + (float)(numSamples * percentageInTrainSet))   #0.5 for rounding up of sample size
 		trainSet = [x for x in range(trainingSize)]
 		testSet = [x for x in range(trainingSize,numSamples)]
-		print trainingSize, trainSet, testSet
+		#print trainingSize, trainSet, testSet
 		bootStrapIndex = bootStrapIndex + 1
 		trainList = []
 		testDataPoints = []
-  		print("TRAIN:", trainSet, "TEST:", testSet)
+  		#print("TRAIN:", trainSet, "TEST:", testSet)
 		for idx in trainSet:
 			#print idx
 			trainList.append(inArr[idx])
@@ -112,8 +112,8 @@ def getSamplesFromSortedParams(inArr, resampleNumber, percentageInTrainSet, useB
 		testTrainPairMap[bootStrapIndex] = (trainArr,testArr)
 			
 	#print testTrainPairMap
-	for key in testTrainPairMap.keys():
-		print "Key = ", key, "  value = ", testTrainPairMap[key] 
+	#for key in testTrainPairMap.keys():
+	#	print "Key = ", key, "  value = ", testTrainPairMap[key] 
 
 	return testTrainPairMap
 
@@ -127,7 +127,7 @@ def getMeanOfObservations(inArr):
         #output:   [ 1.5  9. ]
 
 	centerOfRef = np.mean(inArr,axis=0)
-	print centerOfRef
+	#print centerOfRef
 	return centerOfRef
 
 def getPairWiseDistance(refArr, otherArr):
@@ -151,19 +151,20 @@ def getStandardizedEuclideanDistance(refArr, otherArr):
 	print distArr
 	return distArr	
 
-def getObservationsFromMergedSamples(samples,numOfFeatures,totalNumberOfColumns):
-	print "merged sample: " , samples
+def getObservationsFromMergedSamples(samples,numOfFeatures,totalNumberOfColumns,observationType):
+	#print "merged sample: " , samples
         #while splitting horizontally, we should give [numOfFeatures, totalNumberOfColumns] argumnet to hsplit
 	#which will return 3 arrays:
 	# 1. samples[:numOfFeatures] => essntially the data-point part of the merged array 
 	# 2. samples[numOfFeatures : totalNumberOfColumns] => essentially the target array
 	# 3. samples[totalNumberOfColumns:] => essentially an empty array -> we are not interested
 	
-	print "Num features: ",numOfFeatures, " total columns: " , totalNumberOfColumns
+	#print "Num features: ",numOfFeatures, " total columns: " , totalNumberOfColumns
 	splittedList = np.hsplit(samples, np.array([numOfFeatures, totalNumberOfColumns] ))
 	paramArr = splittedList[0]  #or inArr or data point array
 	targetArr = splittedList[1]
-	obs = Observations(paramArr,targetArr)
+	#pass observationType as "TRAIN" or "TEST"
+	obs = Observations(paramArr,targetArr,observationType)
 	return obs
 	
 # returns data structure TargetErrorData => data structure per target for train and test samples
@@ -193,10 +194,10 @@ def generateTrainingAndTestSetsForDistanceProfilingForEachTarget(inArr,targetArr
                 feErr.name = featureIndex 
 		for key in trainAndTestSamples.keys():
 			trainSample,testSamples = trainAndTestSamples[key]
-			traingObs = getObservationsFromMergedSamples(trainSample,numFeatures, numTotalColumns)
+			traingObs = getObservationsFromMergedSamples(trainSample,numFeatures, numTotalColumns,"TRAIN")
 			feErr.TrainingObservations = traingObs
 			for testSample in testSamples:
-				testObs = getObservationsFromMergedSamples(testSample,numFeatures, numTotalColumns)
+				testObs = getObservationsFromMergedSamples(testSample,numFeatures, numTotalColumns,"TEST")
 				feErr.TestObservations.append(testObs)
 		
 		#now append this featureErrorData into the list. This is for a target, 

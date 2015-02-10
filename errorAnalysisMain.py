@@ -44,15 +44,40 @@ def populateRegressionFunctionForEachTarget():
                 tarErrData = TargetErrorDataMap[targetkey]
 		for featureKey in tarErrData.FeatureErrorDataMap.keys():
 			featureErrData = tarErrData.FeatureErrorDataMap[featureKey]
-			trainObs = featureErrData.TrainingObservations	
+			trainObs = featureErrData.TrainingObservations
+			if(trainObs.observeType == "TEST"):
+				#only do fit for "TRAIN" observations. We will use "TEST" to calculate error
+				continue
+	
 			inArr = trainObs.ParamArr
-			testArr = trainObs.TargetArr
+			targetArr = trainObs.TargetArr
 			#fit the regression function based on training params and target
-			regressFunc = getRegressionFunctionForEachTarget(inArr,testArr,targetkey)
+			regressFunc = getRegressionFunctionForEachTarget(inArr,targetArr,targetkey)
 			#print "here:", targetkey, featureKey, regressFunc
 			featureErrData.RegressionFunction = regressFunc
 			#print str(tarErrData)
 				
+def populatePredictionsForTestSamples():
+	for targetkey in TargetErrorDataMap.keys():
+                tarErrData = TargetErrorDataMap[targetkey]
+                for featureKey in tarErrData.FeatureErrorDataMap.keys():
+                        featureErrData = tarErrData.FeatureErrorDataMap[featureKey]
+                        testObsList = featureErrData.TestObservations
+                        regressFunc = featureErrData.RegressionFunction
+			for testObs in testObsList:
+				if(testObs.observeType == "TRAIN"):     
+                                	#We will use ONLY "TEST" observations to predict and then calculate error
+                                	continue
+                        	inArr = testObs.ParamArr
+                        	targetArr = testObs.TargetArr
+				predicted = regressFunc.predict(inArr)
+				testObs.PredictedArr = predicted
+				#print "target: ", targetArr, " predicted: ", predicted 
+				#NOW CALCULATE ERROR --------------------------------
+				#calculate percentage error. Be acreful about devide by zero!!
+				error = (targetArr[0] - predicted[0])*1.0/float(targetArr[0]) if (targetArr[0] != 0) else (targetArr[0] - predicted[0])*1.0
+				#now also store this error in the same DataStructure. Will be used for distance based profiling
+				testObs.PredictionErrArr = error
 
 def populateSamplesInErrorDataStructure(dataFile,inArr,measuredArr,outArr):
 	i = 0
@@ -109,5 +134,5 @@ if __name__ == "__main__":
 	
 	#populate regression function for each target and for samples sorted based on each feature
 	populateRegressionFunctionForEachTarget()
-	
+        populatePredictionsForTestSamples()	
 	printFullErrorDataStructure()
