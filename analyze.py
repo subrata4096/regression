@@ -180,6 +180,12 @@ def getColumnIndexes(fName, columnNames):
 	#print indexes
 	return indexes
 
+def getInputParameterNameFromColumnIndex(columnIndex):
+	#NOTE! This function might have bugs. This index may not be the actual index we are looking for
+	#paramName = InputColumnIndexToNameMap[columnIndex]
+	paramName = inputColumnNames[columnIndex]
+	return paramName
+	
 def calculateStatisticOfTarget(targetArr):
 	scaled_target = preprocessing.scale(targetArr)
         mean = np.mean(scaled_target)

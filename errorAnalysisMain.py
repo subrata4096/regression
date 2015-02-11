@@ -21,6 +21,7 @@ global outputColumnNames
 global regressionDict
 
 global TargetErrorDataMap
+global ErrorDistributionProfileMapForTargetAndFeature
 
 #=> convert target list to 2d list
 #[1 2 3 4] => [[1] [2] [3] [4]] => beacuse that's what following functions expect
@@ -31,12 +32,6 @@ def listTo2DArray(theList):
 	#print list2D
 	return np.array(list2D)
 	
-#takes, input parameter array, target array and target name
-def getRegressionFunctionForEachTarget(inArr, tarArr,tname):	
-	#fit a polynomial regression of degree 2 using Lasso as underlying linear regression model
-	reg = doPolyRegression(inArr, tarArr,tname,2,fitUse="Lasso")
-	#print reg
-	return reg
 
 #this function will fit the training set for each feature sample for each target and populate the regression function in DS
 def populateRegressionFunctionForEachTarget():	
@@ -56,6 +51,38 @@ def populateRegressionFunctionForEachTarget():
 			#print "here:", targetkey, featureKey, regressFunc
 			featureErrData.RegressionFunction = regressFunc
 			#print str(tarErrData)
+
+
+
+def populateErrorProfileFunctions():
+	for targetkey in TargetErrorDataMap.keys():
+                tarErrData = TargetErrorDataMap[targetkey]
+                for featureIndex in tarErrData.FeatureErrorDataMap.keys():
+                        featureErrData = tarErrData.FeatureErrorDataMap[featureIndex]
+                        testObsList = featureErrData.TestObservations
+			distanceList = []
+			errorList = []
+			errorSamples = []
+                        for testObs in testObsList:
+                                if(testObs.observeType == "TRAIN"):
+                                        #We will use ONLY "TEST" observations to predict and then calculate error
+                                        continue
+				#make a 2d list of distance and errors => to be used for curve fitting
+                                distanceList.append([testObs.DistanceToTargetArr])
+                                errorList.append([testObs.PredictionErrArr])
+				# also keep same error samples in a different list in 1D format for histogram/distribution calculations (inefficient!)
+                                errorSamples.append(testObs.PredictionErrArr)
+			
+			featureName = getInputParameterNameFromColumnIndex(featureIndex)
+			errDistProfile = curveFitErrorSamplesWithDistance(targetkey,featureName,distanceList,errorList,errorSamples)	
+			
+			if targetkey in ErrorDistributionProfileMapForTargetAndFeature.keys():
+				ErrorDistributionProfileMapForTargetAndFeature[targetkey][featureName] = errDistProfile
+			else:
+				featureMap = {}
+				featureMap[featureName] = errDistProfile
+				ErrorDistributionProfileMapForTargetAndFeature[targetkey] = featureMap
+
 				
 def populatePredictionsForTestSamples():
 	for targetkey in TargetErrorDataMap.keys():
@@ -84,7 +111,7 @@ def populatePredictionsForTestSamples():
 				testObs.PredictionErrArr = error
 				#calculate the distance of this target from the center of training set, so that we can have a profile of error varying with distance
 				distance = getDistanceOfFeaturesFromTrainingSet(meanPoint,StdDev,featureIndex,inArr)
-				testObs.distanceToTargetArr = distance
+				testObs.DistanceToTargetArr = distance
 
 def populateSamplesInErrorDataStructure(dataFile,inArr,measuredArr,outArr):
 	i = 0
@@ -142,4 +169,8 @@ if __name__ == "__main__":
 	#populate regression function for each target and for samples sorted based on each feature
 	populateRegressionFunctionForEachTarget()
         populatePredictionsForTestSamples()	
+	populateErrorProfileFunctions()
+
+	#prints
 	printFullErrorDataStructure()
+	printErrorDistributionProfileMapForTargetAndFeatureMap()

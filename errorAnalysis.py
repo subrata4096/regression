@@ -229,8 +229,33 @@ def generateTrainingAndTestSetsForDistanceProfilingForEachTarget(inArr,targetArr
 		targetErrData.FeatureErrorDataMap[feErr.name] = feErr 
 
 	#return featureErrorDataList                 
-	return targetErrData               
+	return targetErrData   
+       
+#takes, input parameter array, target array and target name
+def getRegressionFunctionForEachTarget(inArr, tarArr,tname):
+        #fit a polynomial regression of degree 2 using Lasso as underlying linear regression model
+        reg = doPolyRegression(inArr, tarArr,tname,2,fitUse="Lasso")
+        #print reg
+        return reg
+ 
+def curveFitErrorSamplesWithDistance(targetkey,featureName,distanceList,errorList,errorSamples):
+	#distanceList = [[1.0],[4.0],[6.0],[9.0]]
+	#errorList = [[3.0],[18.0],[38.0],[83.0]]
+	distanceArr = np.array(distanceList)
+	errArr = np.array(errorList)
+	regName = targetkey + "_" + featureName + "_err"
+	#print regName, distanceArr, errArr
+	curvFunc = getRegressionFunctionForEachTarget(distanceArr,errArr,regName)	    
+	
+	#testDist = [[11.0]]
+	#predVal = curvFunc.predict(testDist)
+	#print "Predicted Value (in code test)(123 is correct): ", predVal
+	errDistProfile = errorDistributionProfile(featureName,targetkey)
 
+	errDistProfile.ErrorRegressFunction = curvFunc
+	errDistProfile.ErrorSamples = np.array(errorSamples)
+	return errDistProfile
+	 
 
 #X = [[0, 1], [1, 1]]
 #getStandardizedEuclideanDistance(X,[[0, 0]])

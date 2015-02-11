@@ -32,7 +32,15 @@ global regressionDict
 #this is a global container for error datastructure
 #targetName vs TargetErrorData map
 global TargetErrorDataMap
+global ErrorDistributionProfileMapForTargetAndFeature
+#This is a map where initial samples for test and train are kept.
+#Later it is populated with prediction functions and prediction errors.
+#The top level key is "target-name". The content DataStructure "TargetErrorData"
 TargetErrorDataMap = {}
+
+#This map keeps the calculated error profile for each target for each profile along with curve-fitted error function
+#top level key is target name. 2nd level key is feature name. Then the content is "errorDistributionProfile"
+ErrorDistributionProfileMapForTargetAndFeature = {}
 
 class Observations:
 	#while creating the observations, specify observationType, TRAIN or TEST. 
@@ -44,13 +52,13 @@ class Observations:
 		self.TargetArr = tarArr
 		self.PredictedArr = None
 		self.PredictionErrArr = None
-		self.distanceToTargetArr = None
+		self.DistanceToTargetArr = None
 	def __str__(self):
 		s = str("\n\tObservationType:" + self.observeType + "\tPARAM Arr: " + np.array_str(self.ParamArr) + "\tTARGET Arr: " + np.array_str(self.TargetArr))
 		if(self.PredictionErrArr != None):
 			s = s + "\tPREDICTED Arr: " + np.array_str(self.PredictedArr)
 			s = s + "\tPREDICTION ERROR: " + str(self.PredictionErrArr)
-			s = s + "\tDISTANCE: " + str(self.distanceToTargetArr)
+			s = s + "\tDISTANCE: " + str(self.DistanceToTargetArr)
 		return s
 
 class FeatureErrorData:
@@ -100,6 +108,25 @@ def printFullErrorDataStructure():
         #        testObs = errDS.TestObservations
         #        for o in testObs:
         #                print "Test obs: \n\t" + str(o)
-	
+
+class errorDistributionProfile:
+	def __init__(self,feature_name,target_name):
+		self.FeatureName = feature_name
+		self.TargetName = target_name
+		self.ErrorRegressFunction = None
+		self.ErrorSamples = []
+	def __str__(self):
+		s = "\nError profile:  TargetName = " + self.TargetName + " FeatureName = " + self.FeatureName 
+		s = s + "\n\tError Curve Fitted Fuction: " + str(self.ErrorRegressFunction)
+		s = s + "\n\tError Samples: " + np.array_str(self.ErrorSamples) + "\n"
+		return s
+		 
+def printErrorDistributionProfileMapForTargetAndFeatureMap():
+	for targetKey in ErrorDistributionProfileMapForTargetAndFeature.keys():	
+		featureMap = ErrorDistributionProfileMapForTargetAndFeature[targetKey]
+		for featureName in featureMap.keys():
+			errProf = featureMap[featureName]
+			print "\nxxxxxxxxxxxxxxxx     ERROR PROFILE   xxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n"
+			print str(errProf)
 if __name__ == "__main__":
 	o = FeatureErrorData()
