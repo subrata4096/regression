@@ -1,5 +1,15 @@
 #!/usr/bin/python
+import os
 
+def setActiveDumpDirectory(dataFile):
+	fileWithoutExt = os.path.splitext(dataFile)[0]
+        workingDir = os.path.join(os.path.expanduser("~"),"errorFigDump")
+        activeDumpDir = os.path.join(workingDir,os.path.basename(fileWithoutExt))
+        print activeDumpDir
+	return activeDumpDir
+
+global activeDumpDirectory
+activeDumpDirectory = ''
 
 global inputColumnNames
 global measuredColumnNames
@@ -12,6 +22,7 @@ measuredColumnNames = []
 outputColumnNames = []
 
 #inputColumnNames = ['module:input:0:length','module:pub_input::balance','module:pub_input::cost','module:pub_input::dtfixed','module:pub_input::dtmax','module:pub_input::iter','module:pub_input::its','module:pub_input::numElem','module:pub_input::numNode','module:pub_input::numReg','module:pub_input::nx','module:pub_input::phase','module:pub_input::u_cut']
+inputColumnNames = ['module:pub_input::iter','module:pub_input::numElem','module:pub_input::numNode','module:pub_input::nx','module:pub_input::phase']
 #inputColumnNames = ['module:pub_input::balance','module:pub_input::cost','module:pub_input::dtfixed','module:pub_input::dtmax','module:pub_input::iter','module:pub_input::its','module:pub_input::numElem','module:pub_input::numNode','module:pub_input::numReg','module:pub_input::nx','module:pub_input::phase','module:pub_input::u_cut']
 #inputColumnNames = ['module:input:0:numRanks','module:input:0:nx']
 #inputColumnNames = ['module:input:0:numRanks','module:input:0:nx']
@@ -24,7 +35,8 @@ outputColumnNames = []
 #inputColumnNames = ['module:pub_input::dt','module:pub_input::lat','module:input:0:iStep']
 #inputColumnNames = ['module:pub_input::dt','module:pub_input::lat']
 #inputColumnNames = ['module:input:0:dt','module:input:0:lat']
-inputColumnNames = ['in1', 'in2', 'in3']
+#inputColumnNames = ['in1', 'in2', 'in3']
+measuredColumnNames = ['module:measure:PAPI:PAPI_BR_CN','module:measure:PAPI:PAPI_FP_OPS','module:measure:PAPI:PAPI_TOT_INS','module:measure:time:time']
 #measuredColumnNames = ['module:measure:time:time','module:measure:PAPI:PAPI_BR_CN','module:measure:PAPI:PAPI_FP_OPS','module:measure:PAPI:PAPI_TOT_INS']
 #measuredColumnNames = ['module:measure:time:time','module:measure:PAPI:PAPI_TOT_INS']
 #measuredColumnNames = ['module:measure:PAPI:PAPI_L2_TC_MR','module:measure:PAPI:PAPI_TOT_INS','module:measure:RAPL:Elapsed']
@@ -33,11 +45,11 @@ inputColumnNames = ['in1', 'in2', 'in3']
 #measuredColumnNames = ['module:measure:PAPI:PAPI_TOT_INS','module:measure:time:time']
 #measuredColumnNames = ['module:measure:time:time','module:input:1:u_cut']
 #measuredColumnNames = ['module:measure:RAPL:Elapsed','module:measure:RAPL:EDP_S0']
-measuredColumnNames = ['m1','m2']
+#measuredColumnNames = ['m1','m2']
 #outputColumnNames = ['module:output:0:TotalAbsDiff','module:output:1:numCycles']
 #outputColumnNames = ['module:output:0:TotalAbsDiff','module:output:1:numCycles']
 #outputColumnNames = ['module:output:0:MaxRelDiff','module:output:0:TotalAbsDiff']
 #outputColumnNames = ['module:measure:PAPI:PAPI_BR_CN','module:measure:PAPI:PAPI_FP_OPS']
 #outputColumnNames = ['module:output:0:FOM','module:output:0:MaxAbsDiff','module:output:0:MaxRelDiff','module:output:0:TotalAbsDiff','module:output:1:numCycles']
 #outputColumnNames = ['o1','o2','o3']
-outputColumnNames = ['o1','o2']
+#outputColumnNames = ['o1','o2']

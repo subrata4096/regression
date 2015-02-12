@@ -159,8 +159,8 @@ def readDataFile(fName,field_type):
 	
 	print indexes	
 	realdata = np.loadtxt(fName, dtype=float,delimiter='\t', usecols=indexes, converters=None,skiprows=1)
+	#print realdata[0]
 	data = np.transpose( realdata)
-	#print data
 	return data
 	
 def getColumnIndexes(fName, columnNames):
@@ -258,9 +258,10 @@ def scikit_scripts(dataFile,inArr,measuredArr,outArr):
 		t = measuredColumnNames[i]
 		reg = doFitForTarget(inArr,targetArr,t)
 		#regressionDict[t] = reg
-		fname = dumpModel(dataFile,t,reg)
-                regLoad = loadModel(fname)
-		regressionDict[t] = regLoad
+		#NOTE: temorary comment
+		#fname = dumpModel(dataFile,t,reg)
+                #regLoad = loadModel(fname)
+		regressionDict[t] = reg
 		i = i + 1
 
 	i = 0
@@ -279,24 +280,32 @@ def getArrayWithUniqueInputs(a):
 	unique_a = np.unique(a.view(np.dtype((np.void, a.dtype.itemsize*a.shape[1])))).view(a.dtype).reshape(-1, a.shape[1])
 	return unique_a
 
+def readInputMeasurementOutput(dataFile):
+	inputDataArr = []
+        measuredDataArr = []
+        outputDataArr = []
+        
+	inputDataArr = readDataFile(dataFile,'input')
+        inputDataArr = np.transpose(inputDataArr)
+        
+	measuredDataArr = readDataFile(dataFile,'measured')
+ 	#outputDataArr = readDataFile(dataFile,'output')
+
+	return inputDataArr,measuredDataArr,outputDataArr
+
 if __name__ == "__main__":
 	dataFile = sys.argv[1]
 	productionDataFile = ""
-	productionDataFile = sys.argv[2]
+	#productionDataFile = sys.argv[2]
 	print "DataFile: " , dataFile , "\n"        
 	print "Input variables", inputColumnNames
 	print "Meassured variables", measuredColumnNames
 	print "Output variables", outputColumnNames
-
- 	inputDataArr = readDataFile(dataFile,'input')
-	inputDataArr = np.transpose(inputDataArr)
- 	measuredDataArr = readDataFile(dataFile,'measured')
-	#print "measured"
-	#print measuredDataArr
- 	outputDataArr = readDataFile(dataFile,'output')
+	
+	inputDataArr,measuredDataArr,outputDataArr = readInputMeasurementOutput(dataFile)
 
 	measureVari = calculateVariability(inputDataArr,measuredDataArr)
-	outVari = calculateVariability(inputDataArr,outputDataArr)
+	#outVari = calculateVariability(inputDataArr,outputDataArr)
 	
 	#get an average of values for unique input combinations...        
         averagedOutputArr = []

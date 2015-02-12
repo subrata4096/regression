@@ -4,6 +4,7 @@ from sklearn import cross_validation
 from sklearn import preprocessing
 import numpy as np
 import pylab as plt
+import os
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.axes import Axes
 from fields import *
@@ -11,6 +12,7 @@ from fields import *
 global inputColumnNames
 global measuredColumnNames
 global outputColumnNames
+
 
 def doPlot(inArr,targetArr,in_index1,tname,reg=None):
         #return	        
@@ -60,3 +62,32 @@ def do3dPlot(inArr,targetArr,in_index1,in_index2,tname,reg=None):
         ax.set_zlabel(tname)
         ax.w_zaxis.set_ticklabels([])
         plt.show()
+
+def doHistogramPlot(dataSamples,targetName,featureName,doSave):
+	#
+	# first create a single histogram
+	#
+	doSave = False
+	#print dataSamples
+	mu = np.mean(dataSamples) 
+	sigma = np.std(dataSamples)
+
+	ttl = "Error histogram: \n" + targetName + " for " + featureName 
+	fileName = targetName + "_" + featureName + ".png" 
+	saveFileName = os.path.join(activeDumpDirectory,fileName)
+
+	# the histogram of the data with histtype='step'
+	n, bins, patches = plt.hist(dataSamples, 20, histtype='stepfilled')
+	#n, bins, patches = plt.hist(dataSamples, 20, normed=1, histtype='stepfilled')
+	plt.setp(patches, 'facecolor', 'g', 'alpha', 0.75)
+
+	# add a line showing the expected distribution
+	y = plt.normpdf( bins, mu, sigma)
+	l = plt.plot(bins, y, 'k--', linewidth=1.5)
+	plt.title(ttl)
+	if(doSave == False):
+        	plt.show()
+	else:
+		print "SaveFileName = " + saveFileName
+		#plt.savefig(saveFileName, bbox_inches='tight')
+		plt.savefig(saveFileName)

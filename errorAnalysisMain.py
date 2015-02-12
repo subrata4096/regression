@@ -5,6 +5,7 @@ from sklearn import preprocessing
 import numpy as np
 from matplotlib import pyplot as plt
 import sys
+import os
 from regressFit import *
 from micAnalysis import *
 from drawPlot import *
@@ -19,6 +20,8 @@ global inputColumnNames
 global measuredColumnNames
 global outputColumnNames
 global regressionDict
+
+global activeDumpDirectory
 
 global TargetErrorDataMap
 global ErrorDistributionProfileMapForTargetAndFeature
@@ -69,7 +72,7 @@ def populateErrorProfileFunctions():
                                         continue
 				#make a 2d list of distance and errors => to be used for curve fitting
                                 distanceList.append([testObs.DistanceToTargetArr])
-                                errorList.append([testObs.PredictionErrArr])
+                                errorList.append(testObs.PredictionErrArr)
 				# also keep same error samples in a different list in 1D format for histogram/distribution calculations (inefficient!)
                                 errorSamples.append(testObs.PredictionErrArr)
 			
@@ -150,13 +153,12 @@ if __name__ == "__main__":
 	print "Input variables", inputColumnNames
 	print "Meassured variables", measuredColumnNames
 	print "Output variables", outputColumnNames
+	global activeDumpDirectory
+	activeDumpDirectory = setActiveDumpDirectory(dataFile)	
+	if(os.path.exists(activeDumpDirectory) == False):
+        	os.mkdir(activeDumpDirectory)
 
- 	inputDataArr = readDataFile(dataFile,'input')
-	inputDataArr = np.transpose(inputDataArr)
- 	measuredDataArr = readDataFile(dataFile,'measured')
-	#print "measured"
-	#print measuredDataArr
- 	outputDataArr = readDataFile(dataFile,'output')
+	inputDataArr,measuredDataArr,outputDataArr = readInputMeasurementOutput(dataFile)
 
 	#measuredDataArrT = map(lambda t: list(t), measuredDataArr)
 	#outputDataArrT = map(lambda t: list(t), outputDataArr)
@@ -172,5 +174,5 @@ if __name__ == "__main__":
 	populateErrorProfileFunctions()
 
 	#prints
-	printFullErrorDataStructure()
+	#printFullErrorDataStructure()
 	printErrorDistributionProfileMapForTargetAndFeatureMap()

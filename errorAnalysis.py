@@ -146,7 +146,7 @@ def getMeanAndStandardDevOfTrainingSetOfTrainingSetForAFeature(featureIndex,trai
 	featureColumn = trainArr[:,featureIndex]
 	meanPoint = np.mean(featureColumn)
 	StdDev = np.std(featureColumn)	
-	print "##########################---------------> Training feature, meanpt, stddev", featureColumn, meanPoint, StdDev
+	#print "##########################---------------> Training feature, meanpt, stddev", featureColumn, meanPoint, StdDev
 	return meanPoint,StdDev
 
 #Greg: you didnot specify the distance metric we will use. I think it was (distance to center of training set)/(standard deviation of training set).
@@ -160,7 +160,7 @@ def getDistanceOfFeaturesFromTrainingSet(meanPoint,stdDev,featureIndex,testParam
 		distance = diff/stdDev
 	else:
 		distance = abs(float(targetPoint - meanPoint))
-	print "##########################---------------> Target, Distance", targetPoint, distance
+	#print "##########################---------------> Target, Distance", targetPoint, distance
 	return distance
 
 def getStandardizedEuclideanDistance(refArr, otherArr):
@@ -211,7 +211,9 @@ def generateTrainingAndTestSetsForDistanceProfilingForEachTarget(inArr,targetArr
 
 		#do not use bootstrap resampling. according to document error_profiling.pdf), use first few from
 		#sorted list of params, as training set and far points as test set
-		trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.66,False)
+		trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.5,False)
+		#trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.2,False)
+		#trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.66,False)
 
 		feErr = FeatureErrorData()
                 feErr.name = featureIndex 
@@ -234,7 +236,8 @@ def generateTrainingAndTestSetsForDistanceProfilingForEachTarget(inArr,targetArr
 #takes, input parameter array, target array and target name
 def getRegressionFunctionForEachTarget(inArr, tarArr,tname):
         #fit a polynomial regression of degree 2 using Lasso as underlying linear regression model
-        reg = doPolyRegression(inArr, tarArr,tname,2,fitUse="Lasso")
+        reg = doPolyRegression(inArr, tarArr,tname,2,fitUse="LinearRegression")
+        #reg = doPolyRegression(inArr, tarArr,tname,2,fitUse="Lasso")
         #print reg
         return reg
  
@@ -244,7 +247,7 @@ def curveFitErrorSamplesWithDistance(targetkey,featureName,distanceList,errorLis
 	distanceArr = np.array(distanceList)
 	errArr = np.array(errorList)
 	regName = targetkey + "_" + featureName + "_err"
-	#print regName, distanceArr, errArr
+	print regName, distanceArr, errArr
 	curvFunc = getRegressionFunctionForEachTarget(distanceArr,errArr,regName)	    
 	
 	#testDist = [[11.0]]
@@ -256,7 +259,20 @@ def curveFitErrorSamplesWithDistance(targetkey,featureName,distanceList,errorLis
 	errDistProfile.ErrorSamples = np.array(errorSamples)
 	return errDistProfile
 	 
+def getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,featureDtPt):
+	featureErrMap = ErrorDistributionProfileMapForTargetAndFeature[targetName]
 
+	#key is feature name, value is value of that feature at the intended location
+	for featureName,value in featureDtPt.FeatureErrorDataMap.iteritems():
+		
+		#get the error profile for this feature	
+		errProf = featureErrMap[featureName]
+
+		#get the distance of that feature from the training location
+
+		#get the curve/regression function which fits the variation of error with distance
+		errProf.RegressionFunction
+	
 #X = [[0, 1], [1, 1]]
 #getStandardizedEuclideanDistance(X,[[0, 0]])
 #A = np.array([[1,11], [0,0], [2,13],[3,12]])

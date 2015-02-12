@@ -42,6 +42,12 @@ TargetErrorDataMap = {}
 #top level key is target name. 2nd level key is feature name. Then the content is "errorDistributionProfile"
 ErrorDistributionProfileMapForTargetAndFeature = {}
 
+class FeatureDataPoint:
+	def__init__(self,nameValueMap):
+		self.featureNameValueMap = nameValueMap
+	def __str__(self):
+		s = str(featureNameValueMap)
+		return s
 class Observations:
 	#while creating the observations, specify observationType, TRAIN or TEST. 
 	# depending on this type, observation data is populated differently
@@ -117,15 +123,16 @@ class errorDistributionProfile:
 		self.ErrorSamples = []
 	def __str__(self):
 		s = "\nError profile:  TargetName = " + self.TargetName + " FeatureName = " + self.FeatureName 
-		s = s + "\n\tError Curve Fitted Fuction: " + str(self.ErrorRegressFunction)
+		#s = s + "\n\tError Curve Fitted Fuction: " + str(self.ErrorRegressFunction)
 		s = s + "\n\tError Samples: " + np.array_str(self.ErrorSamples) + "\n"
+		doHistogramPlot(self.ErrorSamples,self.TargetName,self.FeatureName,doSave=True)
 		return s
 		 
 def printErrorDistributionProfileMapForTargetAndFeatureMap():
 	for targetKey in ErrorDistributionProfileMapForTargetAndFeature.keys():	
-		featureMap = ErrorDistributionProfileMapForTargetAndFeature[targetKey]
-		for featureName in featureMap.keys():
-			errProf = featureMap[featureName]
+		featureErrMap = ErrorDistributionProfileMapForTargetAndFeature[targetKey]
+		for featureName in featureErrMap.keys():
+			errProf = featureErrMap[featureName]
 			print "\nxxxxxxxxxxxxxxxx     ERROR PROFILE   xxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n"
 			print str(errProf)
 if __name__ == "__main__":
