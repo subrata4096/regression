@@ -120,12 +120,15 @@ class errorDistributionProfile:
 		self.FeatureName = feature_name
 		self.TargetName = target_name
 		self.ErrorRegressFunction = None
+		self.MeanPointOfTrainingSet = None
+		self.StandardDeviationOfTrainingSet = None
 		self.ErrorSamples = []
 	def __str__(self):
 		s = "\nError profile:  TargetName = " + self.TargetName + " FeatureName = " + self.FeatureName 
-		#s = s + "\n\tError Curve Fitted Fuction: " + str(self.ErrorRegressFunction)
+		s = "\n\tMean point of training = " + self.MeanPointOfTrainingSet + " StdDev of training set = " + self.StandardDeviationOfTrainingSet
+		s = s + "\n\tError Curve Fitted Fuction: " + str(self.ErrorRegressFunction)
 		s = s + "\n\tError Samples: " + np.array_str(self.ErrorSamples) + "\n"
-		doHistogramPlot(self.ErrorSamples,self.TargetName,self.FeatureName,doSave=True)
+		#doHistogramPlot(self.ErrorSamples,self.TargetName,self.FeatureName,doSave=True)
 		return s
 		 
 def printErrorDistributionProfileMapForTargetAndFeatureMap():

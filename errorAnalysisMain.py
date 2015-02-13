@@ -78,14 +78,14 @@ def populateErrorProfileFunctions():
 			
 			featureName = getInputParameterNameFromColumnIndex(featureIndex)
 			errDistProfile = curveFitErrorSamplesWithDistance(targetkey,featureName,distanceList,errorList,errorSamples)	
-			
-			if targetkey in ErrorDistributionProfileMapForTargetAndFeature.keys():
-				ErrorDistributionProfileMapForTargetAndFeature[targetkey][featureName] = errDistProfile
-			else:
-				featureMap = {}
-				featureMap[featureName] = errDistProfile
-				ErrorDistributionProfileMapForTargetAndFeature[targetkey] = featureMap
-
+			#we already have errDistProfile populated in the map. So skip everything below	
+			#if targetkey in ErrorDistributionProfileMapForTargetAndFeature.keys():
+			#	ErrorDistributionProfileMapForTargetAndFeature[targetkey][featureName] = errDistProfile
+			#else:
+			#	featureMap = {}
+			#	featureMap[featureName] = errDistProfile
+			#	ErrorDistributionProfileMapForTargetAndFeature[targetkey] = featureMap
+	
 				
 def populatePredictionsForTestSamples():
 	for targetkey in TargetErrorDataMap.keys():
@@ -97,7 +97,23 @@ def populatePredictionsForTestSamples():
 			
 			trainSetPoints = featureErrData.TrainingObservations.ParamArr
 			meanPoint,StdDev = getMeanAndStandardDevOfTrainingSetOfTrainingSetForAFeature(featureIndex,trainSetPoints)
-			
+
+			featureName = getInputParameterNameFromColumnIndex(featureIndex)
+			errDistProfile = errorDistributionProfile(featureName,targetkey)
+			errDistProfile.MeanPointOfTrainingSet = meanPoint
+			errDistProfile.StandardDeviationOfTrainingSet = StdDev
+
+			#Put this errorProfile object into the data structure (that is this 2 level map)
+			#This will be populated later with error regression function
+			#start populating data structure
+			if targetkey in ErrorDistributionProfileMapForTargetAndFeature.keys():
+                                ErrorDistributionProfileMapForTargetAndFeature[targetkey][featureName] = errDistProfile
+                        else:
+                                featureMap = {}
+                                featureMap[featureName] = errDistProfile
+                                ErrorDistributionProfileMapForTargetAndFeature[targetkey] = featureMap
+			#end populating data structure
+
 			for testObs in testObsList:
 				if(testObs.observeType == "TRAIN"):     
                                 	#We will use ONLY "TEST" observations to predict and then calculate error

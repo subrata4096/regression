@@ -10,6 +10,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.cross_validation import LeavePOut
 from sklearn.metrics.pairwise import *
 from scipy.spatial.distance import *
+from scipy.stats.stats import pearsonr 
 import numpy as np
 import pylab as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -44,6 +45,19 @@ def getSortedArrayBasedOnColumn(inArr,columnIndex):
 	#print "Sorted array, based on column = ", columnIndex
 	#print sortedArr
 	return  sortedArr
+
+def calculateCorrelationBetweenVectors(a,b):
+	#The Pearson correlation coefficient measures the linear relationship between two datasets. 
+	#Strictly speaking, Pearson correlation requires that each dataset be normally distributed. 
+	#correlation coefficients, this one varies between -1 and +1 with 0 implying no correlation. 
+	#Correlations of -1 or +1 imply an exact linear relationship. 
+
+	#The p-value roughly indicates the probability of an uncorrelated system producing datasets that have a Pearson correlation at least as extreme as the one computed from these datasets. 
+	#The p-values are not entirely reliable but are probably reasonable for datasets larger than 500 or so.
+	
+	(corr,p-val) = pearsonr(a,b)
+
+	return corr
 
 #print the error data structure map
 def printErrorDataStructureMap(errDSList):
@@ -150,17 +164,21 @@ def getMeanAndStandardDevOfTrainingSetOfTrainingSetForAFeature(featureIndex,trai
 	return meanPoint,StdDev
 
 #Greg: you didnot specify the distance metric we will use. I think it was (distance to center of training set)/(standard deviation of training set).
+def getDistanceAlongOneFeature(meanPoint,stdDev,testPoint):
+	distance = 0.0
+        if(stdDev != 0):
+                diff = abs(float(testPoint - meanPoint))
+                #distance = diff
+                distance = diff/stdDev
+        else:
+                distance = abs(float(testPoint - meanPoint))
+        #print "##########################---------------> TestPoint, Distance", testPoint, distance
+        return distance
+
 def getDistanceOfFeaturesFromTrainingSet(meanPoint,stdDev,featureIndex,testParamArr):
 	#get the feature/param corresponding to this feature index
-	targetPoint = testParamArr[featureIndex]
-	distance = 0.0 
-        if(stdDev != 0):
-		diff = abs(float(targetPoint - meanPoint))
-		#distance = diff
-		distance = diff/stdDev
-	else:
-		distance = abs(float(targetPoint - meanPoint))
-	#print "##########################---------------> Target, Distance", targetPoint, distance
+	testPoint = testParamArr[featureIndex]
+	distance = getDistanceAlongOneFeature(meanPoint,stdDev,testPoint)
 	return distance
 
 def getStandardizedEuclideanDistance(refArr, otherArr):
@@ -253,15 +271,42 @@ def curveFitErrorSamplesWithDistance(targetkey,featureName,distanceList,errorLis
 	#testDist = [[11.0]]
 	#predVal = curvFunc.predict(testDist)
 	#print "Predicted Value (in code test)(123 is correct): ", predVal
-	errDistProfile = errorDistributionProfile(featureName,targetkey)
+	#errDistProfile = errorDistributionProfile(featureName,targetkey)
 
+	#this error profile object is already populated in the map. Just extract that and modify (add errorCurve)
+	errDistProfile = ErrorDistributionProfileMapForTargetAndFeature[targetkey][featureName]
+	
 	errDistProfile.ErrorRegressFunction = curvFunc
 	errDistProfile.ErrorSamples = np.array(errorSamples)
 	return errDistProfile
-	 
+
+#see "getResultantErrorFromFeatureErrorsForATargetAtADatapoint" func to check how the input map was populated
+def getCorrelationBetweenErrorsWRTFirstFeature(productionErrorInfoDict):
+	errorCorrMap = {}
+	i = 0
+	firstErrorSamples = None
+	for featureName in productionErrorInfoDict.keys():
+		i = i + 1
+		(errSamples, errorForFeature) = productionErrorInfoDict[featureName]
+		
+		if(i==1):
+			firstErrorSamples = errSamples
+			errorCorrMap[featureName] = (1.0,errorForFeature)
+			continue
+		else:
+			corrCoeff = calculateCorrelationBetweenVectors(firstErrorSamples,errSamples)	
+			errorCorrMap[featureName] = (corrCoeff,errorForFeature)
+	#END of for
+
+	return errorCorrMap
+
+	
+#pass a featureDataPoint (parameter values found in production) and a target name
+#it will return how much prediction error can be there 
 def getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,featureDtPt):
 	featureErrMap = ErrorDistributionProfileMapForTargetAndFeature[targetName]
 
+	tempErrorInfoDict = {}
 	#key is feature name, value is value of that feature at the intended location
 	for featureName,value in featureDtPt.FeatureErrorDataMap.iteritems():
 		
@@ -269,10 +314,24 @@ def getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,featureD
 		errProf = featureErrMap[featureName]
 
 		#get the distance of that feature from the training location
+		meanPoint = errProf.MeanPointOfTrainingSet
+		StdDev = errProf.StandardDeviationOfTrainingSet
+		distance = getDistanceAlongOneFeature(meanPoint,StdDev,value)
 
 		#get the curve/regression function which fits the variation of error with distance
-		errProf.RegressionFunction
+		errorForFeature = errProf.RegressionFunction.predict(distance)
+
+		tempErrorInfoDict[featureName] = (errProf.ErrorSamples, errorForFeature) # put raw error samples, and predicted err
+		#^^ later we will use this info to first calculate correlation between errors and then resultant error
 	
+	#END of for loop
+	
+	#this function calculates the correlation between the error in first feature and all other (n-1) features
+	#returns a map. feature name is key, and a tuple (correlation value compared to first, actual error along that feature) 
+	featureErrorCorrelaionIndividualErrorMap = getCorrelationBetweenErrorsWRTFirstFeature(tempErrorInfoDict)
+	
+	#here use the formula : sqrt[ {(e1 + c12e2 + c13e3 + ..)}^2 + {(1-c12)e2}^2 + {(1-c13)e3}^2 + ...]	
+	print "use the formula : sqrt[ {(e1 + c12e2 + c13e3 + ..)}^2 + {(1-c12)e2}^2 + {(1-c13)e3}^2 + ...] "
 #X = [[0, 1], [1, 1]]
 #getStandardizedEuclideanDistance(X,[[0, 0]])
 #A = np.array([[1,11], [0,0], [2,13],[3,12]])
