@@ -17,6 +17,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from micAnalysis import *
 
 import sys
+import math
 from regressFit import *
 from micAnalysis import *
 from drawPlot import *
@@ -280,6 +281,31 @@ def curveFitErrorSamplesWithDistance(targetkey,featureName,distanceList,errorLis
 	errDistProfile.ErrorSamples = np.array(errorSamples)
 	return errDistProfile
 
+def calculateResultantError(errorMap):
+	errorObjectForFirstFeature = None
+	correlationAdjustedErrorTerms = {}
+	print "use the formula : sqrt[ {(e1 + c12e2 + c13e3 + ..)}^2 + {(1-c12)e2}^2 + {(1-c13)e3}^2 + ...] "
+	for idx in errorMap.keys():
+		(corrCoeff,errorForFeature) = errorMap[idx] 
+		if(idx == 1):
+			correlationAdjustedErrorTerms[idx] = errorForFeature
+		else:
+			#calculate the first term "(e1 + c12e2 + c13e3 + ..)" 
+			correlationAdjustedErrorTerms[1] = correlationAdjustedErrorTerms[1] + (corrCoeff)*(errorForFeature)
+			# now calculate other terms "(1-c12)e2" as "(1-c13)e3"
+			correlationAdjustedErrorTerms[idx] = (1 - corrCoeff)*(errorForFeature)
+	#end for 
+	
+	#now calculate the RMS of these terms to get resultant error
+	sumOfSquares = 0.0
+	for key,value in correlationAdjustedErrorTerms.iteritems():
+		sumOfSquares = sumOfSquares + (value)*(value)     #calculate sqrs
+	#end for
+	rmsError = math.sqrt(sumOfSquares)				
+
+	return rmsError
+	
+
 #see "getResultantErrorFromFeatureErrorsForATargetAtADatapoint" func to check how the input map was populated
 def getCorrelationBetweenErrorsWRTFirstFeature(productionErrorInfoDict):
 	errorCorrMap = {}
@@ -302,14 +328,21 @@ def getCorrelationBetweenErrorsWRTFirstFeature(productionErrorInfoDict):
 
 	
 #pass a featureDataPoint (parameter values found in production) and a target name
-#it will return how much prediction error can be there 
+#it will return how much prediction error can be there
+#returns: rmsError,if all err components were +ve, if all err components were -ve
+#if all components were positive, we will consider final result to be only positive and not +/- around predicted targetValue 
 def getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,featureDtPt):
 	featureErrMap = ErrorDistributionProfileMapForTargetAndFeature[targetName]
 
 	tempErrorInfoDict = {}
+	
+	errorTermsAllPositive = True
+	errorTermsAllNegative = True
+
+	idx = 0
 	#key is feature name, value is value of that feature at the intended location
 	for featureName,value in featureDtPt.FeatureErrorDataMap.iteritems():
-		
+		idx = idx + 1	
 		#get the error profile for this feature	
 		errProf = featureErrMap[featureName]
 
@@ -320,8 +353,14 @@ def getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,featureD
 
 		#get the curve/regression function which fits the variation of error with distance
 		errorForFeature = errProf.RegressionFunction.predict(distance)
-
-		tempErrorInfoDict[featureName] = (errProf.ErrorSamples, errorForFeature) # put raw error samples, and predicted err
+		
+		if(errorForFeature > 0.0):
+			errorTermsAllNegative = False
+		if(errorForFeature < 0.0):
+			errorTermsAllPositive = False
+		
+		#tempErrorInfoDict[featureName] = (errProf.ErrorSamples, errorForFeature) # put raw error samples, and predicted err
+		tempErrorInfoDict[idx] = (errProf.ErrorSamples, errorForFeature) # put raw error samples, and predicted err
 		#^^ later we will use this info to first calculate correlation between errors and then resultant error
 	
 	#END of for loop
@@ -332,6 +371,11 @@ def getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,featureD
 	
 	#here use the formula : sqrt[ {(e1 + c12e2 + c13e3 + ..)}^2 + {(1-c12)e2}^2 + {(1-c13)e3}^2 + ...]	
 	print "use the formula : sqrt[ {(e1 + c12e2 + c13e3 + ..)}^2 + {(1-c12)e2}^2 + {(1-c13)e3}^2 + ...] "
+
+	rmsError = calculateResultantError(featureErrorCorrelaionIndividualErrorMap)
+	
+	return (rmsError,errorTermsAllPositive,errorTermsAllNegative)
+
 #X = [[0, 1], [1, 1]]
 #getStandardizedEuclideanDistance(X,[[0, 0]])
 #A = np.array([[1,11], [0,0], [2,13],[3,12]])
