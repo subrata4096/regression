@@ -43,7 +43,7 @@ TargetErrorDataMap = {}
 ErrorDistributionProfileMapForTargetAndFeature = {}
 
 class FeatureDataPoint:
-	def__init__(self,nameValueMap):
+	def __init__(self,nameValueMap):
 		self.featureNameValueMap = nameValueMap
 	def __str__(self):
 		s = str(featureNameValueMap)
@@ -125,15 +125,22 @@ class errorDistributionProfile:
 		self.ErrorSamples = []
 	def __str__(self):
 		s = "\nError profile:  TargetName = " + self.TargetName + " FeatureName = " + self.FeatureName 
-		s = "\n\tMean point of training = " + self.MeanPointOfTrainingSet + " StdDev of training set = " + self.StandardDeviationOfTrainingSet
-		s = s + "\n\tError Curve Fitted Fuction: " + str(self.ErrorRegressFunction)
+		s = s + "\n\tMean point of training = " + str(self.MeanPointOfTrainingSet) + " StdDev of training set = " + str(self.StandardDeviationOfTrainingSet)
+		#s = s + "\n\tError Curve Fitted Fuction: " + str(self.ErrorRegressFunction.coeff_)
+		s = s + "\n\tError Curve Fitted Fuction: " + str(self.ErrorRegressFunction.named_steps['linear'].coef_)
 		s = s + "\n\tError Samples: " + np.array_str(self.ErrorSamples) + "\n"
 		#doHistogramPlot(self.ErrorSamples,self.TargetName,self.FeatureName,doSave=True)
 		return s
 		 
-def printErrorDistributionProfileMapForTargetAndFeatureMap():
-	for targetKey in ErrorDistributionProfileMapForTargetAndFeature.keys():	
-		featureErrMap = ErrorDistributionProfileMapForTargetAndFeature[targetKey]
+def printErrorDistributionProfileMapForTargetAndFeatureMap(errProfMap=None):
+	workingErrProfileMap = errProfMap
+	if(errProfMap == None):
+		workingErrProfileMap = ErrorDistributionProfileMapForTargetAndFeature
+	else:
+		workingErrProfileMap = errProfMap
+
+	for targetKey in workingErrProfileMap.keys():	
+		featureErrMap = workingErrProfileMap[targetKey]
 		for featureName in featureErrMap.keys():
 			errProf = featureErrMap[featureName]
 			print "\nxxxxxxxxxxxxxxxx     ERROR PROFILE   xxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n"

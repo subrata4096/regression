@@ -9,6 +9,7 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import Pipeline
 from sklearn.cross_validation import LeavePOut
 from sklearn.metrics.pairwise import *
+import scipy
 from scipy.spatial.distance import *
 from scipy.stats.stats import pearsonr 
 import numpy as np
@@ -47,7 +48,9 @@ def getSortedArrayBasedOnColumn(inArr,columnIndex):
 	#print sortedArr
 	return  sortedArr
 
-def calculateCorrelationBetweenVectors(a,b):
+def calculateCorrelationBetweenVectors(x,y):
+	#x = scipy.array([-0.65499887,  2.34644428, 3.0])
+ 	#y = scipy.array([-1.46049758,  3.86537321, 21.0])
 	#The Pearson correlation coefficient measures the linear relationship between two datasets. 
 	#Strictly speaking, Pearson correlation requires that each dataset be normally distributed. 
 	#correlation coefficients, this one varies between -1 and +1 with 0 implying no correlation. 
@@ -55,9 +58,9 @@ def calculateCorrelationBetweenVectors(a,b):
 
 	#The p-value roughly indicates the probability of an uncorrelated system producing datasets that have a Pearson correlation at least as extreme as the one computed from these datasets. 
 	#The p-values are not entirely reliable but are probably reasonable for datasets larger than 500 or so.
-	
-	(corr,p-val) = pearsonr(a,b)
-
+	print "X = " , x, "\nY = ", y
+	corr, p_value = pearsonr(x, y)	
+	#return 
 	return corr
 
 #print the error data structure map
@@ -331,8 +334,12 @@ def getCorrelationBetweenErrorsWRTFirstFeature(productionErrorInfoDict):
 #it will return how much prediction error can be there
 #returns: rmsError,if all err components were +ve, if all err components were -ve
 #if all components were positive, we will consider final result to be only positive and not +/- around predicted targetValue 
-def getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,featureDtPt):
-	featureErrMap = ErrorDistributionProfileMapForTargetAndFeature[targetName]
+def getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,featureDtPt,errProfMap=None):
+	featureErrMap = None
+	if(errProfMap == None):
+		featureErrMap = ErrorDistributionProfileMapForTargetAndFeature[targetName]
+	else:
+		featureErrMap = errProfMap[targetName]
 
 	tempErrorInfoDict = {}
 	
@@ -341,9 +348,10 @@ def getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,featureD
 
 	idx = 0
 	#key is feature name, value is value of that feature at the intended location
-	for featureName,value in featureDtPt.FeatureErrorDataMap.iteritems():
+	for featureName,value in featureDtPt.featureNameValueMap.iteritems():
 		idx = idx + 1	
 		#get the error profile for this feature	
+		print featureErrMap
 		errProf = featureErrMap[featureName]
 
 		#get the distance of that feature from the training location
@@ -352,7 +360,7 @@ def getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,featureD
 		distance = getDistanceAlongOneFeature(meanPoint,StdDev,value)
 
 		#get the curve/regression function which fits the variation of error with distance
-		errorForFeature = errProf.RegressionFunction.predict(distance)
+		errorForFeature = errProf.ErrorRegressFunction.predict(distance)
 		
 		if(errorForFeature > 0.0):
 			errorTermsAllNegative = False

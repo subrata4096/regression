@@ -191,4 +191,8 @@ if __name__ == "__main__":
 
 	#prints
 	#printFullErrorDataStructure()
-	printErrorDistributionProfileMapForTargetAndFeatureMap()
+	#printErrorDistributionProfileMapForTargetAndFeatureMap()
+	picklepath,cPicklepath = dumpErrorDistributionProfileMap(ErrorDistributionProfileMapForTargetAndFeature)
+	errProfMap = loadErrorDistributionProfileMap(cPicklepath,True)
+	printErrorDistributionProfileMapForTargetAndFeatureMap(errProfMap)
+	

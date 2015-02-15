@@ -289,7 +289,7 @@ def readInputMeasurementOutput(dataFile):
         inputDataArr = np.transpose(inputDataArr)
         
 	measuredDataArr = readDataFile(dataFile,'measured')
- 	#outputDataArr = readDataFile(dataFile,'output')
+ 	outputDataArr = readDataFile(dataFile,'output')
 
 	return inputDataArr,measuredDataArr,outputDataArr
 
