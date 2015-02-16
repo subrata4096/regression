@@ -16,15 +16,15 @@ from analyze import *
 from errorDatastructure import *
 from errorAnalysis import *
 
-global inputColumnNames
-global measuredColumnNames
-global outputColumnNames
-global regressionDict
+#global inputColumnNames
+#global measuredColumnNames
+#global outputColumnNames
+#global regressionDict
 
-global activeDumpDirectory
+#global activeDumpDirectory
 
-global TargetErrorDataMap
-global ErrorDistributionProfileMapForTargetAndFeature
+#global TargetErrorDataMap
+#global ErrorDistributionProfileMapForTargetAndFeature
 
 #=> convert target list to 2d list
 #[1 2 3 4] => [[1] [2] [3] [4]] => beacuse that's what following functions expect
@@ -37,9 +37,10 @@ def listTo2DArray(theList):
 	
 
 #this function will fit the training set for each feature sample for each target and populate the regression function in DS
-def populateRegressionFunctionForEachTarget():	
-	for targetkey in TargetErrorDataMap.keys():
-                tarErrData = TargetErrorDataMap[targetkey]
+def populateRegressionFunctionForEachTarget():
+	tgtErrDataMap = getGlobalObject("TargetErrorDataMap")	
+	for targetkey in tgtErrDataMap.keys():
+                tarErrData = tgtErrDataMap[targetkey]
 		for featureKey in tarErrData.FeatureErrorDataMap.keys():
 			featureErrData = tarErrData.FeatureErrorDataMap[featureKey]
 			trainObs = featureErrData.TrainingObservations
@@ -58,8 +59,9 @@ def populateRegressionFunctionForEachTarget():
 
 
 def populateErrorProfileFunctions():
-	for targetkey in TargetErrorDataMap.keys():
-                tarErrData = TargetErrorDataMap[targetkey]
+	tgtErrDataMap = getGlobalObject("TargetErrorDataMap")	
+	for targetkey in tgtErrDataMap.keys():
+                tarErrData = tgtErrDataMap[targetkey]
                 for featureIndex in tarErrData.FeatureErrorDataMap.keys():
                         featureErrData = tarErrData.FeatureErrorDataMap[featureIndex]
                         testObsList = featureErrData.TestObservations
@@ -88,8 +90,10 @@ def populateErrorProfileFunctions():
 	
 				
 def populatePredictionsForTestSamples():
-	for targetkey in TargetErrorDataMap.keys():
-                tarErrData = TargetErrorDataMap[targetkey]
+	tgtErrDataMap = getGlobalObject("TargetErrorDataMap")	
+	errDistProfMapForTargetAndFeature = getGlobalObject("ErrorDistributionProfileMapForTargetAndFeature")
+	for targetkey in tgtErrDataMap.keys():
+                tarErrData = tgtErrDataMap[targetkey]
                 for featureIndex in tarErrData.FeatureErrorDataMap.keys():
                         featureErrData = tarErrData.FeatureErrorDataMap[featureIndex]
                         testObsList = featureErrData.TestObservations
@@ -106,12 +110,12 @@ def populatePredictionsForTestSamples():
 			#Put this errorProfile object into the data structure (that is this 2 level map)
 			#This will be populated later with error regression function
 			#start populating data structure
-			if targetkey in ErrorDistributionProfileMapForTargetAndFeature.keys():
-                                ErrorDistributionProfileMapForTargetAndFeature[targetkey][featureName] = errDistProfile
+			if targetkey in errDistProfMapForTargetAndFeature.keys():
+                                errDistProfMapForTargetAndFeature[targetkey][featureName] = errDistProfile
                         else:
                                 featureMap = {}
                                 featureMap[featureName] = errDistProfile
-                                ErrorDistributionProfileMapForTargetAndFeature[targetkey] = featureMap
+                                errDistProfMapForTargetAndFeature[targetkey] = featureMap
 			#end populating data structure
 
 			for testObs in testObsList:
@@ -133,6 +137,7 @@ def populatePredictionsForTestSamples():
 				testObs.DistanceToTargetArr = distance
 
 def populateSamplesInErrorDataStructure(dataFile,inArr,measuredArr,outArr):
+	tgtErrDataMap = getGlobalObject("TargetErrorDataMap")	
 	i = 0
 	for targetArr in measuredArr:
 		t = measuredColumnNames[i]
@@ -147,7 +152,7 @@ def populateSamplesInErrorDataStructure(dataFile,inArr,measuredArr,outArr):
 		#targetArrT = map(lambda t: list(t), targetArr)
 		#print "targetArrT :", targetArrT
 		targetErrData = generateTrainingAndTestSetsForDistanceProfilingForEachTarget(inArr,targetArrT,t)
-		TargetErrorDataMap[t] = targetErrData
+		tgtErrDataMap[t] = targetErrData
 		i = i + 1
 
 	i = 0
@@ -158,30 +163,37 @@ def populateSamplesInErrorDataStructure(dataFile,inArr,measuredArr,outArr):
 		#targetArrT = map(lambda t: list(t), targetArr)
 		targetArrT = listTo2DArray(targetArr) #=> convert target list to 2d list 
 		targetErrData = generateTrainingAndTestSetsForDistanceProfilingForEachTarget(inArr,targetArrT,t)
-		TargetErrorDataMap[t] = targetErrData
+		tgtErrDataMap[t] = targetErrData
 		i = i + 1
 			
 
 if __name__ == "__main__":
+	initializeGlobalObjects()
 	dataFile = sys.argv[1]
 	productionDataFile = ""
 	print "DataFile: " , dataFile , "\n"        
-	print "Input variables", inputColumnNames
-	print "Meassured variables", measuredColumnNames
-	print "Output variables", outputColumnNames
-	global activeDumpDirectory
-	activeDumpDirectory = setActiveDumpDirectory(dataFile)	
-	if(os.path.exists(activeDumpDirectory) == False):
-        	os.mkdir(activeDumpDirectory)
+	print "Input variables", getGlobalObject("inputColumnNames")
+	print "Meassured variables", getGlobalObject("measuredColumnNames")
+	print "Output variables", getGlobalObject("outputColumnNames")
+	
+	dumpDir = setActiveDumpDirectory(dataFile)	
+	setGlobalObject("activeDumpDirectory",dumpDir)	
+	if(os.path.exists(dumpDir) == False):
+        	os.mkdir(dumpDir)
 
 	inputDataArr,measuredDataArr,outputDataArr = readInputMeasurementOutput(dataFile)
+	#global inputColumnNameToIndexMapFromFile
+        #global measuredColumnNameToIndexMapFromFile
+        #global outputColumnNameToIndexMapFromFile
+	print "here ", getGlobalObject("inputColumnNameToIndexMapFromFile")
+	selectedInputDataArr = selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputDataArr)
 
 	#measuredDataArrT = map(lambda t: list(t), measuredDataArr)
 	#outputDataArrT = map(lambda t: list(t), outputDataArr)
 	#print "measuredArrT :", measuredDataArrT
 
 	#populateSamplesInErrorDataStructure(dataFile,inputDataArr,measuredDataArrT,outputDataArrT)
-	populateSamplesInErrorDataStructure(dataFile,inputDataArr,measuredDataArr,outputDataArr)
+	populateSamplesInErrorDataStructure(dataFile,selectedInputDataArr,measuredDataArr,outputDataArr)
 
 	
 	#populate regression function for each target and for samples sorted based on each feature
@@ -190,9 +202,9 @@ if __name__ == "__main__":
 	populateErrorProfileFunctions()
 
 	#prints
-	#printFullErrorDataStructure()
+	printFullErrorDataStructure()
 	#printErrorDistributionProfileMapForTargetAndFeatureMap()
-	picklepath,cPicklepath = dumpErrorDistributionProfileMap(ErrorDistributionProfileMapForTargetAndFeature)
+	picklepath,cPicklepath = dumpErrorDistributionProfileMap(getGlobalObject("ErrorDistributionProfileMapForTargetAndFeature"))
 	errProfMap = loadErrorDistributionProfileMap(cPicklepath,True)
-	printErrorDistributionProfileMapForTargetAndFeatureMap(errProfMap)
+	#printErrorDistributionProfileMapForTargetAndFeatureMap(errProfMap)
 	

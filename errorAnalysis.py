@@ -58,9 +58,10 @@ def calculateCorrelationBetweenVectors(x,y):
 
 	#The p-value roughly indicates the probability of an uncorrelated system producing datasets that have a Pearson correlation at least as extreme as the one computed from these datasets. 
 	#The p-values are not entirely reliable but are probably reasonable for datasets larger than 500 or so.
-	print "X = " , x, "\nY = ", y
+	#print "X = " , x, "\nY = ", y
 	corr, p_value = pearsonr(x, y)	
 	#return 
+	#print "correlation :", corr
 	return corr
 
 #print the error data structure map
@@ -269,7 +270,7 @@ def curveFitErrorSamplesWithDistance(targetkey,featureName,distanceList,errorLis
 	distanceArr = np.array(distanceList)
 	errArr = np.array(errorList)
 	regName = targetkey + "_" + featureName + "_err"
-	print regName, distanceArr, errArr
+	#print regName, distanceArr, errArr
 	curvFunc = getRegressionFunctionForEachTarget(distanceArr,errArr,regName)	    
 	
 	#testDist = [[11.0]]
@@ -278,7 +279,7 @@ def curveFitErrorSamplesWithDistance(targetkey,featureName,distanceList,errorLis
 	#errDistProfile = errorDistributionProfile(featureName,targetkey)
 
 	#this error profile object is already populated in the map. Just extract that and modify (add errorCurve)
-	errDistProfile = ErrorDistributionProfileMapForTargetAndFeature[targetkey][featureName]
+	errDistProfile = getGlobalObject("ErrorDistributionProfileMapForTargetAndFeature")[targetkey][featureName]
 	
 	errDistProfile.ErrorRegressFunction = curvFunc
 	errDistProfile.ErrorSamples = np.array(errorSamples)
@@ -287,21 +288,22 @@ def curveFitErrorSamplesWithDistance(targetkey,featureName,distanceList,errorLis
 def calculateResultantError(errorMap):
 	errorObjectForFirstFeature = None
 	correlationAdjustedErrorTerms = {}
-	print "use the formula : sqrt[ {(e1 + c12e2 + c13e3 + ..)}^2 + {(1-c12)e2}^2 + {(1-c13)e3}^2 + ...] "
+	print "use the formula : sqrt[ {(|e1| + |c12e2| + |c13e3| + ..)}^2 + {(1-c12)e2}^2 + {(1-c13)e3}^2 + ...] "
 	for idx in errorMap.keys():
 		(corrCoeff,errorForFeature) = errorMap[idx] 
 		if(idx == 1):
-			correlationAdjustedErrorTerms[idx] = errorForFeature
+			correlationAdjustedErrorTerms[1] = abs(errorForFeature)
 		else:
 			#calculate the first term "(e1 + c12e2 + c13e3 + ..)" 
-			correlationAdjustedErrorTerms[1] = correlationAdjustedErrorTerms[1] + (corrCoeff)*(errorForFeature)
+			correlationAdjustedErrorTerms[1] = correlationAdjustedErrorTerms[1] + abs((corrCoeff)*(errorForFeature))
 			# now calculate other terms "(1-c12)e2" as "(1-c13)e3"
-			correlationAdjustedErrorTerms[idx] = (1 - corrCoeff)*(errorForFeature)
+			correlationAdjustedErrorTerms[idx] = abs((1 - corrCoeff)*(errorForFeature))
 	#end for 
 	
 	#now calculate the RMS of these terms to get resultant error
 	sumOfSquares = 0.0
 	for key,value in correlationAdjustedErrorTerms.iteritems():
+		#print "val = " , value
 		sumOfSquares = sumOfSquares + (value)*(value)     #calculate sqrs
 	#end for
 	rmsError = math.sqrt(sumOfSquares)				
@@ -321,10 +323,12 @@ def getCorrelationBetweenErrorsWRTFirstFeature(productionErrorInfoDict):
 		if(i==1):
 			firstErrorSamples = errSamples
 			errorCorrMap[featureName] = (1.0,errorForFeature)
+			print "featreName =", featureName, " corrCoeff = " , "1.0" , " error term = " , errorForFeature
 			continue
 		else:
 			corrCoeff = calculateCorrelationBetweenVectors(firstErrorSamples,errSamples)	
 			errorCorrMap[featureName] = (corrCoeff,errorForFeature)
+			print "featreName =", featureName, " corrCoeff = " , corrCoeff , " error term = " , errorForFeature
 	#END of for
 
 	return errorCorrMap
@@ -337,7 +341,7 @@ def getCorrelationBetweenErrorsWRTFirstFeature(productionErrorInfoDict):
 def getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,featureDtPt,errProfMap=None):
 	featureErrMap = None
 	if(errProfMap == None):
-		featureErrMap = ErrorDistributionProfileMapForTargetAndFeature[targetName]
+		featureErrMap = getGlobalObject("ErrorDistributionProfileMapForTargetAndFeature")[targetName]
 	else:
 		featureErrMap = errProfMap[targetName]
 
@@ -351,8 +355,8 @@ def getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,featureD
 	for featureName,value in featureDtPt.featureNameValueMap.iteritems():
 		idx = idx + 1	
 		#get the error profile for this feature	
-		print featureErrMap
 		errProf = featureErrMap[featureName]
+		#print errProf
 
 		#get the distance of that feature from the training location
 		meanPoint = errProf.MeanPointOfTrainingSet
@@ -366,7 +370,7 @@ def getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,featureD
 			errorTermsAllNegative = False
 		if(errorForFeature < 0.0):
 			errorTermsAllPositive = False
-		
+		print "featureName = " , featureName, " sample = ", errProf.ErrorSamples, " err = ", errorForFeature
 		#tempErrorInfoDict[featureName] = (errProf.ErrorSamples, errorForFeature) # put raw error samples, and predicted err
 		tempErrorInfoDict[idx] = (errProf.ErrorSamples, errorForFeature) # put raw error samples, and predicted err
 		#^^ later we will use this info to first calculate correlation between errors and then resultant error
@@ -378,7 +382,7 @@ def getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,featureD
 	featureErrorCorrelaionIndividualErrorMap = getCorrelationBetweenErrorsWRTFirstFeature(tempErrorInfoDict)
 	
 	#here use the formula : sqrt[ {(e1 + c12e2 + c13e3 + ..)}^2 + {(1-c12)e2}^2 + {(1-c13)e3}^2 + ...]	
-	print "use the formula : sqrt[ {(e1 + c12e2 + c13e3 + ..)}^2 + {(1-c12)e2}^2 + {(1-c13)e3}^2 + ...] "
+	print "use the formula : sqrt[ {(|e1| + |c12e2| + |c13e3| + ..)}^2 + {(1-c12)e2}^2 + {(1-c13)e3}^2 + ...] "
 
 	rmsError = calculateResultantError(featureErrorCorrelaionIndividualErrorMap)
 	

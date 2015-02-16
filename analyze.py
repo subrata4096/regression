@@ -9,14 +9,16 @@ from regressFit import *
 from micAnalysis import *
 from drawPlot import *
 from detectAnomaly import *
-from fields import *
+#from fields import *
 from pickleDump import *
 
-global inputColumnNames
-global measuredColumnNames
-global outputColumnNames
-global regressionDict
-
+#global inputColumnNames
+#global measuredColumnNames
+#global outputColumnNames
+#global regressionDict
+#global inputColumnNameToIndexMapFromFile
+#global measuredColumnNameToIndexMapFromFile
+#global outputColumnNameToIndexMapFromFile
 
 def getRowKey(row):
 	s = ""
@@ -151,17 +153,33 @@ def getAveragePerExperiments(inArr, dataArr):
 def readDataFile(fName,field_type):
 	indexes = []
 	if(field_type == 'input'):
-		indexes = getColumnIndexes(fName,inputColumnNames)
+		indexes = getColumnIndexes(fName,getGlobalObject("inputColumnNames"))
    	elif(field_type == 'measured'):
-		indexes = getColumnIndexes(fName,measuredColumnNames)
+		indexes = getColumnIndexes(fName,getGlobalObject("measuredColumnNames"))
 	elif(field_type == 'output'):
-		indexes = getColumnIndexes(fName,outputColumnNames)
+		indexes = getColumnIndexes(fName,getGlobalObject("outputColumnNames"))
 	
 	print indexes	
 	realdata = np.loadtxt(fName, dtype=float,delimiter='\t', usecols=indexes, converters=None,skiprows=1)
 	#print realdata[0]
 	data = np.transpose( realdata)
 	return data
+
+def getColumnNameToIndexMappingFromFile(fName,columnNames):
+	featureNameToIndexMap = {}
+	if(len(columnNames) == 0):
+                return featureNameToIndexMap
+        #data = np.genfromtxt(fName, dtype=None, delimiter='\t', names=True)
+        d = np.genfromtxt(fName, dtype=str,delimiter='\t')
+	names = d[0]
+        #print names
+        i = 0
+        for name in names:
+                if(name in columnNames):
+			featureNameToIndexMap[i] = name
+                i = i + 1
+        #print featureNameToIndexMap
+        return featureNameToIndexMap
 	
 def getColumnIndexes(fName, columnNames):
 	if(len(columnNames) == 0):
@@ -183,7 +201,10 @@ def getColumnIndexes(fName, columnNames):
 def getInputParameterNameFromColumnIndex(columnIndex):
 	#NOTE! This function might have bugs. This index may not be the actual index we are looking for
 	#paramName = InputColumnIndexToNameMap[columnIndex]
-	paramName = inputColumnNames[columnIndex]
+	#paramName = inputColumnNames[columnIndex]
+	#^^ was old and inaccurate
+	#get the index from updated index to name map
+	paramName = getGlobalObject("inputIndexToFieldNameMap")[columnIndex]
 	return paramName
 	
 def calculateStatisticOfTarget(targetArr):
@@ -208,7 +229,7 @@ def doFitForTarget(inArr,targetArr, tname):
     	#calculateStatisticOfTarget(targetArr)
 
 	#Do MIC analysis based on Science 2011 paper
-        selected_inArr = doMICAnalysisOfInputVariables(inArr, targetArr)
+        selected_inArr,selected_inArr_indexs = doMICAnalysisOfInputVariables(inArr, targetArr,tname,0.0)
 	#print "sel list" , selected_inArr
 
 
@@ -253,22 +274,24 @@ def doFitForTarget(inArr,targetArr, tname):
 
 
 def scikit_scripts(dataFile,inArr,measuredArr,outArr):
+	
+	regressDict = getGlobalObject("regressionDict") 
 	i = 0
 	for targetArr in measuredArr:
-		t = measuredColumnNames[i]
+		t = getGlobalObject("measuredColumnNames")[i]
 		reg = doFitForTarget(inArr,targetArr,t)
 		#regressionDict[t] = reg
 		#NOTE: temorary comment
 		#fname = dumpModel(dataFile,t,reg)
                 #regLoad = loadModel(fname)
-		regressionDict[t] = reg
+		regressDict[t] = reg
 		i = i + 1
 
 	i = 0
 	for targetArr in outArr:
-		t = outputColumnNames[i]
+		t = getGlobalObject("outputColumnNames")[i]
 		reg = doFitForTarget(inArr,targetArr,t)
-		regressionDict[t] = reg
+		regressDict[t] = reg
 		i = i + 1
 			
 
@@ -284,34 +307,104 @@ def readInputMeasurementOutput(dataFile):
 	inputDataArr = []
         measuredDataArr = []
         outputDataArr = []
-        
+        #global inputColumnNameToIndexMapFromFile
+	#global measuredColumnNameToIndexMapFromFile
+	#global outputColumnNameToIndexMapFromFile
+	inColNames = getGlobalObject("inputColumnNames")
+	mesureColNames = getGlobalObject("measuredColumnNames")
+	outColNames = getGlobalObject("outputColumnNames")
+ 
 	inputDataArr = readDataFile(dataFile,'input')
+	setGlobalObject("inputColumnNameToIndexMapFromFile",getColumnNameToIndexMappingFromFile(dataFile,inColNames))
+	print getGlobalObject("inputColumnNameToIndexMapFromFile")
         inputDataArr = np.transpose(inputDataArr)
         
 	measuredDataArr = readDataFile(dataFile,'measured')
- 	outputDataArr = readDataFile(dataFile,'output')
+	setGlobalObject("measuredColumnNameToIndexMapFromFile",getColumnNameToIndexMappingFromFile(dataFile,mesureColNames))
+ 	
+	outputDataArr = readDataFile(dataFile,'output')
+	setGlobalObject("outputColumnNameToIndexMapFromFile",getColumnNameToIndexMappingFromFile(dataFile,outColNames))
 
 	return inputDataArr,measuredDataArr,outputDataArr
 
+def updateFieldsIndexToNameMap(newMapOfSelectedIndex,field_type):
+	#global inputColumnNameToIndexMapFromFile
+        #global measuredColumnNameToIndexMapFromFile
+        #global outputColumnNameToIndexMapFromFile
+
+	usefulNameToIndexMapFromFile = {}
+	indexToFieldNameUpdatedMap = {}
+	selected_fields_indexs = newMapOfSelectedIndex.keys()
+	if(field_type == "input"):
+		usefulNameToIndexMapFromFile = getGlobalObject("inputColumnNameToIndexMapFromFile")
+	
+	for fieldIndex,fieldName in usefulNameToIndexMapFromFile.iteritems():
+		if fieldIndex in selected_fields_indexs:
+			indexToFieldNameUpdatedMap[fieldIndex] = fieldName
+	#end for
+	return indexToFieldNameUpdatedMap
+			
+		
+
+def selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputDataArr):
+
+	selected_indexs_union = {}
+	selected_feature_Arr = []
+	i = 0
+	#print "---------",getGlobalObject("measuredColumnNames")
+	for targetArr in measuredDataArr:
+		#print "i=",i
+		#print targetArr
+		t = getGlobalObject("measuredColumnNames")[i]
+		selected_inArr,selected_inArr_indexs = doMICAnalysisOfInputVariables(inputDataArr, targetArr,t,0.0)
+		for idx in  selected_inArr_indexs:
+			selected_indexs_union[idx] = True
+		#end for
+		i = i + 1
+	
+	i = 0
+	for targetArr in outputDataArr:
+		t = getGlobalObject("outputColumnNames")[i]
+                selected_inArr,selected_inArr_indexs = doMICAnalysisOfInputVariables(inputDataArr, targetArr,t,0.0)
+		for idx in  selected_inArr_indexs:
+                        selected_indexs_union[idx] = True
+		#end for
+		i = i + 1
+
+	for selected_index in selected_indexs_union.keys():
+		feature_Arr = inputDataArr[:,selected_index]
+		selected_feature_Arr.append(feature_Arr)
+	
+	#update a new field index to name map for inputs
+	setGlobalObject("inputIndexToFieldNameMap",updateFieldsIndexToNameMap(selected_indexs_union,"input"))
+
+
+	selected_inArr = np.array(selected_feature_Arr).transpose()
+	return selected_inArr
+
+
 if __name__ == "__main__":
+	initializeGlobalObjects()
 	dataFile = sys.argv[1]
 	productionDataFile = ""
 	#productionDataFile = sys.argv[2]
 	print "DataFile: " , dataFile , "\n"        
-	print "Input variables", inputColumnNames
-	print "Meassured variables", measuredColumnNames
-	print "Output variables", outputColumnNames
+	print "Input variables", getGlobalObject("inputColumnNames")
+	print "Meassured variables", getGlobalObject("measuredColumnNames")
+	print "Output variables", getGlobalObject("outputColumnNames")
 	
 	inputDataArr,measuredDataArr,outputDataArr = readInputMeasurementOutput(dataFile)
 
 	measureVari = calculateVariability(inputDataArr,measuredDataArr)
 	#outVari = calculateVariability(inputDataArr,outputDataArr)
+
+	selectedInputDataArr = selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputDataArr)
 	
 	#get an average of values for unique input combinations...        
-        averagedOutputArr = []
-	averagedMeasuredArr = []
-	uniqueInputArr, averagedMeasuredArr = getAveragePerExperiments(inputDataArr,measuredDataArr)	
-	uniqueInputArr1, averagedOutputArr = getAveragePerExperiments(inputDataArr,outputDataArr)
+        #averagedOutputArr = []
+	#averagedMeasuredArr = []
+	#uniqueInputArr, averagedMeasuredArr = getAveragePerExperiments(inputDataArr,measuredDataArr)	
+	#uniqueInputArr1, averagedOutputArr = getAveragePerExperiments(inputDataArr,outputDataArr)
 	#print uniqueInputArr
 	#print "\n------"
 	#print averagedMeasuredArr
@@ -322,7 +415,8 @@ if __name__ == "__main__":
 	#print "\n\n ----- "
         #print averagedMeasuredArr
 	#print "\n\n ----- "
-	scikit_scripts(dataFile,uniqueInputArr,averagedMeasuredArr,averagedOutputArr)
+	#scikit_scripts(dataFile,uniqueInputArr,averagedMeasuredArr,averagedOutputArr)
+	scikit_scripts(dataFile,selectedInputDataArr,measuredDataArr,outputDataArr)
 
 	if(productionDataFile != ""):
 		prodInputArr = readDataFile(productionDataFile,'input')

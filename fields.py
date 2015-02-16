@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import os
+from abc import ABCMeta, abstractmethod
 
 def setActiveDumpDirectory(dataFile):
 	fileWithoutExt = os.path.splitext(dataFile)[0]
@@ -8,18 +9,50 @@ def setActiveDumpDirectory(dataFile):
         print activeDumpDir
 	return activeDumpDir
 
-global activeDumpDirectory
-activeDumpDirectory = ''
 
-global inputColumnNames
-global measuredColumnNames
-global outputColumnNames
-global regressionDict
-regressionDict = {}
 
-inputColumnNames = []
-measuredColumnNames = []
-outputColumnNames = []
+class globalObjectsContainerClass:
+	__metaclass__ = ABCMeta
+	globalObjectMap = {}
+	@abstractmethod
+	def name(self):
+		pass
+
+#global activeDumpDirectory
+
+#global inputColumnNames
+#global measuredColumnNames
+#global outputColumnNames
+#global regressionDict
+
+#global inputColumnNameToIndexMapFromFile
+#global measuredColumnNameToIndexMapFromFile
+#global outputColumnNameToIndexMapFromFile
+#inputColumnNameToIndexMapFromFile = {}
+#global inputIndexToFieldNameMap
+#global measuredIndexToFieldNameMap
+#global outputIndexToFieldNameMap
+
+def setGlobalObject(objectName,objectRef):
+	globalObjectsContainerClass.globalObjectMap[objectName] = objectRef
+
+def getGlobalObject(objectName):
+	return globalObjectsContainerClass.globalObjectMap[objectName]
+
+def initializeGlobalObjects():
+	globalObjectsContainerClass.globalObjectMap["activeDumpDirectory"] = ''
+	globalObjectsContainerClass.globalObjectMap["inputColumnNames"] = []
+	globalObjectsContainerClass.globalObjectMap["measuredColumnNames"] = []
+	globalObjectsContainerClass.globalObjectMap["outputColumnNames"] = []
+	globalObjectsContainerClass.globalObjectMap["regressionDict"] = {}
+	globalObjectsContainerClass.globalObjectMap["inputColumnNameToIndexMapFromFile"] = {}
+	globalObjectsContainerClass.globalObjectMap["measuredColumnNameToIndexMapFromFile"] = {}
+	globalObjectsContainerClass.globalObjectMap["outputColumnNameToIndexMapFromFile"] = {}
+
+	globalObjectsContainerClass.globalObjectMap["inputIndexToFieldNameMap"] = {}
+	globalObjectsContainerClass.globalObjectMap["measuredIndexToFieldNameMap"] = {}
+	globalObjectsContainerClass.globalObjectMap["outputIndexToFieldNameMap"] = {}
+
 
 #inputColumnNames = ['module:input:0:length','module:pub_input::balance','module:pub_input::cost','module:pub_input::dtfixed','module:pub_input::dtmax','module:pub_input::iter','module:pub_input::its','module:pub_input::numElem','module:pub_input::numNode','module:pub_input::numReg','module:pub_input::nx','module:pub_input::phase','module:pub_input::u_cut']
 #inputColumnNames = ['module:pub_input::iter','module:pub_input::numElem','module:pub_input::numNode','module:pub_input::nx','module:pub_input::phase']
@@ -53,3 +86,32 @@ measuredColumnNames = ['m1','m2']
 #outputColumnNames = ['module:output:0:FOM','module:output:0:MaxAbsDiff','module:output:0:MaxRelDiff','module:output:0:TotalAbsDiff','module:output:1:numCycles']
 outputColumnNames = ['o1','o2','o3']
 #outputColumnNames = ['o1','o2']
+
+def initializeGlobalObjects():
+        globalObjectsContainerClass.globalObjectMap["activeDumpDirectory"] = ''
+        globalObjectsContainerClass.globalObjectMap["inputColumnNames"] = []
+        globalObjectsContainerClass.globalObjectMap["measuredColumnNames"] = []
+        globalObjectsContainerClass.globalObjectMap["outputColumnNames"] = []
+        globalObjectsContainerClass.globalObjectMap["regressionDict"] = {}
+        globalObjectsContainerClass.globalObjectMap["inputColumnNameToIndexMapFromFile"] = {}
+        globalObjectsContainerClass.globalObjectMap["measuredColumnNameToIndexMapFromFile"] = {}
+        globalObjectsContainerClass.globalObjectMap["outputColumnNameToIndexMapFromFile"] = {}
+
+        globalObjectsContainerClass.globalObjectMap["inputIndexToFieldNameMap"] = {}
+        globalObjectsContainerClass.globalObjectMap["measuredIndexToFieldNameMap"] = {}
+        globalObjectsContainerClass.globalObjectMap["outputIndexToFieldNameMap"] = {}
+
+	#this is a global container for error datastructure
+	#targetName vs TargetErrorData map
+	globalObjectsContainerClass.globalObjectMap["TargetErrorDataMap"] = {}
+	 #This is a map where initial samples for test and train are kept.
+        #Later it is populated with prediction functions and prediction errors.
+        #The top level key is "target-name". The content DataStructure "TargetErrorData"
+
+        #This map keeps the calculated error profile for each target for each profile along with curve-fitted error function
+	#top level key is target name. 2nd level key is feature name. Then the content is "errorDistributionProfile"
+	globalObjectsContainerClass.globalObjectMap["ErrorDistributionProfileMapForTargetAndFeature"] = {}
+	
+	setGlobalObject("inputColumnNames",inputColumnNames)
+	setGlobalObject("measuredColumnNames",measuredColumnNames)
+	setGlobalObject("outputColumnNames",outputColumnNames)

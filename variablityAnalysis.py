@@ -81,7 +81,7 @@ if __name__ == "__main__":
 	for targetArr in measuredDataArr:
                 t = measuredColumnNames[i]
                 print "\n Target :  ", t
-        	selected_inArr = doMICAnalysisOfInputVariables(inputDataArr, targetArr, targetDataQuality[t]["mic"]) 
+        	selected_inArr,selected_inArr_indexs = doMICAnalysisOfInputVariables(inputDataArr, targetArr,0.0, targetDataQuality[t]["mic"]) 
                 #print targetDataQuality[t]["mic"]
 		i = i + 1
 	
@@ -89,7 +89,7 @@ if __name__ == "__main__":
 	for targetArr in outputDataArr:
                 t = outputColumnNames[i]
 		print "\n Target :  ", t
-                selected_inArr = doMICAnalysisOfInputVariables(inputDataArr, targetArr, targetDataQuality[t]["mic"])
+                selected_inArr = doMICAnalysisOfInputVariables(inputDataArr, targetArr, 0.0,targetDataQuality[t]["mic"])
                 i = i + 1
 
 	#print targetDataQuality

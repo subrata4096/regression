@@ -4,11 +4,11 @@ from errorDatastructure import *
 from errorAnalysis import *
 from pickleDump import *
 from fields import *
-global ErrorDistributionProfileMapForTargetAndFeature
+#global ErrorDistributionProfileMapForTargetAndFeature
  
 def test_errorProfileMapLoad(cPicklepath):
 	errProfMap = loadErrorDistributionProfileMap(cPicklepath,True)
-	#ErrorDistributionProfileMapForTargetAndFeature = errProfMap
+	#setGlobalObject("ErrorDistributionProfileMapForTargetAndFeature") = errProfMap
 	printErrorDistributionProfileMapForTargetAndFeatureMap(errProfMap)
 
 def test_resultantError(cPicklepath):
@@ -16,9 +16,10 @@ def test_resultantError(cPicklepath):
 	prodDataPointMap = {}
 	prodDataPointMap["in1"] = 20
 	prodDataPointMap["in2"] = 20
-	prodDataPointMap["in3"] = 20
+	#prodDataPointMap["in3"] = 20
 	fDpt = FeatureDataPoint(prodDataPointMap)
 	errProfMap = loadErrorDistributionProfileMap(cPicklepath,True)
+	#print errProfMap
 	rmsErr,errPostibeBias,errMegBias = getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,fDpt,errProfMap)
 	print rmsErr, errPostibeBias,errPostibeBias
 

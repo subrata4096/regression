@@ -24,23 +24,22 @@ from fields import *
 from analyze import *
 from pickleDump import *
 
-global inputColumnNames
-global measuredColumnNames
-global outputColumnNames
-global regressionDict
+#global inputColumnNames
+#global measuredColumnNames
+#global outputColumnNames
+#global regressionDict
 
 #this is a global container for error datastructure
 #targetName vs TargetErrorData map
-global TargetErrorDataMap
-global ErrorDistributionProfileMapForTargetAndFeature
+#global TargetErrorDataMap
+#global ErrorDistributionProfileMapForTargetAndFeature
 #This is a map where initial samples for test and train are kept.
 #Later it is populated with prediction functions and prediction errors.
 #The top level key is "target-name". The content DataStructure "TargetErrorData"
-TargetErrorDataMap = {}
-
+#TargetErrorDataMap ={}
 #This map keeps the calculated error profile for each target for each profile along with curve-fitted error function
 #top level key is target name. 2nd level key is feature name. Then the content is "errorDistributionProfile"
-ErrorDistributionProfileMapForTargetAndFeature = {}
+#ErrorDistributionProfileMapForTargetAndFeature = {}
 
 class FeatureDataPoint:
 	def __init__(self,nameValueMap):
@@ -106,8 +105,9 @@ class TargetErrorData:
 
 def printFullErrorDataStructure():
 	print "\n\n******* Target error data map ********"
-	for targetkey in TargetErrorDataMap.keys():
-		tarErrData = TargetErrorDataMap[targetkey]
+	tgtErrMap = getGlobalObject("TargetErrorDataMap")
+	for targetkey in tgtErrMap.keys():
+		tarErrData = tgtErrMap[targetkey]
 		print "\n*****************For target = ", str(tarErrData)
         #for errDS in errDSList:
         #        print "Training obs: \n\t" + str(errDS.TrainingObservations)
@@ -135,7 +135,7 @@ class errorDistributionProfile:
 def printErrorDistributionProfileMapForTargetAndFeatureMap(errProfMap=None):
 	workingErrProfileMap = errProfMap
 	if(errProfMap == None):
-		workingErrProfileMap = ErrorDistributionProfileMapForTargetAndFeature
+		workingErrProfileMap = getGlobalObject("ErrorDistributionProfileMapForTargetAndFeature")
 	else:
 		workingErrProfileMap = errProfMap
 
