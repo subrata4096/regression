@@ -47,6 +47,19 @@ class FeatureDataPoint:
 	def __str__(self):
 		s = str(featureNameValueMap)
 		return s
+
+def getSelectedFeaturePtFromProductionDataPoint(prodFeaturePt,selectedFeatureMap):
+        selectedDataPointMap = {}
+        #selectedDataPointMap["in1"] = 2
+        selectedFeatures = selectedFeatureMap.keys()
+        productionDataPtMap = prodFeaturePt.featureNameValueMap
+        #print FeatureDataPoint
+        for feature,value in productionDataPtMap.iteritems():
+                if feature in selectedFeatures:
+                        selectedDataPointMap[feature] = value
+        dataPtWithSelectedFeature = FeatureDataPoint(selectedDataPointMap)
+        return dataPtWithSelectedFeature
+
 class Observations:
 	#while creating the observations, specify observationType, TRAIN or TEST. 
 	# depending on this type, observation data is populated differently

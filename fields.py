@@ -39,20 +39,6 @@ def setGlobalObject(objectName,objectRef):
 def getGlobalObject(objectName):
 	return globalObjectsContainerClass.globalObjectMap[objectName]
 
-def initializeGlobalObjects():
-	globalObjectsContainerClass.globalObjectMap["activeDumpDirectory"] = ''
-	globalObjectsContainerClass.globalObjectMap["inputColumnNames"] = []
-	globalObjectsContainerClass.globalObjectMap["measuredColumnNames"] = []
-	globalObjectsContainerClass.globalObjectMap["outputColumnNames"] = []
-	globalObjectsContainerClass.globalObjectMap["regressionDict"] = {}
-	globalObjectsContainerClass.globalObjectMap["inputColumnNameToIndexMapFromFile"] = {}
-	globalObjectsContainerClass.globalObjectMap["measuredColumnNameToIndexMapFromFile"] = {}
-	globalObjectsContainerClass.globalObjectMap["outputColumnNameToIndexMapFromFile"] = {}
-
-	globalObjectsContainerClass.globalObjectMap["inputIndexToFieldNameMap"] = {}
-	globalObjectsContainerClass.globalObjectMap["measuredIndexToFieldNameMap"] = {}
-	globalObjectsContainerClass.globalObjectMap["outputIndexToFieldNameMap"] = {}
-
 
 #inputColumnNames = ['module:input:0:length','module:pub_input::balance','module:pub_input::cost','module:pub_input::dtfixed','module:pub_input::dtmax','module:pub_input::iter','module:pub_input::its','module:pub_input::numElem','module:pub_input::numNode','module:pub_input::numReg','module:pub_input::nx','module:pub_input::phase','module:pub_input::u_cut']
 #inputColumnNames = ['module:pub_input::iter','module:pub_input::numElem','module:pub_input::numNode','module:pub_input::nx','module:pub_input::phase']
@@ -69,6 +55,7 @@ def initializeGlobalObjects():
 #inputColumnNames = ['module:pub_input::dt','module:pub_input::lat']
 #inputColumnNames = ['module:input:0:dt','module:input:0:lat']
 inputColumnNames = ['in1', 'in2', 'in3']
+#inputColumnNames = ['in1', 'in2']
 #measuredColumnNames = ['module:measure:PAPI:PAPI_BR_CN','module:measure:PAPI:PAPI_FP_OPS','module:measure:PAPI:PAPI_TOT_INS','module:measure:time:time']
 #measuredColumnNames = ['module:measure:time:time','module:measure:PAPI:PAPI_BR_CN','module:measure:PAPI:PAPI_FP_OPS','module:measure:PAPI:PAPI_TOT_INS']
 #measuredColumnNames = ['module:measure:time:time','module:measure:PAPI:PAPI_TOT_INS']
@@ -89,17 +76,31 @@ outputColumnNames = ['o1','o2','o3']
 
 def initializeGlobalObjects():
         globalObjectsContainerClass.globalObjectMap["activeDumpDirectory"] = ''
-        globalObjectsContainerClass.globalObjectMap["inputColumnNames"] = []
+        
+	globalObjectsContainerClass.globalObjectMap["inputColumnNames"] = []
         globalObjectsContainerClass.globalObjectMap["measuredColumnNames"] = []
         globalObjectsContainerClass.globalObjectMap["outputColumnNames"] = []
-        globalObjectsContainerClass.globalObjectMap["regressionDict"] = {}
+        
+	globalObjectsContainerClass.globalObjectMap["regressionDict"] = {}
+        
+	globalObjectsContainerClass.globalObjectMap["columnIndexToInArrIndexMap"] = {}
+	globalObjectsContainerClass.globalObjectMap["columnIndexToMsrArrIndexMap"] = {}
+	globalObjectsContainerClass.globalObjectMap["columnIndexToOutArrIndexMap"] = {}
+
         globalObjectsContainerClass.globalObjectMap["inputColumnNameToIndexMapFromFile"] = {}
+        globalObjectsContainerClass.globalObjectMap["inputColumnIndexToNameMapFromFile"] = {}
+
         globalObjectsContainerClass.globalObjectMap["measuredColumnNameToIndexMapFromFile"] = {}
+        globalObjectsContainerClass.globalObjectMap["measuredColumnIndexToNameMapFromFile"] = {}
+
         globalObjectsContainerClass.globalObjectMap["outputColumnNameToIndexMapFromFile"] = {}
+        globalObjectsContainerClass.globalObjectMap["outputColumnIndexToNameMapFromFile"] = {}
 
         globalObjectsContainerClass.globalObjectMap["inputIndexToFieldNameMap"] = {}
         globalObjectsContainerClass.globalObjectMap["measuredIndexToFieldNameMap"] = {}
         globalObjectsContainerClass.globalObjectMap["outputIndexToFieldNameMap"] = {}
+        
+	globalObjectsContainerClass.globalObjectMap["selectedOriginalColIndexMap"] = {}
 
 	#this is a global container for error datastructure
 	#targetName vs TargetErrorData map

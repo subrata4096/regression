@@ -33,19 +33,25 @@ def doMICAnalysisOfInputVariables(inArr, targetArr,targetName, mic_score_thresho
 
 	selected_inArr = []
 	selected_inArr_indexes = []
+	selected_originalColumn_indexes = []
+
+	inColMap = getGlobalObject("inputColumnIndexToNameMapFromFile") #keys are col index and vals are names
 	#selected_inArr.append([])
-	numOfColumns = inArr.shape[1]
+	#numOfColumns = inArr.shape[1]
 	k = 0	
-	for i in range(numOfColumns):
-		x = inArr[:,i]
+	#for i in range(numOfColumns):
+	for i in inColMap.keys():
+		#x = inArr[:,i]
+		x = inArr[:,k]
 		#print "x: ", x
 		x_scaled = preprocessing.scale(x)
 		#print "x: ", x_scaled
 		#print "targetArr: ", targetArr 
 		mine = MINE(alpha=0.6, c=15)
 		mine.compute_score(x_scaled, targetArr)
-		print getGlobalObject("inputColumnNameToIndexMapFromFile")
-		inputFeatureName = getGlobalObject("inputColumnNameToIndexMapFromFile")[i]
+		#print getGlobalObject("inputColumnNameToIndexMapFromFile")
+		#inputFeatureName = getGlobalObject("inputColumnNameToIndexMapFromFile")[i]
+		inputFeatureName = inColMap[i]
 		print_stats(mine,inputFeatureName,targetName,mic_score_threshold)
 		if(targetQualityMap != None):
 			targetQualityMap.append(float(mine.mic()))
@@ -53,12 +59,13 @@ def doMICAnalysisOfInputVariables(inArr, targetArr,targetName, mic_score_thresho
 		#selected_inArr = np.concatenate((selected_inArr, np.array(l)), axis=0)
 		#print k
 		#print mine.mic()
-		if(float(mine.mic()) > mic_score_threshold):
-			selected_inArr.append(x)
-			selected_inArr_indexes.append(i)
+		if(float(mine.mic()) >= mic_score_threshold):
+			selected_inArr.append(x) #keep the input data column
+			selected_inArr_indexes.append(k) #keep the index corresponding to that column
+			selected_originalColumn_indexes.append(i) #keep the original column index corresponding to that column
 		k = k + 1	
 		
 	selected_inArr = np.array(selected_inArr).transpose()
-	#print selected_inArr
-        return selected_inArr, selected_inArr_indexes
+	#print "\n **** selected: ==== \n", selected_inArr, selected_inArr_indexes,selected_originalColumn_indexes
+        return selected_inArr, selected_inArr_indexes, selected_originalColumn_indexes
 	#return selected_inArr

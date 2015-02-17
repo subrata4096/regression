@@ -17,7 +17,8 @@ global outputColumnNames
 def doPlot(inArr,targetArr,in_index1,tname,reg=None):
         #return	        
 	#xfullname = inputColumnNames[in_index1].split(':')
-	xfullname = getInputParameterNameFromColumnIndex(in_index1).split(':')
+	#xfullname = getInputParameterNameFromColumnIndex(in_index1).split(':')
+	xfullname = getInputParameterNameFromFeatureIndex(in_index1).split(':')
 	xname = xfullname[len(xfullname) -1]
 	print xname, " VS " , tname
         #fig = plt.figure(1, figsize=(8, 6))
@@ -41,9 +42,10 @@ def doPlot(inArr,targetArr,in_index1,tname,reg=None):
 def do3dPlot(inArr,targetArr,in_index1,in_index2,tname,reg=None):
 	# Plot outputs
         #xfullname = inputColumnNames[in_index1].split(':')
-        xfullname = getInputParameterNameFromColumnIndex(in_index1).split(':')
+        #xfullname = getInputParameterNameFromColumnIndex(in_index1).split(':')
+        xfullname = getInputParameterNameFromFeatureIndex(in_index1).split(':')
         #yfullname = inputColumnNames[in_index2].split(':')
-        yfullname = getInputParameterNameFromColumnIndex(in_index2).split(':')
+        yfullname = getInputParameterNameFromFeatureIndex(in_index2).split(':')
 
 	xname = xfullname[len(xfullname) -1]
 	yname = yfullname[len(yfullname) -1]

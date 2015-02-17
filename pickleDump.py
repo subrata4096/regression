@@ -41,7 +41,33 @@ def dumpErrorDistributionProfileMap(errDistMap):
         fid.close()
 	return (picklepath,cPicklepath)
 
+def dumpSelectedFeaturesMap(colNameToIndexMap,filePath):
+	picklepath = filePath + ".pkl"
+        cPicklepath = filePath + ".cpkl"
+        with open(picklepath, 'wb') as fid:
+                pickle.dump(colNameToIndexMap, fid)
+
+        fid.close()
+        with open(cPicklepath, 'wb') as fid:
+                cPickle.dump(colNameToIndexMap, fid)
+        fid.close()
+        return (picklepath,cPicklepath)
+
+def loadSelectedFeaturesMap(pklFName,isCPickle):
+	colNameToIndexMap = None
+	if(isCPickle):
+                with open(pklFName, 'rb') as fid:
+                        colNameToIndexMap = cPickle.load(fid)
+                fid.close()
+                return colNameToIndexMap
+        else:
+                with open(pklFName, 'rb') as fid:
+                        colNameToIndexMap = pickle.load(fid)
+                fid.close()
+                return colNameToIndexMap
+
 def loadErrorDistributionProfileMap(pklFName, isCPickle):
+	errProfileMap_loaded = None
 	if(isCPickle):
 		with open(pklFName, 'rb') as fid:
                 	errProfileMap_loaded = cPickle.load(fid)

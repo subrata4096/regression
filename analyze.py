@@ -167,6 +167,8 @@ def readDataFile(fName,field_type):
 
 def getColumnNameToIndexMappingFromFile(fName,columnNames):
 	featureNameToIndexMap = {}
+	featureIndexToNameMap = {}
+	colIdxToInArrIdxMap = {}
 	if(len(columnNames) == 0):
                 return featureNameToIndexMap
         #data = np.genfromtxt(fName, dtype=None, delimiter='\t', names=True)
@@ -174,12 +176,16 @@ def getColumnNameToIndexMappingFromFile(fName,columnNames):
 	names = d[0]
         #print names
         i = 0
+	k = 0
         for name in names:
                 if(name in columnNames):
-			featureNameToIndexMap[i] = name
+			featureNameToIndexMap[name] = i
+			featureIndexToNameMap[i] = name
+			colIdxToInArrIdxMap[i] = k
+			k = k + 1
                 i = i + 1
         #print featureNameToIndexMap
-        return featureNameToIndexMap
+        return featureNameToIndexMap,featureIndexToNameMap,colIdxToInArrIdxMap
 	
 def getColumnIndexes(fName, columnNames):
 	if(len(columnNames) == 0):
@@ -198,15 +204,31 @@ def getColumnIndexes(fName, columnNames):
 	#print indexes
 	return indexes
 
+def getInputParameterNameFromFeatureIndex(featureIndex):
+	colIdx = getColumnIndexFromFeatureIndex(featureIndex)
+	#print "feature idx = ", featureIndex, " colIdx = " , colIdx
+	return getInputParameterNameFromColumnIndex(colIdx)
+
 def getInputParameterNameFromColumnIndex(columnIndex):
 	#NOTE! This function might have bugs. This index may not be the actual index we are looking for
 	#paramName = InputColumnIndexToNameMap[columnIndex]
 	#paramName = inputColumnNames[columnIndex]
 	#^^ was old and inaccurate
 	#get the index from updated index to name map
-	paramName = getGlobalObject("inputIndexToFieldNameMap")[columnIndex]
+	#print getGlobalObject("inputIndexToFieldNameMap")
+	#paramName = getGlobalObject("inputIndexToFieldNameMap")[columnIndex]
+	#print getGlobalObject("inputColumnIndexToNameMapFromFile")
+	paramName = getGlobalObject("inputColumnIndexToNameMapFromFile")[columnIndex]
 	return paramName
-	
+
+def getColumnIndexFromFeatureIndex(featureIndex):
+	colIdxToInArrIdxMap = getGlobalObject("columnIndexToInArrIndexMap")
+	#print colIdxToInArrIdxMap
+	for colIdx,inArrIdx in colIdxToInArrIdxMap.iteritems():
+		if(inArrIdx == featureIndex):
+			return colIdx
+	return -1
+
 def calculateStatisticOfTarget(targetArr):
 	scaled_target = preprocessing.scale(targetArr)
         mean = np.mean(scaled_target)
@@ -315,59 +337,88 @@ def readInputMeasurementOutput(dataFile):
 	outColNames = getGlobalObject("outputColumnNames")
  
 	inputDataArr = readDataFile(dataFile,'input')
-	setGlobalObject("inputColumnNameToIndexMapFromFile",getColumnNameToIndexMappingFromFile(dataFile,inColNames))
-	print getGlobalObject("inputColumnNameToIndexMapFromFile")
+	featureNameToIndexMap_in,featureIndexToNameMap_in,colIdxToArrIdxMap_in = getColumnNameToIndexMappingFromFile(dataFile,inColNames)
+	setGlobalObject("inputColumnNameToIndexMapFromFile",featureNameToIndexMap_in)
+	setGlobalObject("inputColumnIndexToNameMapFromFile",featureIndexToNameMap_in)
+	setGlobalObject("columnIndexToInArrIndexMap",colIdxToArrIdxMap_in)
+	#print getGlobalObject("inputColumnNameToIndexMapFromFile")
         inputDataArr = np.transpose(inputDataArr)
         
 	measuredDataArr = readDataFile(dataFile,'measured')
-	setGlobalObject("measuredColumnNameToIndexMapFromFile",getColumnNameToIndexMappingFromFile(dataFile,mesureColNames))
+	featureNameToIndexMap_msr,featureIndexToNameMap_msr,colIdxToArrIdxMap_msr = getColumnNameToIndexMappingFromFile(dataFile,mesureColNames)
+	setGlobalObject("measuredColumnNameToIndexMapFromFile",featureNameToIndexMap_msr)
+	setGlobalObject("measuredColumnIndexToNameMapFromFile",featureIndexToNameMap_msr)
+	setGlobalObject("columnIndexToMsrArrIndexMap",colIdxToArrIdxMap_msr)
  	
 	outputDataArr = readDataFile(dataFile,'output')
-	setGlobalObject("outputColumnNameToIndexMapFromFile",getColumnNameToIndexMappingFromFile(dataFile,outColNames))
+	featureNameToIndexMap_out,featureIndexToNameMap_out,colIdxToArrIdxMap_out = getColumnNameToIndexMappingFromFile(dataFile,outColNames)
+	setGlobalObject("outputColumnNameToIndexMapFromFile",featureNameToIndexMap_out)
+	setGlobalObject("outputColumnIndexToNameMapFromFile",featureIndexToNameMap_out)
+	setGlobalObject("columnIndexToOutArrIndexMap",colIdxToArrIdxMap_out)
 
 	return inputDataArr,measuredDataArr,outputDataArr
 
-def updateFieldsIndexToNameMap(newMapOfSelectedIndex,field_type):
-	#global inputColumnNameToIndexMapFromFile
-        #global measuredColumnNameToIndexMapFromFile
-        #global outputColumnNameToIndexMapFromFile
-
-	usefulNameToIndexMapFromFile = {}
-	indexToFieldNameUpdatedMap = {}
-	selected_fields_indexs = newMapOfSelectedIndex.keys()
-	if(field_type == "input"):
-		usefulNameToIndexMapFromFile = getGlobalObject("inputColumnNameToIndexMapFromFile")
-	
-	for fieldIndex,fieldName in usefulNameToIndexMapFromFile.iteritems():
-		if fieldIndex in selected_fields_indexs:
-			indexToFieldNameUpdatedMap[fieldIndex] = fieldName
-	#end for
-	return indexToFieldNameUpdatedMap
+#def updateFieldsIndexToNameMap(newMapOfSelectedIndex,field_type):
+#	#global inputColumnNameToIndexMapFromFile
+#        #global measuredColumnNameToIndexMapFromFile
+#        #global outputColumnNameToIndexMapFromFile
+#
+#	usefulNameToIndexMapFromFile = {}
+#	indexToFieldNameUpdatedMap = {}
+#	selected_fields_indexs = newMapOfSelectedIndex.keys()
+#	if(field_type == "input"):
+#		usefulNameToIndexMapFromFile = getGlobalObject("inputColumnNameToIndexMapFromFile")
+#	
+#	for fieldIndex,fieldName in usefulNameToIndexMapFromFile.iteritems():
+#		if fieldIndex in selected_fields_indexs:
+#			indexToFieldNameUpdatedMap[fieldIndex] = fieldName
+#	#end for
+#	return indexToFieldNameUpdatedMap
 			
 		
+def updateColumnIndexToInArrIndexMap(selected_inArr_indexs,selected_origCol_indexs):
+	colIdxToInArrIdxMap = getGlobalObject("columnIndexToInArrIndexMap")	
+	#Now repopulate the mapping with modified map for selected columns (done through MIC amalysis)
+	i = 0
+	for colIdx in selected_origCol_indexs:
+		inArrIdx = selected_inArr_indexs[i]
+		colIdxToInArrIdxMap[colIdx] = inArrIdx
+		i = i + 1
+	#end for
 
-def selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputDataArr):
+def selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputDataArr,mic_threshold):
 
 	selected_indexs_union = {}
 	selected_feature_Arr = []
+	selected_origCol_index_union = getGlobalObject("selectedOriginalColIndexMap")
+	selected_origCol_index_union.clear()
+	colIdxToInArrIdxMap = getGlobalObject("columnIndexToInArrIndexMap")
 	i = 0
 	#print "---------",getGlobalObject("measuredColumnNames")
 	for targetArr in measuredDataArr:
 		#print "i=",i
 		#print targetArr
 		t = getGlobalObject("measuredColumnNames")[i]
-		selected_inArr,selected_inArr_indexs = doMICAnalysisOfInputVariables(inputDataArr, targetArr,t,0.0)
+		selected_inArr,selected_inArr_indexs,selected_origCol_indexs = doMICAnalysisOfInputVariables(inputDataArr, targetArr,t,mic_threshold)
+		updateColumnIndexToInArrIndexMap(selected_inArr_indexs,selected_origCol_indexs)
 		for idx in  selected_inArr_indexs:
 			selected_indexs_union[idx] = True
+
+		for idx in  selected_origCol_indexs:
+                        selected_origCol_index_union[idx] = True
 		#end for
 		i = i + 1
 	
 	i = 0
 	for targetArr in outputDataArr:
 		t = getGlobalObject("outputColumnNames")[i]
-                selected_inArr,selected_inArr_indexs = doMICAnalysisOfInputVariables(inputDataArr, targetArr,t,0.0)
+                selected_inArr,selected_inArr_indexs,selected_origCol_indexs = doMICAnalysisOfInputVariables(inputDataArr, targetArr,t,mic_threshold)
+		updateColumnIndexToInArrIndexMap(selected_inArr_indexs,selected_origCol_indexs)
 		for idx in  selected_inArr_indexs:
                         selected_indexs_union[idx] = True
+
+		for idx in  selected_origCol_indexs:
+                        selected_origCol_index_union[idx] = True
 		#end for
 		i = i + 1
 
@@ -376,7 +427,7 @@ def selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputData
 		selected_feature_Arr.append(feature_Arr)
 	
 	#update a new field index to name map for inputs
-	setGlobalObject("inputIndexToFieldNameMap",updateFieldsIndexToNameMap(selected_indexs_union,"input"))
+	#setGlobalObject("inputIndexToFieldNameMap",updateFieldsIndexToNameMap(selected_indexs_union,"input"))
 
 
 	selected_inArr = np.array(selected_feature_Arr).transpose()
@@ -398,7 +449,7 @@ if __name__ == "__main__":
 	measureVari = calculateVariability(inputDataArr,measuredDataArr)
 	#outVari = calculateVariability(inputDataArr,outputDataArr)
 
-	selectedInputDataArr = selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputDataArr)
+	selectedInputDataArr = selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputDataArr,0.0)
 	
 	#get an average of values for unique input combinations...        
         #averagedOutputArr = []

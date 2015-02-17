@@ -9,16 +9,46 @@ from regressFit import *
 from micAnalysis import *
 from drawPlot import *
 from fields import *
+from pickleDump import *
+import errorDatastructure
+from errorAnalysis import *
 
-global inputColumnNames
-global measuredColumnNames
-global outputColumnNames
+#global inputColumnNames
+#global measuredColumnNames
+#global outputColumnNames
 
-global regressionDict
+#global regressionDict
 
+class anomalyDetection:
+	def __init__(self):
+		self.errorProfPicklePath = ''
+		self.usefulFeaturePicklePath = ''
+		self.errProfileMap = None
+		self.selectedFeatureMap = None
+
+	def loadAnalysisFiles(self):
+		self.errProfileMap = loadErrorDistributionProfileMap(self.errorProfPicklePath,True)
+		self.selectedFeatureMap = loadSelectedFeaturesMap(self.usefulFeaturePicklePath,True)
+		print self.errProfileMap
+		errorDatastructure.printErrorDistributionProfileMapForTargetAndFeatureMap(self.selectedFeatureMap)
+		print self.selectedFeatureMap
+		if(self.errProfileMap == None):
+			print "Error Profile Map could not be loaded"
+		if(self.selectedFeatureMap == None):
+			print "Selected Feature Map could not be loaded"
+			
+	def getPredictionErrorEstimation(self, targetName, productionPt):
+		dataPtWithSelectedFeature = errorDatastructure.getSelectedFeaturePtFromProductionDataPoint(productionPt,self.selectedFeatureMap)
+		rmsErr,errPostibeBias,errMegBias = getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,dataPtWithSelectedFeature,self.errProfileMap)
+
+        	print rmsErr, errPostibeBias,errPostibeBias
+
+		return rmsErr,errPostibeBias,errMegBias
+		
+			
 
 def check_anomaly(production_inArr, targetArr,tname):
-        reg = regressionDict[tname]
+        reg = getGlobalObject("regressionDict")[tname]
         if(reg == None):
                 print "target", tname, " can not be predicted by the captured inputs"
                 return
@@ -31,24 +61,34 @@ def check_anomaly(production_inArr, targetArr,tname):
         print "Percentage error: " , error
 
 def anomaly_detection(inArr, measuredArr, outArr):
+	msrdCols = getGlobalObject("measuredColumnNames")
+	outputCols = getGlobalObject("outputColumnNames")
         i = 0
         for targetArr in measuredArr:
-                t = measuredColumnNames[i]
+                #t = measuredColumnNames[i]
+                t = msrdCols[i]
                 #check_anomaly(inArr,targetArr,t)
                 check_score(inArr,targetArr,t)
                 i = i + 1
 
         i = 0
         for targetArr in outArr:
-                t = outputColumnNames[i]
+                #t = outputColumnNames[i]
+                t = outputCols[i]
                 #check_anomaly(inArr,targetArr,t)
                 check_score(inArr,targetArr,t)
                 i = i + 1
 
 def check_score(production_inArr, targetArr,tname):
-	reg = regressionDict[tname]
+	reg = getGlobalObject("regressionDict")[tname]
         if(reg == None):
                 print "target", tname, " can not be predicted by the captured inputs"
                 return
 
 	print "Production R2 score: ",tname , "= " , reg.score(production_inArr, targetArr)	
+
+#if __name__ == "__main__":
+#	fValMap = {}
+#	fDtPt = errorDatastructure.FeatureDataPoint(fValMap)
+#	print fDtPt.featureNameValueMap
+#	errorDatastructure.getSelectedFeaturePtFromProductionDataPoinr(fDtPt,fValMap)

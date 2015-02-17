@@ -78,7 +78,8 @@ def populateErrorProfileFunctions():
 				# also keep same error samples in a different list in 1D format for histogram/distribution calculations (inefficient!)
                                 errorSamples.append(testObs.PredictionErrArr)
 			
-			featureName = getInputParameterNameFromColumnIndex(featureIndex)
+			#featureName = getInputParameterNameFromColumnIndex(featureIndex)
+			featureName = getInputParameterNameFromFeatureIndex(featureIndex)
 			errDistProfile = curveFitErrorSamplesWithDistance(targetkey,featureName,distanceList,errorList,errorSamples)	
 			#we already have errDistProfile populated in the map. So skip everything below	
 			#if targetkey in ErrorDistributionProfileMapForTargetAndFeature.keys():
@@ -102,7 +103,8 @@ def populatePredictionsForTestSamples():
 			trainSetPoints = featureErrData.TrainingObservations.ParamArr
 			meanPoint,StdDev = getMeanAndStandardDevOfTrainingSetOfTrainingSetForAFeature(featureIndex,trainSetPoints)
 
-			featureName = getInputParameterNameFromColumnIndex(featureIndex)
+			#featureName = getInputParameterNameFromColumnIndex(featureIndex)
+			featureName = getInputParameterNameFromFeatureIndex(featureIndex)
 			errDistProfile = errorDistributionProfile(featureName,targetkey)
 			errDistProfile.MeanPointOfTrainingSet = meanPoint
 			errDistProfile.StandardDeviationOfTrainingSet = StdDev
@@ -185,8 +187,9 @@ if __name__ == "__main__":
 	#global inputColumnNameToIndexMapFromFile
         #global measuredColumnNameToIndexMapFromFile
         #global outputColumnNameToIndexMapFromFile
-	print "here ", getGlobalObject("inputColumnNameToIndexMapFromFile")
-	selectedInputDataArr = selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputDataArr)
+	#print "here 1", getGlobalObject("inputColumnNameToIndexMapFromFile")
+	#selectedInputDataArr = selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputDataArr,0.2)
+	selectedInputDataArr = selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputDataArr,0.0)
 
 	#measuredDataArrT = map(lambda t: list(t), measuredDataArr)
 	#outputDataArrT = map(lambda t: list(t), outputDataArr)
@@ -197,13 +200,16 @@ if __name__ == "__main__":
 
 	
 	#populate regression function for each target and for samples sorted based on each feature
+	#print "here 2", getGlobalObject("inputColumnNameToIndexMapFromFile")
 	populateRegressionFunctionForEachTarget()
+	#print "here 3", getGlobalObject("inputColumnNameToIndexMapFromFile")
         populatePredictionsForTestSamples()	
 	populateErrorProfileFunctions()
 
 	#prints
-	printFullErrorDataStructure()
+	#printFullErrorDataStructure()
 	#printErrorDistributionProfileMapForTargetAndFeatureMap()
+	dumpSelectedFeaturesMap(getGlobalObject("selectedOriginalColIndexMap"),"/home/mitra4/work/regression/selInput")
 	picklepath,cPicklepath = dumpErrorDistributionProfileMap(getGlobalObject("ErrorDistributionProfileMapForTargetAndFeature"))
 	errProfMap = loadErrorDistributionProfileMap(cPicklepath,True)
 	#printErrorDistributionProfileMapForTargetAndFeatureMap(errProfMap)
