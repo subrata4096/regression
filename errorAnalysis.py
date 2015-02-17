@@ -259,8 +259,9 @@ def generateTrainingAndTestSetsForDistanceProfilingForEachTarget(inArr,targetArr
 #takes, input parameter array, target array and target name
 def getRegressionFunctionForEachTarget(inArr, tarArr,tname):
         #fit a polynomial regression of degree 2 using Lasso as underlying linear regression model
-        reg = doPolyRegression(inArr, tarArr,tname,2,fitUse="LinearRegression")
-        #reg = doPolyRegression(inArr, tarArr,tname,2,fitUse="Lasso")
+        reg = doPolyRegression(inArr, tarArr,tname,2,fitUse="Lasso")   # works best
+        #reg = doPolyRegression(inArr, tarArr,tname,2,fitUse="LinearRegression") #bad
+        #reg = doPolyRegression(inArr, tarArr,tname,2,fitUse="RidgeRegression") #bad
         #print reg
         return reg
  
@@ -350,6 +351,9 @@ def getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,featureD
 	errorTermsAllPositive = True
 	errorTermsAllNegative = True
 
+	print "TEST: featureErrorMap: ", featureErrMap 
+	print "TEST: featureDtPt: ", featureDtPt 
+
 	idx = 0
 	#key is feature name, value is value of that feature at the intended location
 	for featureName,value in featureDtPt.featureNameValueMap.iteritems():
@@ -376,6 +380,7 @@ def getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,featureD
 		#^^ later we will use this info to first calculate correlation between errors and then resultant error
 	
 	#END of for loop
+	print "TEST: tempErrorInfoDict ", tempErrorInfoDict
 	
 	#this function calculates the correlation between the error in first feature and all other (n-1) features
 	#returns a map. feature name is key, and a tuple (correlation value compared to first, actual error along that feature) 

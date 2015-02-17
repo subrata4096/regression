@@ -20,6 +20,13 @@ from pickleDump import *
 #global measuredColumnNameToIndexMapFromFile
 #global outputColumnNameToIndexMapFromFile
 
+def makeDumpDirectory():
+	dumpDir = os.environ['HOME'] + "/test_dump_pickle"
+	if not os.path.exists(dumpDir):
+    		os.makedirs(dumpDir)
+
+	return dumpDir
+
 def getRowKey(row):
 	s = ""
 	for k in row:
@@ -251,7 +258,7 @@ def doFitForTarget(inArr,targetArr, tname):
     	#calculateStatisticOfTarget(targetArr)
 
 	#Do MIC analysis based on Science 2011 paper
-        selected_inArr,selected_inArr_indexs = doMICAnalysisOfInputVariables(inArr, targetArr,tname,0.0)
+        selected_inArr,selected_inArr_indexs,selected_origCol_index = doMICAnalysisOfInputVariables(inArr, targetArr,tname,0.0)
 	#print "sel list" , selected_inArr
 
 
@@ -438,11 +445,16 @@ if __name__ == "__main__":
 	initializeGlobalObjects()
 	dataFile = sys.argv[1]
 	productionDataFile = ""
+	
 	#productionDataFile = sys.argv[2]
 	print "DataFile: " , dataFile , "\n"        
 	print "Input variables", getGlobalObject("inputColumnNames")
 	print "Meassured variables", getGlobalObject("measuredColumnNames")
 	print "Output variables", getGlobalObject("outputColumnNames")
+
+	#get general dump dir
+        dumpDir = makeDumpDirectory()
+        setGlobalObject("activeDumpDirectory",dumpDir)
 	
 	inputDataArr,measuredDataArr,outputDataArr = readInputMeasurementOutput(dataFile)
 
@@ -468,6 +480,8 @@ if __name__ == "__main__":
 	#print "\n\n ----- "
 	#scikit_scripts(dataFile,uniqueInputArr,averagedMeasuredArr,averagedOutputArr)
 	scikit_scripts(dataFile,selectedInputDataArr,measuredDataArr,outputDataArr)
+	
+	dumpRegressorObjectDict(getGlobalObject("regressionDict"),getGlobalObject("activeDumpDirectory"))
 
 	if(productionDataFile != ""):
 		prodInputArr = readDataFile(productionDataFile,'input')

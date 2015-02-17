@@ -29,9 +29,9 @@ def loadModel(pklFName):
 	fid.close()
 	return model_loaded
 
-def dumpErrorDistributionProfileMap(errDistMap):
-	picklepath = "/home/mitra4/work/regression/errMapDump.pkl"
-	cPicklepath = "/home/mitra4/work/regression/errMapDump.cpkl"
+def dumpErrorDistributionProfileMap(errDistMap, dumpDir):
+	picklepath = dumpDir + "/errMapDump.pkl"
+	cPicklepath = dumpDir + "/errMapDump.cpkl"
 	with open(picklepath, 'wb') as fid:
                 pickle.dump(errDistMap, fid)
 
@@ -41,9 +41,9 @@ def dumpErrorDistributionProfileMap(errDistMap):
         fid.close()
 	return (picklepath,cPicklepath)
 
-def dumpSelectedFeaturesMap(colNameToIndexMap,filePath):
-	picklepath = filePath + ".pkl"
-        cPicklepath = filePath + ".cpkl"
+def dumpSelectedFeaturesMap(colNameToIndexMap,dumpDir):
+	picklepath = dumpDir + "/selectedFeatures.pkl"
+	cPicklepath = dumpDir + "/selectedFeatures.cpkl"
         with open(picklepath, 'wb') as fid:
                 pickle.dump(colNameToIndexMap, fid)
 
@@ -53,29 +53,62 @@ def dumpSelectedFeaturesMap(colNameToIndexMap,filePath):
         fid.close()
         return (picklepath,cPicklepath)
 
-def loadSelectedFeaturesMap(pklFName,isCPickle):
+def loadSelectedFeaturesMap(dumpDir,isCPickle):
+	pklFName = dumpDir + "/selectedFeatures"
 	colNameToIndexMap = None
 	if(isCPickle):
+		pklFName = pklFName + ".cpkl"
                 with open(pklFName, 'rb') as fid:
                         colNameToIndexMap = cPickle.load(fid)
                 fid.close()
                 return colNameToIndexMap
         else:
+		pklFName = pklFName + ".pkl"
                 with open(pklFName, 'rb') as fid:
                         colNameToIndexMap = pickle.load(fid)
                 fid.close()
                 return colNameToIndexMap
 
-def loadErrorDistributionProfileMap(pklFName, isCPickle):
+def loadErrorDistributionProfileMap(dumpDir, isCPickle):
 	errProfileMap_loaded = None
+	pklFName = dumpDir + "/errMapDump"
 	if(isCPickle):
+		pklFName = pklFName + ".cpkl"
 		with open(pklFName, 'rb') as fid:
                 	errProfileMap_loaded = cPickle.load(fid)
         	fid.close()
         	return errProfileMap_loaded
 	else:
+		pklFName = pklFName + ".pkl"
 		with open(pklFName, 'rb') as fid:
                 	errProfileMap_loaded = pickle.load(fid)
         	fid.close()
         	return errProfileMap_loaded
-		
+
+def dumpRegressorObjectDict(regressionObjectDict,dumpDir):
+	picklepath = dumpDir + "/regressionObjectDict.pkl"
+	cPicklepath = dumpDir + "/regressionObjectDict.cpkl"
+        with open(picklepath, 'wb') as fid:
+                pickle.dump(regressionObjectDict, fid)
+
+        fid.close()
+        with open(cPicklepath, 'wb') as fid:
+                cPickle.dump(regressionObjectDict, fid)
+        fid.close()
+        return (picklepath,cPicklepath)	
+
+def loadRegressorObjectDict(dumpDir, isCPickle):
+        regressionObjectDict_loaded = None
+        pklFName = dumpDir + "/regressionObjectDict"
+        if(isCPickle):
+                pklFName = pklFName + ".cpkl"
+                with open(pklFName, 'rb') as fid:
+                        regressionObjectDict_loaded = cPickle.load(fid)
+                fid.close()
+                return regressionObjectDict_loaded
+        else:
+                pklFName = pklFName + ".pkl"
+                with open(pklFName, 'rb') as fid:
+                        regressionObjectDict_loaded = pickle.load(fid)
+                fid.close()
+                return regressionObjectDict_loaded		

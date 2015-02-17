@@ -21,17 +21,20 @@ from errorAnalysis import *
 
 class anomalyDetection:
 	def __init__(self):
-		self.errorProfPicklePath = ''
-		self.usefulFeaturePicklePath = ''
+		#self.errorProfPicklePath = ''
+		#self.usefulFeaturePicklePath = ''
+		self.dumpDirectory = ''
 		self.errProfileMap = None
 		self.selectedFeatureMap = None
 
 	def loadAnalysisFiles(self):
-		self.errProfileMap = loadErrorDistributionProfileMap(self.errorProfPicklePath,True)
-		self.selectedFeatureMap = loadSelectedFeaturesMap(self.usefulFeaturePicklePath,True)
-		print self.errProfileMap
-		errorDatastructure.printErrorDistributionProfileMapForTargetAndFeatureMap(self.selectedFeatureMap)
-		print self.selectedFeatureMap
+		#self.errProfileMap = loadErrorDistributionProfileMap(self.errorProfPicklePath,True)
+		self.errProfileMap = loadErrorDistributionProfileMap(self.dumpDirectory,True)
+		#self.selectedFeatureMap = loadSelectedFeaturesMap(self.usefulFeaturePicklePath,True)
+		self.selectedFeatureMap = loadSelectedFeaturesMap(self.dumpDirectory,True)
+		#print self.errProfileMap["o3"]
+		#errorDatastructure.printErrorDistributionProfileMapForTargetAndFeatureMap(self.errProfileMap)
+		#print self.selectedFeatureMap
 		if(self.errProfileMap == None):
 			print "Error Profile Map could not be loaded"
 		if(self.selectedFeatureMap == None):
@@ -44,7 +47,14 @@ class anomalyDetection:
         	print rmsErr, errPostibeBias,errPostibeBias
 
 		return rmsErr,errPostibeBias,errMegBias
+
+	#Based on our prediction and error estimation on top of that we calculate valid target value range
+	#This value is based on on input feature value provided for production settings
+	#If observed value falls outside this range: it will be an anomaly
+	def getValidRangeOfTargetValue(self, targetName, productionPt):
+		dataPtWithSelectedFeature = errorDatastructure.getSelectedFeaturePtFromProductionDataPoint(productionPt,self.selectedFeatureMap)
 		
+	
 			
 
 def check_anomaly(production_inArr, targetArr,tname):

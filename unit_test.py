@@ -13,13 +13,13 @@ def test_errorProfileMapLoad(cPicklepath):
 	printErrorDistributionProfileMapForTargetAndFeatureMap(errProfMap)
 
 def test_resultantError(anomalyDetectObject):
-	targetName = "m1"
+	targetName = "o3"
 	prodDataPointMap = {}
 	prodDataPointMap["in1"] = 20
 	prodDataPointMap["in2"] = 20
 	prodDataPointMap["in3"] = 20
 	fDpt = FeatureDataPoint(prodDataPointMap)
-	#errProfMap = loadErrorDistributionProfileMap(cPicklepath,True)
+	#errProfMap = loadErrorDistributionProfileMap(getGlobalObject("activeDumpDirectory"),True)
 	#print errProfMap
 	#rmsErr,errPostibeBias,errMegBias = getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,fDpt,errProfMap)
 	#print rmsErr, errPostibeBias,errPostibeBias
@@ -27,9 +27,14 @@ def test_resultantError(anomalyDetectObject):
 
 
 if __name__ == "__main__" :
+	dumpDir = makeDumpDirectory()
+        setGlobalObject("activeDumpDirectory",dumpDir)
+
 	anoDetect = anomalyDetection()
-	anoDetect.errorProfPicklePath = "/home/mitra4/work/regression/errMapDump.cpkl"
-	anoDetect.usefulFeaturePicklePath = "/home/mitra4/work/regression/selInput.cpkl"
+	#anoDetect.errorProfPicklePath = getGlobalObject("activeDumpDirectory")
+	#anoDetect.usefulFeaturePicklePath = "/home/mitra4/work/regression/selInput.cpkl"
+	anoDetect.dumpDirectory = getGlobalObject("activeDumpDirectory")
+
 	anoDetect.loadAnalysisFiles()
 	test_resultantError(anoDetect)
 	#test_errorProfileMapLoad("/home/mitra4/work/regression/errMapDump.cpkl")

@@ -45,10 +45,12 @@ class FeatureDataPoint:
 	def __init__(self,nameValueMap):
 		self.featureNameValueMap = nameValueMap
 	def __str__(self):
-		s = str(featureNameValueMap)
+		s = str(self.featureNameValueMap)
 		return s
 
 def getSelectedFeaturePtFromProductionDataPoint(prodFeaturePt,selectedFeatureMap):
+	#print "TEST: prodFeaturePt ", prodFeaturePt
+	#print "TEST: selectedFeatureMap ",selectedFeatureMap 
         selectedDataPointMap = {}
         #selectedDataPointMap["in1"] = 2
         selectedFeatures = selectedFeatureMap.keys()
@@ -57,6 +59,7 @@ def getSelectedFeaturePtFromProductionDataPoint(prodFeaturePt,selectedFeatureMap
         for feature,value in productionDataPtMap.iteritems():
                 if feature in selectedFeatures:
                         selectedDataPointMap[feature] = value
+	#print "TEST : selectedDataPointMap ", selectedDataPointMap
         dataPtWithSelectedFeature = FeatureDataPoint(selectedDataPointMap)
         return dataPtWithSelectedFeature
 
@@ -86,7 +89,9 @@ class FeatureErrorData:
 		self.TestObservations = []
 		self.RegressionFunction = None
 	def __str__(self):
-		s = "\n\t\t-----------------  Feature id: " + str(self.name) + " --------\n"
+		featureName = getInputParameterNameFromFeatureIndex(self.name)
+		#s = "\n\t\t-----------------  Feature id: " + str(self.name) + " --------\n"
+		s = "\n\t\t-----------------  Feature id: " + featureName + " --------\n"
 		s = s + "- - - - - - - - - - - - - - - - - - \n"
 		s = s +	"\t\t" + "TRAIN OBSERVATIONS: " + str(self.TrainingObservations) + "\n" 
 		s = s + "\t\t" + "TEST OBSERVATIONS: " 
@@ -151,7 +156,7 @@ def printErrorDistributionProfileMapForTargetAndFeatureMap(errProfMap=None):
 		workingErrProfileMap = getGlobalObject("ErrorDistributionProfileMapForTargetAndFeature")
 	else:
 		workingErrProfileMap = errProfMap
-
+	#print "just printing the map\n", workingErrProfileMap
 	for targetKey in workingErrProfileMap.keys():	
 		featureErrMap = workingErrProfileMap[targetKey]
 		for featureName in featureErrMap.keys():

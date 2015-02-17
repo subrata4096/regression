@@ -168,6 +168,16 @@ def populateSamplesInErrorDataStructure(dataFile,inArr,measuredArr,outArr):
 		tgtErrDataMap[t] = targetErrData
 		i = i + 1
 			
+def getSelectedColumnNames(selectedOrigColIndexMap):
+	selectedColumnNameMap = {}
+	for colIdx in selectedOrigColIndexMap.keys():
+		if(selectedOrigColIndexMap[colIdx] == False):
+			continue
+			
+		colName = getGlobalObject("inputColumnIndexToNameMapFromFile")[colIdx]
+		selectedColumnNameMap[colName] = True
+	#end for
+	return selectedColumnNameMap
 
 if __name__ == "__main__":
 	initializeGlobalObjects()
@@ -178,18 +188,23 @@ if __name__ == "__main__":
 	print "Meassured variables", getGlobalObject("measuredColumnNames")
 	print "Output variables", getGlobalObject("outputColumnNames")
 	
-	dumpDir = setActiveDumpDirectory(dataFile)	
-	setGlobalObject("activeDumpDirectory",dumpDir)	
-	if(os.path.exists(dumpDir) == False):
-        	os.mkdir(dumpDir)
+	#these are for figure dump
+	#dumpDir = setActiveDumpDirectory(dataFile)	
+	#setGlobalObject("activeDumpDirectory",dumpDir)	
+	#if(os.path.exists(dumpDir) == False):
+        #	os.mkdir(dumpDir)
+	
+	#get general dump dir
+	dumpDir = makeDumpDirectory()	
+	setGlobalObject("activeDumpDirectory",dumpDir)
 
 	inputDataArr,measuredDataArr,outputDataArr = readInputMeasurementOutput(dataFile)
 	#global inputColumnNameToIndexMapFromFile
         #global measuredColumnNameToIndexMapFromFile
         #global outputColumnNameToIndexMapFromFile
 	#print "here 1", getGlobalObject("inputColumnNameToIndexMapFromFile")
-	#selectedInputDataArr = selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputDataArr,0.2)
-	selectedInputDataArr = selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputDataArr,0.0)
+	selectedInputDataArr = selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputDataArr,0.8)
+	#selectedInputDataArr = selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputDataArr,0.0)
 
 	#measuredDataArrT = map(lambda t: list(t), measuredDataArr)
 	#outputDataArrT = map(lambda t: list(t), outputDataArr)
@@ -207,10 +222,10 @@ if __name__ == "__main__":
 	populateErrorProfileFunctions()
 
 	#prints
-	#printFullErrorDataStructure()
-	#printErrorDistributionProfileMapForTargetAndFeatureMap()
-	dumpSelectedFeaturesMap(getGlobalObject("selectedOriginalColIndexMap"),"/home/mitra4/work/regression/selInput")
-	picklepath,cPicklepath = dumpErrorDistributionProfileMap(getGlobalObject("ErrorDistributionProfileMapForTargetAndFeature"))
-	errProfMap = loadErrorDistributionProfileMap(cPicklepath,True)
+	printFullErrorDataStructure()
+	printErrorDistributionProfileMapForTargetAndFeatureMap()
+	dumpSelectedFeaturesMap(getSelectedColumnNames(getGlobalObject("selectedOriginalColIndexMap")),getGlobalObject("activeDumpDirectory"))
+	picklepath,cPicklepath = dumpErrorDistributionProfileMap(getGlobalObject("ErrorDistributionProfileMapForTargetAndFeature"),getGlobalObject("activeDumpDirectory"))
+	errProfMap = loadErrorDistributionProfileMap(getGlobalObject("activeDumpDirectory"),True)
 	#printErrorDistributionProfileMapForTargetAndFeatureMap(errProfMap)
 	
