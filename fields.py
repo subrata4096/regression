@@ -2,6 +2,12 @@
 import os
 from abc import ABCMeta, abstractmethod
 
+def makeDirectoriesRecursively(dirName):
+	try:
+		os.makedirs(dirName)
+	except:
+		pass
+
 def setActiveDumpDirectory(dataFile):
 	fileWithoutExt = os.path.splitext(dataFile)[0]
         workingDir = os.path.join(os.path.expanduser("~"),"errorFigDump")

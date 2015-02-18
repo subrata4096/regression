@@ -28,7 +28,8 @@ def test_resultantError(anomalyDetectObject):
 
 
 if __name__ == "__main__" :
-	dumpDir = makeDumpDirectory()
+	referenceDataFile = sys.argv[1]
+	dumpDir = makeDumpDirectory(referenceDataFile)
         setGlobalObject("activeDumpDirectory",dumpDir)
 
 	anoDetect = anomalyDetection()

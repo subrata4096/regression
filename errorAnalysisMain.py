@@ -197,7 +197,7 @@ if __name__ == "__main__":
         #	os.mkdir(dumpDir)
 	
 	#get general dump dir
-	dumpDir = makeDumpDirectory()	
+	dumpDir = makeDumpDirectory(dataFile)	
 	setGlobalObject("activeDumpDirectory",dumpDir)
 
 	inputDataArr,measuredDataArr,outputDataArr = readInputMeasurementOutput(dataFile)

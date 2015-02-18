@@ -21,11 +21,11 @@ from pickleDump import *
 #global outputColumnNameToIndexMapFromFile
 
 
-def makeDumpDirectory():
-	dumpDir = os.environ['HOME'] + "/test_dump_pickle"
-	if not os.path.exists(dumpDir):
-    		os.makedirs(dumpDir)
-
+def makeDumpDirectory(moduleName):
+	dumpDir = os.environ['HOME'] + "/test_dump_pickle/" + moduleName
+	#if not os.path.exists(dumpDir):
+    	#	os.makedirs(dumpDir)
+	makeDirectoriesRecursively(dumpDir)
 	return dumpDir
 
 def getRowKey(row):
@@ -429,7 +429,7 @@ if __name__ == "__main__":
 	print "Output variables", getGlobalObject("outputColumnNames")
 
 	#get general dump dir
-        dumpDir = makeDumpDirectory()
+        dumpDir = makeDumpDirectory(dataFile)
         setGlobalObject("activeDumpDirectory",dumpDir)
 	
 	inputDataArr,measuredDataArr,outputDataArr = readInputMeasurementOutput(dataFile)
