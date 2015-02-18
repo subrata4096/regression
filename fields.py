@@ -9,7 +9,30 @@ def setActiveDumpDirectory(dataFile):
         print activeDumpDir
 	return activeDumpDir
 
+def getInputParameterNameFromFeatureIndex(featureIndex):
+        colIdx = getColumnIndexFromFeatureIndex(featureIndex)
+        #print "feature idx = ", featureIndex, " colIdx = " , colIdx
+        return getInputParameterNameFromColumnIndex(colIdx)
 
+def getInputParameterNameFromColumnIndex(columnIndex):
+        #NOTE! This function might have bugs. This index may not be the actual index we are looking for
+        #paramName = InputColumnIndexToNameMap[columnIndex]
+        #paramName = inputColumnNames[columnIndex]
+        #^^ was old and inaccurate
+        #get the index from updated index to name map
+        #print getGlobalObject("inputIndexToFieldNameMap")
+        #paramName = getGlobalObject("inputIndexToFieldNameMap")[columnIndex]
+        #print getGlobalObject("inputColumnIndexToNameMapFromFile")
+        paramName = getGlobalObject("inputColumnIndexToNameMapFromFile")[columnIndex]
+        return paramName
+
+def getColumnIndexFromFeatureIndex(featureIndex):
+        colIdxToInArrIdxMap = getGlobalObject("columnIndexToInArrIndexMap")
+        #print colIdxToInArrIdxMap
+        for colIdx,inArrIdx in colIdxToInArrIdxMap.iteritems():
+                if(inArrIdx == featureIndex):
+                        return colIdx
+        return -1
 
 class globalObjectsContainerClass:
 	__metaclass__ = ABCMeta

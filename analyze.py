@@ -20,6 +20,7 @@ from pickleDump import *
 #global measuredColumnNameToIndexMapFromFile
 #global outputColumnNameToIndexMapFromFile
 
+
 def makeDumpDirectory():
 	dumpDir = os.environ['HOME'] + "/test_dump_pickle"
 	if not os.path.exists(dumpDir):
@@ -211,31 +212,6 @@ def getColumnIndexes(fName, columnNames):
 	#print indexes
 	return indexes
 
-def getInputParameterNameFromFeatureIndex(featureIndex):
-	colIdx = getColumnIndexFromFeatureIndex(featureIndex)
-	#print "feature idx = ", featureIndex, " colIdx = " , colIdx
-	return getInputParameterNameFromColumnIndex(colIdx)
-
-def getInputParameterNameFromColumnIndex(columnIndex):
-	#NOTE! This function might have bugs. This index may not be the actual index we are looking for
-	#paramName = InputColumnIndexToNameMap[columnIndex]
-	#paramName = inputColumnNames[columnIndex]
-	#^^ was old and inaccurate
-	#get the index from updated index to name map
-	#print getGlobalObject("inputIndexToFieldNameMap")
-	#paramName = getGlobalObject("inputIndexToFieldNameMap")[columnIndex]
-	#print getGlobalObject("inputColumnIndexToNameMapFromFile")
-	paramName = getGlobalObject("inputColumnIndexToNameMapFromFile")[columnIndex]
-	return paramName
-
-def getColumnIndexFromFeatureIndex(featureIndex):
-	colIdxToInArrIdxMap = getGlobalObject("columnIndexToInArrIndexMap")
-	#print colIdxToInArrIdxMap
-	for colIdx,inArrIdx in colIdxToInArrIdxMap.iteritems():
-		if(inArrIdx == featureIndex):
-			return colIdx
-	return -1
-
 def calculateStatisticOfTarget(targetArr):
 	scaled_target = preprocessing.scale(targetArr)
         mean = np.mean(scaled_target)
@@ -253,7 +229,7 @@ def doFitForTarget(inArr,targetArr, tname):
 	#just use one input for MIC testing purpose
         #inArr = inArr[:,1]
 	#inArr = inArr[:,None]
-	#print inArr	
+	print inArr	
 
     	#calculateStatisticOfTarget(targetArr)
 
@@ -461,7 +437,7 @@ if __name__ == "__main__":
 	measureVari = calculateVariability(inputDataArr,measuredDataArr)
 	#outVari = calculateVariability(inputDataArr,outputDataArr)
 
-	selectedInputDataArr = selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputDataArr,0.0)
+	selectedInputDataArr = selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputDataArr,0.8)
 	
 	#get an average of values for unique input combinations...        
         #averagedOutputArr = []

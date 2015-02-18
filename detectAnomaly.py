@@ -26,27 +26,34 @@ class anomalyDetection:
 		self.dumpDirectory = ''
 		self.errProfileMap = None
 		self.selectedFeatureMap = None
+		self.selectedFeatureSortedByInIndex = None
+		self.regressionObjectDict = None
 
 	def loadAnalysisFiles(self):
 		#self.errProfileMap = loadErrorDistributionProfileMap(self.errorProfPicklePath,True)
 		self.errProfileMap = loadErrorDistributionProfileMap(self.dumpDirectory,True)
 		#self.selectedFeatureMap = loadSelectedFeaturesMap(self.usefulFeaturePicklePath,True)
 		self.selectedFeatureMap = loadSelectedFeaturesMap(self.dumpDirectory,True)
+		self.selectedFeatureSortedByInIndex = getSortedTupleFromDictionary(self.selectedFeatureMap)
 		#print self.errProfileMap["o3"]
 		#errorDatastructure.printErrorDistributionProfileMapForTargetAndFeatureMap(self.errProfileMap)
 		#print self.selectedFeatureMap
+		self.regressionObjectDict = loadRegressorObjectDict(self.dumpDirectory,True)
+
 		if(self.errProfileMap == None):
 			print "Error Profile Map could not be loaded"
 		if(self.selectedFeatureMap == None):
 			print "Selected Feature Map could not be loaded"
+		if(self.regressionObjectDict == None):
+                        print "Regression Object Dict could not be loaded"
 			
 	def getPredictionErrorEstimation(self, targetName, productionPt):
 		dataPtWithSelectedFeature = errorDatastructure.getSelectedFeaturePtFromProductionDataPoint(productionPt,self.selectedFeatureMap)
-		rmsErr,errPostibeBias,errMegBias = getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,dataPtWithSelectedFeature,self.errProfileMap)
+		rmsErr,errPosBias,errNegBias = getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,dataPtWithSelectedFeature,self.errProfileMap)
 
-        	print rmsErr, errPostibeBias,errPostibeBias
+        	print "Percentage of overall error = ", rmsErr, errPosBias,errNegBias
 
-		return rmsErr,errPostibeBias,errMegBias
+		return rmsErr,errPosBias,errNegBias
 
 	#Based on our prediction and error estimation on top of that we calculate valid target value range
 	#This value is based on on input feature value provided for production settings
@@ -54,8 +61,25 @@ class anomalyDetection:
 	def getValidRangeOfTargetValue(self, targetName, productionPt):
 		dataPtWithSelectedFeature = errorDatastructure.getSelectedFeaturePtFromProductionDataPoint(productionPt,self.selectedFeatureMap)
 		
-	
-			
+		rmsErr,errPosBias,errNegBias = getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,dataPtWithSelectedFeature,self.errProfileMap)
+		inArr = errorDatastructure.getSelectedInputArrFromSelectedDataPoint(dataPtWithSelectedFeature,self.selectedFeatureSortedByInIndex)	
+		
+		#print "TEST : Selected input array is: ", inArr 
+		predictedVal = self.regressionObjectDict[targetName].predict(inArr)	
+		
+		predictedValueErrorAdjusted = (predictedVal,predictedVal)
+
+		errorVal = predictedVal * rmsErr
+
+		if(errPosBias):
+			predictedValueErrorAdjusted = (predictedVal, predictedVal + errorVal)
+		elif(errNegBias):
+			predictedValueErrorAdjusted = (predictedVal, predictedVal - errorVal)
+		else:
+			predictedValueErrorAdjusted = (predictedVal - errorVal, predictedVal + errorVal)
+
+		print "Predicted val = ", predictedVal, " Valid range of value for = ", targetName, "  is = ", predictedValueErrorAdjusted
+		return predictedValueErrorAdjusted
 
 def check_anomaly(production_inArr, targetArr,tname):
         reg = getGlobalObject("regressionDict")[tname]

@@ -15,15 +15,16 @@ def test_errorProfileMapLoad(cPicklepath):
 def test_resultantError(anomalyDetectObject):
 	targetName = "o3"
 	prodDataPointMap = {}
-	prodDataPointMap["in1"] = 20
-	prodDataPointMap["in2"] = 20
-	prodDataPointMap["in3"] = 20
+	prodDataPointMap["in1"] = 2
+	prodDataPointMap["in2"] = 2
+	prodDataPointMap["in3"] = 2
 	fDpt = FeatureDataPoint(prodDataPointMap)
 	#errProfMap = loadErrorDistributionProfileMap(getGlobalObject("activeDumpDirectory"),True)
 	#print errProfMap
 	#rmsErr,errPostibeBias,errMegBias = getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,fDpt,errProfMap)
 	#print rmsErr, errPostibeBias,errPostibeBias
 	anomalyDetectObject.getPredictionErrorEstimation(targetName,fDpt)
+	anomalyDetectObject.getValidRangeOfTargetValue(targetName,fDpt)
 
 
 if __name__ == "__main__" :

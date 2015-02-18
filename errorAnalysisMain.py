@@ -175,8 +175,10 @@ def getSelectedColumnNames(selectedOrigColIndexMap):
 			continue
 			
 		colName = getGlobalObject("inputColumnIndexToNameMapFromFile")[colIdx]
-		selectedColumnNameMap[colName] = True
+		featureIndex = getGlobalObject("columnIndexToInArrIndexMap")[colIdx]
+		selectedColumnNameMap[colName] = featureIndex
 	#end for
+	#return getSortedTupleFromDictionary(selectedColumnNameMap)
 	return selectedColumnNameMap
 
 if __name__ == "__main__":
@@ -223,8 +225,12 @@ if __name__ == "__main__":
 
 	#prints
 	printFullErrorDataStructure()
-	printErrorDistributionProfileMapForTargetAndFeatureMap()
+	#printErrorDistributionProfileMapForTargetAndFeatureMap()
+	#print getGlobalObject("selectedOriginalColIndexMap")
 	dumpSelectedFeaturesMap(getSelectedColumnNames(getGlobalObject("selectedOriginalColIndexMap")),getGlobalObject("activeDumpDirectory"))
+	theSelectedDict = loadSelectedFeaturesMap(getGlobalObject("activeDumpDirectory"),True)
+	print "loaded ", theSelectedDict
+
 	picklepath,cPicklepath = dumpErrorDistributionProfileMap(getGlobalObject("ErrorDistributionProfileMapForTargetAndFeature"),getGlobalObject("activeDumpDirectory"))
 	errProfMap = loadErrorDistributionProfileMap(getGlobalObject("activeDumpDirectory"),True)
 	#printErrorDistributionProfileMapForTargetAndFeatureMap(errProfMap)

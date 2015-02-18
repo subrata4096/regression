@@ -63,6 +63,16 @@ def getSelectedFeaturePtFromProductionDataPoint(prodFeaturePt,selectedFeatureMap
         dataPtWithSelectedFeature = FeatureDataPoint(selectedDataPointMap)
         return dataPtWithSelectedFeature
 
+def getSelectedInputArrFromSelectedDataPoint(selectedFeaturePt,selectedFeatureSortedByInIndex):
+	inArr = []
+	# remember, selectedFeatureMap should have a format: <featureName> <=> <index in input feature Arr>
+	#AND it is supposed to be sorted based on index in input feature Arr in increasing order
+	for selectedFeature in selectedFeatureSortedByInIndex:
+		inArr.append(selectedFeaturePt.featureNameValueMap[selectedFeature[0]])
+	#end for
+	return inArr
+
+
 class Observations:
 	#while creating the observations, specify observationType, TRAIN or TEST. 
 	# depending on this type, observation data is populated differently

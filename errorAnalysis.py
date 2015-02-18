@@ -19,6 +19,7 @@ from micAnalysis import *
 
 import sys
 import math
+import operator
 from regressFit import *
 from micAnalysis import *
 from drawPlot import *
@@ -32,6 +33,10 @@ global inputColumnNames
 global measuredColumnNames
 global outputColumnNames
 global regressionDict
+
+def getSortedTupleFromDictionary(theDict):
+	sorted_tuple = sorted(theDict.items(), key=operator.itemgetter(1))
+	return sorted_tuple
 
 #merge two arrays side by side (horizontally)
 def getMergedInputAndTargetArray(inArr, targetArr):
@@ -351,8 +356,8 @@ def getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,featureD
 	errorTermsAllPositive = True
 	errorTermsAllNegative = True
 
-	print "TEST: featureErrorMap: ", featureErrMap 
-	print "TEST: featureDtPt: ", featureDtPt 
+	#print "TEST: featureErrorMap: ", featureErrMap 
+	#print "TEST: featureDtPt: ", featureDtPt 
 
 	idx = 0
 	#key is feature name, value is value of that feature at the intended location
@@ -380,14 +385,14 @@ def getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,featureD
 		#^^ later we will use this info to first calculate correlation between errors and then resultant error
 	
 	#END of for loop
-	print "TEST: tempErrorInfoDict ", tempErrorInfoDict
+	#print "TEST: tempErrorInfoDict ", tempErrorInfoDict
 	
 	#this function calculates the correlation between the error in first feature and all other (n-1) features
 	#returns a map. feature name is key, and a tuple (correlation value compared to first, actual error along that feature) 
 	featureErrorCorrelaionIndividualErrorMap = getCorrelationBetweenErrorsWRTFirstFeature(tempErrorInfoDict)
 	
 	#here use the formula : sqrt[ {(e1 + c12e2 + c13e3 + ..)}^2 + {(1-c12)e2}^2 + {(1-c13)e3}^2 + ...]	
-	print "use the formula : sqrt[ {(|e1| + |c12e2| + |c13e3| + ..)}^2 + {(1-c12)e2}^2 + {(1-c13)e3}^2 + ...] "
+	#print "use the formula : sqrt[ {(|e1| + |c12e2| + |c13e3| + ..)}^2 + {(1-c12)e2}^2 + {(1-c13)e3}^2 + ...] "
 
 	rmsError = calculateResultantError(featureErrorCorrelaionIndividualErrorMap)
 	

@@ -37,12 +37,13 @@ def doMICAnalysisOfInputVariables(inArr, targetArr,targetName, mic_score_thresho
 
 	inColMap = getGlobalObject("inputColumnIndexToNameMapFromFile") #keys are col index and vals are names
 	#selected_inArr.append([])
-	#numOfColumns = inArr.shape[1]
+	numOfFeatures = inArr.shape[1]
 	k = 0	
-	#for i in range(numOfColumns):
-	for i in inColMap.keys():
+	for featureIndex in range(numOfFeatures):
+	#for i in inColMap.keys():
 		#x = inArr[:,i]
-		x = inArr[:,k]
+		#x = inArr[:,k]
+		x = inArr[:,featureIndex]
 		#print "x: ", x
 		x_scaled = preprocessing.scale(x)
 		#print "x: ", x_scaled
@@ -51,7 +52,8 @@ def doMICAnalysisOfInputVariables(inArr, targetArr,targetName, mic_score_thresho
 		mine.compute_score(x_scaled, targetArr)
 		#print getGlobalObject("inputColumnNameToIndexMapFromFile")
 		#inputFeatureName = getGlobalObject("inputColumnNameToIndexMapFromFile")[i]
-		inputFeatureName = inColMap[i]
+		#inputFeatureName = inColMap[i]
+		inputFeatureName = getInputParameterNameFromFeatureIndex(featureIndex)
 		print_stats(mine,inputFeatureName,targetName,mic_score_threshold)
 		if(targetQualityMap != None):
 			targetQualityMap.append(float(mine.mic()))
@@ -62,7 +64,8 @@ def doMICAnalysisOfInputVariables(inArr, targetArr,targetName, mic_score_thresho
 		if(float(mine.mic()) >= mic_score_threshold):
 			selected_inArr.append(x) #keep the input data column
 			selected_inArr_indexes.append(k) #keep the index corresponding to that column
-			selected_originalColumn_indexes.append(i) #keep the original column index corresponding to that column
+			colIdx = getColumnIndexFromFeatureIndex(featureIndex)
+			selected_originalColumn_indexes.append(colIdx) #keep the original column index corresponding to that column
 		k = k + 1	
 		
 	selected_inArr = np.array(selected_inArr).transpose()
