@@ -3,7 +3,6 @@ from sklearn import linear_model
 from sklearn import cross_validation
 from sklearn import preprocessing
 import numpy as np
-from matplotlib import pyplot as plt
 import sys
 from regressFit import *
 from micAnalysis import *

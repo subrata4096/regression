@@ -9,8 +9,8 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import Pipeline
 from sklearn.cross_validation import LeavePOut
 import numpy as np
-import pylab as plt
-from mpl_toolkits.mplot3d import Axes3D
+#import pylab as plt
+#from mpl_toolkits.mplot3d import Axes3D
 from micAnalysis import *
 
 def doCrossValidation(k,model, inArr, targetArr):

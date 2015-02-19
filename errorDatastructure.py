@@ -11,8 +11,6 @@ from sklearn.cross_validation import LeavePOut
 from sklearn.metrics.pairwise import *
 from scipy.spatial.distance import *
 import numpy as np
-import pylab as plt
-from mpl_toolkits.mplot3d import Axes3D
 from micAnalysis import *
 
 import sys
