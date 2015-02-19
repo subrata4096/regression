@@ -1,9 +1,7 @@
 #!/usr/bin/python
 import numpy as np
 from minepy import MINE
-import pylab as plt
 from sklearn import preprocessing
-from mpl_toolkits.mplot3d import Axes3D
 from fields import *
 
 #global inputColumnNames
