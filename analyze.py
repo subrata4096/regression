@@ -3,6 +3,7 @@ from sklearn import linear_model
 from sklearn import cross_validation
 from sklearn import preprocessing
 import numpy as np
+import os.path
 import sys
 from regressFit import *
 from micAnalysis import *
@@ -21,9 +22,12 @@ from pickleDump import *
 
 
 def makeDumpDirectory(moduleName):
-	dumpDir = os.environ['HOME'] + "/test_dump_pickle/" + moduleName
+	#dumpDir = os.environ['HOME'] + "/test_dump_pickle/" + moduleName
 	#if not os.path.exists(dumpDir):
     	#	os.makedirs(dumpDir)
+	dumpDir = os.path.dirname(moduleName)
+	if(dumpDir == ""):
+		dumpDir = "."
 	makeDirectoriesRecursively(dumpDir)
 	return dumpDir
 
@@ -36,6 +40,10 @@ def getRowKey(row):
 			s = s + ":" + str(k)
 	return s
 
+def dumpModelAndSelectedFeatures(tsvFName,target, model,selectedfeatures):
+	dumpname = dumpModel(dataFile,t,reg)
+
+	return dumpname
 
 def calculateVariability(inArr, dArr):
 	#print "dArr:", dArr
@@ -167,6 +175,8 @@ def readDataFile(fName,field_type):
 		indexes = getColumnIndexes(fName,getGlobalObject("outputColumnNames"))
 	
 	print indexes	
+	if(len(indexes) == 0):
+		return []
 	realdata = np.loadtxt(fName, dtype=float,delimiter='\t', usecols=indexes, converters=None,skiprows=1)
 	#print realdata[0]
 	data = np.transpose( realdata)
@@ -177,7 +187,7 @@ def getColumnNameToIndexMappingFromFile(fName,columnNames):
 	featureIndexToNameMap = {}
 	colIdxToInArrIdxMap = {}
 	if(len(columnNames) == 0):
-                return featureNameToIndexMap
+                return featureNameToIndexMap,featureIndexToNameMap,colIdxToInArrIdxMap
         #data = np.genfromtxt(fName, dtype=None, delimiter='\t', names=True)
         d = np.genfromtxt(fName, dtype=str,delimiter='\t')
 	names = d[0]
@@ -228,7 +238,7 @@ def doFitForTarget(inArr,targetArr, tname):
 	#just use one input for MIC testing purpose
         #inArr = inArr[:,1]
 	#inArr = inArr[:,None]
-	print inArr	
+	#print inArr	
 
     	#calculateStatisticOfTarget(targetArr)
 
@@ -392,7 +402,9 @@ def selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputData
 		i = i + 1
 	
 	i = 0
+	#print "\n\n\n outpu data arr: ", outputDataArr, "\n\n"
 	for targetArr in outputDataArr:
+		#print "what is the target ? " , targetArr
 		t = getGlobalObject("outputColumnNames")[i]
                 selected_inArr,selected_inArr_indexs,selected_origCol_indexs = doMICAnalysisOfInputVariables(inputDataArr, targetArr,t,mic_threshold)
 		updateColumnIndexToInArrIndexMap(selected_inArr_indexs,selected_origCol_indexs)
@@ -417,8 +429,8 @@ def selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputData
 
 
 if __name__ == "__main__":
-	initializeGlobalObjects()
 	dataFile = sys.argv[1]
+	initializeGlobalObjects(dataFile)
 	productionDataFile = ""
 	
 	#productionDataFile = sys.argv[2]
@@ -433,11 +445,13 @@ if __name__ == "__main__":
 	
 	inputDataArr,measuredDataArr,outputDataArr = readInputMeasurementOutput(dataFile)
 
-	measureVari = calculateVariability(inputDataArr,measuredDataArr)
+	#measureVari = calculateVariability(inputDataArr,measuredDataArr)
 	#outVari = calculateVariability(inputDataArr,outputDataArr)
 
 	selectedInputDataArr = selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputDataArr,0.8)
-	
+        if(len(selectedInputDataArr) == 0):
+		print "\nSerious ERROR!! No input explains the output according to MIC. EXITING..\n"
+		exit(0)
 	#get an average of values for unique input combinations...        
         #averagedOutputArr = []
 	#averagedMeasuredArr = []
@@ -457,7 +471,7 @@ if __name__ == "__main__":
 	scikit_scripts(dataFile,selectedInputDataArr,measuredDataArr,outputDataArr)
 	
 	dumpRegressorObjectDict(getGlobalObject("regressionDict"),getGlobalObject("activeDumpDirectory"))
-
+    	dumpSelectedFeaturesMap(getSelectedColumnNames(getGlobalObject("selectedOriginalColIndexMap")),getGlobalObject("activeDumpDirectory"))
 	if(productionDataFile != ""):
 		prodInputArr = readDataFile(productionDataFile,'input')
         	prodInputArr = np.transpose(prodInputArr)

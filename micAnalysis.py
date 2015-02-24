@@ -35,7 +35,15 @@ def doMICAnalysisOfInputVariables(inArr, targetArr,targetName, mic_score_thresho
 
 	inColMap = getGlobalObject("inputColumnIndexToNameMapFromFile") #keys are col index and vals are names
 	#selected_inArr.append([])
-	numOfFeatures = inArr.shape[1]
+	print "doMICAnalysisOfInputVariables: ", "inArr.shape: ", inArr.shape
+
+	numOfFeatures = 0
+	try:
+		#(rows,numOfFeatures) = inArr.shape
+		numOfFeatures = inArr.shape[1]
+	except:
+		print "ERROR: \n", inArr
+		exit(0)
 	k = 0	
 	for featureIndex in range(numOfFeatures):
 	#for i in inColMap.keys():

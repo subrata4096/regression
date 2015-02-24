@@ -3,10 +3,10 @@ from sklearn import linear_model
 from sklearn import cross_validation
 from sklearn import preprocessing
 import numpy as np
-import pylab as plt
+#import pylab as plt
 import os
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.axes import Axes
+#from mpl_toolkits.mplot3d import Axes3D
+#from matplotlib.axes import Axes
 from fields import *
 
 global inputColumnNames

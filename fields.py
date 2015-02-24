@@ -15,6 +15,20 @@ def setActiveDumpDirectory(dataFile):
         print activeDumpDir
 	return activeDumpDir
 
+def getSelectedColumnNames(selectedOrigColIndexMap):
+        selectedColumnNameMap = {}
+        for colIdx in selectedOrigColIndexMap.keys():
+                if(selectedOrigColIndexMap[colIdx] == False):
+                        continue
+
+                colName = getGlobalObject("inputColumnIndexToNameMapFromFile")[colIdx]
+                featureIndex = getGlobalObject("columnIndexToInArrIndexMap")[colIdx]
+                selectedColumnNameMap[colName] = featureIndex
+        #end for
+        #return getSortedTupleFromDictionary(selectedColumnNameMap)
+        return selectedColumnNameMap
+
+
 def getInputParameterNameFromFeatureIndex(featureIndex):
         colIdx = getColumnIndexFromFeatureIndex(featureIndex)
         #print "feature idx = ", featureIndex, " colIdx = " , colIdx
@@ -68,6 +82,67 @@ def setGlobalObject(objectName,objectRef):
 def getGlobalObject(objectName):
 	return globalObjectsContainerClass.globalObjectMap[objectName]
 
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
+
+def is_input(s):
+        pos = s.find("input:")
+        if(pos > -1):
+                return True
+        else:
+                return False
+def is_measure(s):
+        pos = s.find("measure:")
+        if(pos > -1):
+                return True
+        else:
+                return False
+def is_output(s):
+        pos = s.find("output:")
+        if(pos > -1):
+                return True
+        else:
+                return False
+
+def parseFields(fname):
+	print "Automatically identify input, measurement, output fields from naming convention"
+        inputFields = []
+        measureFields = []
+        outputFields = []
+        with open(fname) as f:
+                firstLine = f.readline()
+                secondLine = f.readline()
+                headerline = firstLine.strip()
+                valueline = secondLine.strip()
+                headerFields = headerline.split("\t")
+                valueFields = valueline.split("\t")
+                numOfFields = len(headerFields)
+                for idx in range(numOfFields):
+                        header = headerFields[idx]
+                        value = valueFields[idx]
+                        if(False == is_number(value)):
+                                continue
+                        elif(is_input(header)):
+                                inputFields.append(header)
+                        elif(is_measure(header)):
+                                measureFields.append(header)
+                        elif(is_output(header)):
+                                outputFields.append(header)
+                        else:
+                                print "Something is wrong with field: " + header
+                                exit(0)
+
+	print "\n****** For file: " + fname
+        print "--> Input fields: " + str(inputFields)
+        print "--> Measure fields: " + str(measureFields)
+        print "--> Output fields: " + str(outputFields)
+
+        return inputFields,measureFields,outputFields
+
 
 #inputColumnNames = ['module:input:0:length','module:pub_input::balance','module:pub_input::cost','module:pub_input::dtfixed','module:pub_input::dtmax','module:pub_input::iter','module:pub_input::its','module:pub_input::numElem','module:pub_input::numNode','module:pub_input::numReg','module:pub_input::nx','module:pub_input::phase','module:pub_input::u_cut']
 #inputColumnNames = ['module:pub_input::iter','module:pub_input::numElem','module:pub_input::numNode','module:pub_input::nx','module:pub_input::phase']
@@ -103,7 +178,7 @@ measuredColumnNames = ['m1','m2']
 outputColumnNames = ['o1','o2','o3']
 #outputColumnNames = ['o1','o2']
 
-def initializeGlobalObjects():
+def initializeGlobalObjects(dataFileName):
         globalObjectsContainerClass.globalObjectMap["activeDumpDirectory"] = ''
         
 	globalObjectsContainerClass.globalObjectMap["inputColumnNames"] = []
@@ -141,6 +216,12 @@ def initializeGlobalObjects():
         #This map keeps the calculated error profile for each target for each profile along with curve-fitted error function
 	#top level key is target name. 2nd level key is feature name. Then the content is "errorDistributionProfile"
 	globalObjectsContainerClass.globalObjectMap["ErrorDistributionProfileMapForTargetAndFeature"] = {}
+	
+	#This routine automatically infers input,measurement,output columns from there names, based on the Sight naming convetion
+	
+	inputColumnNames,measuredColumnNames,outputColumnNames = parseFields(dataFileName)
+	
+	#ELSE: use the above values when commented out, for e.g. during test
 	
 	setGlobalObject("inputColumnNames",inputColumnNames)
 	setGlobalObject("measuredColumnNames",measuredColumnNames)

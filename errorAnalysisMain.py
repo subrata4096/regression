@@ -167,22 +167,10 @@ def populateSamplesInErrorDataStructure(dataFile,inArr,measuredArr,outArr):
 		tgtErrDataMap[t] = targetErrData
 		i = i + 1
 			
-def getSelectedColumnNames(selectedOrigColIndexMap):
-	selectedColumnNameMap = {}
-	for colIdx in selectedOrigColIndexMap.keys():
-		if(selectedOrigColIndexMap[colIdx] == False):
-			continue
-			
-		colName = getGlobalObject("inputColumnIndexToNameMapFromFile")[colIdx]
-		featureIndex = getGlobalObject("columnIndexToInArrIndexMap")[colIdx]
-		selectedColumnNameMap[colName] = featureIndex
-	#end for
-	#return getSortedTupleFromDictionary(selectedColumnNameMap)
-	return selectedColumnNameMap
 
 if __name__ == "__main__":
-	initializeGlobalObjects()
 	dataFile = sys.argv[1]
+	initializeGlobalObjects(dataFile)
 	productionDataFile = ""
 	print "DataFile: " , dataFile , "\n"        
 	print "Input variables", getGlobalObject("inputColumnNames")

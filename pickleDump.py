@@ -42,6 +42,7 @@ def dumpErrorDistributionProfileMap(errDistMap, dumpDir):
 	return (picklepath,cPicklepath)
 
 def dumpSelectedFeaturesMap(colNameToIndexMap,dumpDir):
+	print "\n\n ------------------------- colNameToIndexMap", colNameToIndexMap
 	picklepath = dumpDir + "/selectedFeatures.pkl"
 	cPicklepath = dumpDir + "/selectedFeatures.cpkl"
         with open(picklepath, 'wb') as fid:
