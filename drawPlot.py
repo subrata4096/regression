@@ -3,10 +3,10 @@ from sklearn import linear_model
 from sklearn import cross_validation
 from sklearn import preprocessing
 import numpy as np
-#import pylab as plt
+import pylab as plt
 import os
-#from mpl_toolkits.mplot3d import Axes3D
-#from matplotlib.axes import Axes
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.axes import Axes
 from fields import *
 
 global inputColumnNames
@@ -96,3 +96,11 @@ def doHistogramPlot(dataSamples,targetName,featureName,doSave):
 		print "SaveFileName = " + saveFileName
 		#plt.savefig(saveFileName, bbox_inches='tight')
 		plt.savefig(saveFileName)
+
+def drawErrorDistPlot(errorSamples,Distances,targetName,featureName,doSave):
+	ttl = "Error with distance: \n" + targetName + " for " + featureName
+	print ttl 
+	plt.plot(Distances,errorSamples)
+	plt.title(ttl)
+        plt.show()
+

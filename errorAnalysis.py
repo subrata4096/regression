@@ -276,7 +276,7 @@ def curveFitErrorSamplesWithDistance(targetkey,featureName,distanceList,errorLis
 	regName = targetkey + "_" + featureName + "_err"
 	#print regName, distanceArr, errArr
 	curvFunc = getRegressionFunctionForEachTarget(distanceArr,errArr,regName)	    
-	
+	drawErrorDistPlot(errArr,distanceArr,targetkey,featureName,True)	
 	#testDist = [[11.0]]
 	#predVal = curvFunc.predict(testDist)
 	#print "Predicted Value (in code test)(123 is correct): ", predVal

@@ -115,13 +115,17 @@ class anomalyDetectionEngine:
 	def __init__(self):
 		self.dumpDirectory = ""
 		self.anomalyDetectionPerModuleObjectMap = {}
-	def loadPerModuleObjects(self):
+	def loadPerModuleObjects(self,oneParticularFile=""):
                 if(self.dumpDirectory == ""):
                         print "\nERROR: Please set dumpDirectory on anomalyDetectionEngine object\n"
                         exit(0)
 
-                #dumpedFiles = searchForDumpedFiles(self.dumpDirectory, "*.cpkl")
+                dumpedFiles = []
                 dumpedFiles = searchForDumpedFiles(self.dumpDirectory, "*.tsv")
+		if(oneParticularFile != ""):
+			for file in dumpedFiles:
+				if(file.find(oneParticularFile) != -1):
+					dumpedFiles = [file]
                 for file in dumpedFiles:
 			anoDetect = anomalyDetection()
 			anoDetect.dumpDirectory = self.dumpDirectory

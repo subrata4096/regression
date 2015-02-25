@@ -42,7 +42,7 @@ if __name__ == "__main__" :
 
 	anoDetectEngine = anomalyDetectionEngine()
         anoDetectEngine.dumpDirectory = dumpDir
-        anoDetectEngine.loadPerModuleObjects()
+        anoDetectEngine.loadPerModuleObjects(referenceDataFile)
 
         #anoDetect = anomalyDetection()
         anoDetect = anoDetectEngine.getAnomalyDetectionObject(referenceDataFile)	
