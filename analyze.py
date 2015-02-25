@@ -448,7 +448,7 @@ if __name__ == "__main__":
 	#measureVari = calculateVariability(inputDataArr,measuredDataArr)
 	#outVari = calculateVariability(inputDataArr,outputDataArr)
 
-	selectedInputDataArr = selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputDataArr,0.8)
+	selectedInputDataArr = selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputDataArr,mic_score_threshold_global)
         if(len(selectedInputDataArr) == 0):
 		print "\nSerious ERROR!! No input explains the output according to MIC. EXITING..\n"
 		exit(0)
@@ -470,8 +470,8 @@ if __name__ == "__main__":
 	#scikit_scripts(dataFile,uniqueInputArr,averagedMeasuredArr,averagedOutputArr)
 	scikit_scripts(dataFile,selectedInputDataArr,measuredDataArr,outputDataArr)
 	
-	dumpRegressorObjectDict(getGlobalObject("regressionDict"),getGlobalObject("activeDumpDirectory"))
-    	dumpSelectedFeaturesMap(getSelectedColumnNames(getGlobalObject("selectedOriginalColIndexMap")),getGlobalObject("activeDumpDirectory"))
+	dumpRegressorObjectDict(getGlobalObject("regressionDict"),getGlobalObject("activeDumpDirectory"),dataFile)
+    	dumpSelectedFeaturesMap(getSelectedColumnNames(getGlobalObject("selectedOriginalColIndexMap")),getGlobalObject("activeDumpDirectory"),dataFile)
 	if(productionDataFile != ""):
 		prodInputArr = readDataFile(productionDataFile,'input')
         	prodInputArr = np.transpose(prodInputArr)

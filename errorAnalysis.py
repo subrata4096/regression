@@ -354,7 +354,7 @@ def getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,featureD
 	errorTermsAllPositive = True
 	errorTermsAllNegative = True
 
-	#print "TEST: featureErrorMap: ", featureErrMap 
+	print "TEST: featureErrorMap: ", featureErrMap 
 	#print "TEST: featureDtPt: ", featureDtPt 
 
 	idx = 0

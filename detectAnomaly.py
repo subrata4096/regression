@@ -4,6 +4,7 @@ from sklearn import cross_validation
 from sklearn import preprocessing
 import numpy as np
 import sys
+import fnmatch
 from regressFit import *
 from micAnalysis import *
 from drawPlot import *
@@ -18,6 +19,16 @@ from errorAnalysis import *
 
 #global regressionDict
 
+def searchForDumpedFiles(dirLoc,search_for_extension):
+        matches = []
+	print "directory:" + dirLoc
+        for root, dirnames, filenames in os.walk(dirLoc):
+                for filename in fnmatch.filter(filenames, search_for_extension):
+                        matches.append(os.path.join(root, filename))
+        print matches
+        return matches
+
+
 class anomalyDetection:
 	def __init__(self):
 		#self.errorProfPicklePath = ''
@@ -27,24 +38,37 @@ class anomalyDetection:
 		self.selectedFeatureMap = None
 		self.selectedFeatureSortedByInIndex = None
 		self.regressionObjectDict = None
+		self.isValid = False
 
-	def loadAnalysisFiles(self):
+	def loadAnalysisFiles(self,tsvFileName):
 		#self.errProfileMap = loadErrorDistributionProfileMap(self.errorProfPicklePath,True)
-		self.errProfileMap = loadErrorDistributionProfileMap(self.dumpDirectory,True)
+		self.errProfileMap = loadErrorDistributionProfileMap(self.dumpDirectory,True,tsvFileName)
 		#self.selectedFeatureMap = loadSelectedFeaturesMap(self.usefulFeaturePicklePath,True)
-		self.selectedFeatureMap = loadSelectedFeaturesMap(self.dumpDirectory,True)
-		self.selectedFeatureSortedByInIndex = getSortedTupleFromDictionary(self.selectedFeatureMap)
 		#print self.errProfileMap["o3"]
 		#errorDatastructure.printErrorDistributionProfileMapForTargetAndFeatureMap(self.errProfileMap)
 		#print self.selectedFeatureMap
-		self.regressionObjectDict = loadRegressorObjectDict(self.dumpDirectory,True)
 
 		if(self.errProfileMap == None):
-			print "Error Profile Map could not be loaded"
+			print tsvFileName," Error Profile Map could not be loaded"
+			self.isValid = False
+			return
+
+		self.selectedFeatureMap = loadSelectedFeaturesMap(self.dumpDirectory,True,tsvFileName)
 		if(self.selectedFeatureMap == None):
-			print "Selected Feature Map could not be loaded"
+			print tsvFileName," Selected Feature Map could not be loaded"
+			self.isValid = False
+			return
+		
+		self.selectedFeatureSortedByInIndex = getSortedTupleFromDictionary(self.selectedFeatureMap)
+		
+		self.regressionObjectDict = loadRegressorObjectDict(self.dumpDirectory,True,tsvFileName)
 		if(self.regressionObjectDict == None):
-                        print "Regression Object Dict could not be loaded"
+                        print tsvFileName," Regression Object Dict could not be loaded"
+			self.isValid = False
+			return
+
+		
+		self.isValid = True
 			
 	def getPredictionErrorEstimation(self, targetName, productionPt):
 		dataPtWithSelectedFeature = errorDatastructure.getSelectedFeaturePtFromProductionDataPoint(productionPt,self.selectedFeatureMap)
@@ -63,7 +87,7 @@ class anomalyDetection:
 		rmsErr,errPosBias,errNegBias = getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,dataPtWithSelectedFeature,self.errProfileMap)
 		inArr = errorDatastructure.getSelectedInputArrFromSelectedDataPoint(dataPtWithSelectedFeature,self.selectedFeatureSortedByInIndex)	
 		
-		#print "TEST : Selected input array is: ", inArr 
+		print "TEST : Selected input array is: ", inArr 
 		predictedVal = self.regressionObjectDict[targetName].predict(inArr)	
 		
 		predictedValueErrorAdjusted = (predictedVal,predictedVal)
@@ -79,6 +103,41 @@ class anomalyDetection:
 
 		print "Predicted val = ", predictedVal, " Valid range of value for = ", targetName, "  is = ", predictedValueErrorAdjusted
 		return predictedValueErrorAdjusted
+
+
+def getStackFromFileLocation(dumpDir,fileLoc):
+	idx = fileLoc.find(dumpDir)
+	lengthStr = len(dumpDir)
+	stackStr = fileLoc[idx+lengthStr+1 : ]
+	print "stack string is:" + stackStr
+	return stackStr
+class anomalyDetectionEngine:
+	def __init__(self):
+		self.dumpDirectory = ""
+		self.anomalyDetectionPerModuleObjectMap = {}
+	def loadPerModuleObjects(self):
+                if(self.dumpDirectory == ""):
+                        print "\nERROR: Please set dumpDirectory on anomalyDetectionEngine object\n"
+                        exit(0)
+
+                #dumpedFiles = searchForDumpedFiles(self.dumpDirectory, "*.cpkl")
+                dumpedFiles = searchForDumpedFiles(self.dumpDirectory, "*.tsv")
+                for file in dumpedFiles:
+			anoDetect = anomalyDetection()
+			anoDetect.dumpDirectory = self.dumpDirectory
+                        anoDetect.loadAnalysisFiles(file)
+			if(anoDetect.isValid):
+				stackStr = getStackFromFileLocation(self.dumpDirectory,file)
+				self.anomalyDetectionPerModuleObjectMap[stackStr] = anoDetect
+		print self.anomalyDetectionPerModuleObjectMap
+
+	def getAnomalyDetectionObject(self,filename):
+		#print filename
+		if filename in self.anomalyDetectionPerModuleObjectMap.keys():
+			return self.anomalyDetectionPerModuleObjectMap[filename]
+		else:
+			return None	
+
 
 def check_anomaly(production_inArr, targetArr,tname):
         reg = getGlobalObject("regressionDict")[tname]

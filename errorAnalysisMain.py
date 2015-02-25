@@ -141,7 +141,7 @@ def populateSamplesInErrorDataStructure(dataFile,inArr,measuredArr,outArr):
 	tgtErrDataMap = getGlobalObject("TargetErrorDataMap")	
 	i = 0
 	for targetArr in measuredArr:
-		t = measuredColumnNames[i]
+		t = getGlobalObject("measuredColumnNames")[i]
 		#reg = doFitForTarget(inArr,targetArr,t)
 		#regressionDict[t] = reg
 		#fname = dumpModel(dataFile,t,reg)
@@ -192,7 +192,7 @@ if __name__ == "__main__":
         #global measuredColumnNameToIndexMapFromFile
         #global outputColumnNameToIndexMapFromFile
 	#print "here 1", getGlobalObject("inputColumnNameToIndexMapFromFile")
-	selectedInputDataArr = selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputDataArr,0.8)
+	selectedInputDataArr = selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputDataArr,mic_score_threshold_global)
 	#selectedInputDataArr = selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputDataArr,0.0)
 
 	#measuredDataArrT = map(lambda t: list(t), measuredDataArr)
@@ -214,11 +214,11 @@ if __name__ == "__main__":
 	printFullErrorDataStructure()
 	#printErrorDistributionProfileMapForTargetAndFeatureMap()
 	#print getGlobalObject("selectedOriginalColIndexMap")
-	dumpSelectedFeaturesMap(getSelectedColumnNames(getGlobalObject("selectedOriginalColIndexMap")),getGlobalObject("activeDumpDirectory"))
-	theSelectedDict = loadSelectedFeaturesMap(getGlobalObject("activeDumpDirectory"),True)
+	dumpSelectedFeaturesMap(getSelectedColumnNames(getGlobalObject("selectedOriginalColIndexMap")),getGlobalObject("activeDumpDirectory"), dataFile)
+	theSelectedDict = loadSelectedFeaturesMap(getGlobalObject("activeDumpDirectory"),True,dataFile)
 	print "loaded ", theSelectedDict
 
-	picklepath,cPicklepath = dumpErrorDistributionProfileMap(getGlobalObject("ErrorDistributionProfileMapForTargetAndFeature"),getGlobalObject("activeDumpDirectory"))
-	errProfMap = loadErrorDistributionProfileMap(getGlobalObject("activeDumpDirectory"),True)
+	picklepath,cPicklepath = dumpErrorDistributionProfileMap(getGlobalObject("ErrorDistributionProfileMapForTargetAndFeature"),getGlobalObject("activeDumpDirectory"),dataFile)
+	errProfMap = loadErrorDistributionProfileMap(getGlobalObject("activeDumpDirectory"),True,dataFile)
 	#printErrorDistributionProfileMapForTargetAndFeatureMap(errProfMap)
 	
