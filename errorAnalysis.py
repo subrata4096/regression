@@ -76,30 +76,34 @@ def printErrorDataStructureMap(errDSList):
 			print "Test obs: \n\t" + str(o)
 		
 
-#def getSamplesFromBootstrap(inArr, resampleNumber, percentageInTrainSet, useBootstrap):
-#	bs = cross_validation.Bootstrap(numSamples, resampleNumber, percentageInTrainSet, random_state=0)
-#	print bs
-#        testTrainPairMap = {}
-#        bootStrapIndex = 0;
-#        for train_index, test_index in bs:
-#                bootStrapIndex = bootStrapIndex + 1
-#                trainList = []
-#                testDataPoints = []
-#                print("TRAIN:", train_index, "TEST:", test_index)
-#                for idx in train_index:
-#                        #print idx
-#                        trainList.append(inArr[idx])
-#                trainArr = np.array(trainList)
-#                for idx in test_index:
-#                        testDataPoints.append(inArr[idx])
-#
-#                testTrainPairMap[bootStrapIndex] = (trainArr,testDataPoints)
-#
-#        #print testTrainPairMap
-#        for key in testTrainPairMap.keys():
-#                print "Key = ", key, "  value = ", testTrainPairMap[key]
-#
-#        return testTrainPairMap
+def getSamplesFromBootstrap(inArr, resampleNumber, percentageInTrainSet, useBootstrap):
+	numSamples = inArr.shape[0]
+	bs = cross_validation.Bootstrap(numSamples, resampleNumber, percentageInTrainSet, random_state=0)
+	#print bs
+	print inArr
+        testTrainPairMap = {}
+        bootStrapIndex = 0;
+        for train_index, test_index in bs:
+                bootStrapIndex = bootStrapIndex + 1
+                trainList = []
+                testDataPoints = []
+                print("TRAIN:", train_index, "TEST:", test_index)
+                for idx in train_index:
+                        #print idx
+                        trainList.append(inArr[idx])
+                trainArr = np.array(trainList)
+                
+		for idx in test_index:
+                        testDataPoints.append(inArr[idx])
+		testArr = np.array(testDataPoints)
+
+                testTrainPairMap[bootStrapIndex] = (trainArr,testDataPoints)
+
+        #print testTrainPairMap
+        #for key in testTrainPairMap.keys():
+                #print "Key = ", key, "  value = ", testTrainPairMap[key]
+
+        return testTrainPairMap
 
 
 #takes the merged and sorted array where datapoints and targets are side by side
@@ -113,7 +117,9 @@ def getSamplesFromSortedParams(inArr, resampleNumber, percentageInTrainSet, useB
 	testTrainPairMap = {}
 	bootStrapIndex = 0;
 	if(useBootstrap):
-		print "\n\n== ERROR == ! Please call getSamplesFromBootstrap instead..\n\n"
+		#print "\n\n== ERROR == ! Please call getSamplesFromBootstrap instead..\n\n"
+		print "\n\n == ARE YOU SURE? YOU ARE CALLING BOOTSTRAP FUNCTION FOR HISTOGRAM!! .. \n\n"
+		testTrainPairMap = getSamplesFromBootstrap(inArr,resampleNumber,percentageInTrainSet,useBootstrap)
 	else:
 		trainingSize = (int)(0.5 + (float)(numSamples * percentageInTrainSet))   #0.5 for rounding up of sample size
 		trainSet = [x for x in range(trainingSize)]
@@ -215,6 +221,26 @@ def getObservationsFromMergedSamples(samples,numOfFeatures,totalNumberOfColumns,
 	#pass observationType as "TRAIN" or "TEST"
 	obs = Observations(paramArr,targetArr,observationType)
 	return obs
+
+def generateTrainingAndTestSetsForErrorHistogramForEachTarget(inArr,targetArr,targetName):
+	numSamples = inArr.shape[0]
+        numFeatures = inArr.shape[1]
+        mergedArr = getMergedInputAndTargetArray(inArr,targetArr)
+        numTotalColumns = mergedArr.shape[1]
+        targetErrData = TargetErrorData(targetName)
+	trainAndTestSamples = getSamplesFromSortedParams(mergedArr,100,0.8,True) #use bootstrap
+        feErr = FeatureErrorData()
+        feErr.name = targetName
+        for key in trainAndTestSamples.keys():
+        	trainSample,testSamples = trainAndTestSamples[key]
+        	traingObs = getObservationsFromMergedSamples(trainSample,numFeatures, numTotalColumns,"TRAIN")
+        	feErr.TrainingObservations = traingObs
+        	for testSample in testSamples:
+        		testObs = getObservationsFromMergedSamples(testSample,numFeatures, numTotalColumns,"TEST")
+                	feErr.TestObservations.append(testObs)
+	
+	targetErrData.FeatureErrorDataMap[feErr.name] = feErr
+        return targetErrData
 	
 # returns data structure TargetErrorData => data structure per target for train and test samples
 def generateTrainingAndTestSetsForDistanceProfilingForEachTarget(inArr,targetArr,targetName):

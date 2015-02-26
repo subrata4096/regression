@@ -89,7 +89,7 @@ def populateErrorProfileFunctions():
 			#	ErrorDistributionProfileMapForTargetAndFeature[targetkey] = featureMap
 	
 				
-def populatePredictionsForTestSamples():
+def populatePredictionsForTestSamples(forHistogramAnalysis):
 	tgtErrDataMap = getGlobalObject("TargetErrorDataMap")	
 	errDistProfMapForTargetAndFeature = getGlobalObject("ErrorDistributionProfileMapForTargetAndFeature")
 	for targetkey in tgtErrDataMap.keys():
@@ -100,24 +100,25 @@ def populatePredictionsForTestSamples():
                         regressFunc = featureErrData.RegressionFunction
 			
 			trainSetPoints = featureErrData.TrainingObservations.ParamArr
-			meanPoint,StdDev = getMeanAndStandardDevOfTrainingSetOfTrainingSetForAFeature(featureIndex,trainSetPoints)
+			if(forHistogramAnalysis == False): #if it is not a histogram profile flow
+				meanPoint,StdDev = getMeanAndStandardDevOfTrainingSetOfTrainingSetForAFeature(featureIndex,trainSetPoints)
+				featureName = getInputParameterNameFromFeatureIndex(featureIndex)
+				errDistProfile = errorDistributionProfile(featureName,targetkey)
+				errDistProfile.MeanPointOfTrainingSet = meanPoint
+				errDistProfile.StandardDeviationOfTrainingSet = StdDev
 
-			#featureName = getInputParameterNameFromColumnIndex(featureIndex)
-			featureName = getInputParameterNameFromFeatureIndex(featureIndex)
-			errDistProfile = errorDistributionProfile(featureName,targetkey)
-			errDistProfile.MeanPointOfTrainingSet = meanPoint
-			errDistProfile.StandardDeviationOfTrainingSet = StdDev
+				#Put this errorProfile object into the data structure (that is this 2 level map)
+				#This will be populated later with error regression function
+				#start populating data structure
+				if targetkey in errDistProfMapForTargetAndFeature.keys():
+                                	errDistProfMapForTargetAndFeature[targetkey][featureName] = errDistProfile
+                        	else:
+                                	featureMap = {}
+                                	featureMap[featureName] = errDistProfile
+                                	errDistProfMapForTargetAndFeature[targetkey] = featureMap
+				#end populating data structure
 
-			#Put this errorProfile object into the data structure (that is this 2 level map)
-			#This will be populated later with error regression function
-			#start populating data structure
-			if targetkey in errDistProfMapForTargetAndFeature.keys():
-                                errDistProfMapForTargetAndFeature[targetkey][featureName] = errDistProfile
-                        else:
-                                featureMap = {}
-                                featureMap[featureName] = errDistProfile
-                                errDistProfMapForTargetAndFeature[targetkey] = featureMap
-			#end populating data structure
+			#end NOT "forHistogramAnalysis" flow
 
 			for testObs in testObsList:
 				if(testObs.observeType == "TRAIN"):     
@@ -133,11 +134,15 @@ def populatePredictionsForTestSamples():
 				error = (targetArr[0] - predicted[0])*1.0/float(targetArr[0]) if (targetArr[0] != 0) else (targetArr[0] - predicted[0])*1.0
 				#now also store this error in the same DataStructure. Will be used for distance based profiling
 				testObs.PredictionErrArr = error
-				#calculate the distance of this target from the center of training set, so that we can have a profile of error varying with distance
-				distance = getDistanceOfFeaturesFromTrainingSet(meanPoint,StdDev,featureIndex,inArr)
-				testObs.DistanceToTargetArr = distance
 
-def populateSamplesInErrorDataStructure(dataFile,inArr,measuredArr,outArr):
+				if(forHistogramAnalysis == False): #if it is not a histogram profile flow
+
+					#calculate the distance of this target from the center of training set, so that we can have a profile of error varying with distance
+					distance = getDistanceOfFeaturesFromTrainingSet(meanPoint,StdDev,featureIndex,inArr)
+					testObs.DistanceToTargetArr = distance
+				#end NOT "forHistogramAnalysis" flow
+
+def populateSamplesInErrorDataStructure(dataFile,inArr,measuredArr,outArr,useBootStrap):
 	tgtErrDataMap = getGlobalObject("TargetErrorDataMap")	
 	i = 0
 	for targetArr in measuredArr:
@@ -152,7 +157,11 @@ def populateSamplesInErrorDataStructure(dataFile,inArr,measuredArr,outArr):
 		targetArrT = listTo2DArray(targetArr) #=> convert target list to 2d list
 		#targetArrT = map(lambda t: list(t), targetArr)
 		#print "targetArrT :", targetArrT
-		targetErrData = generateTrainingAndTestSetsForDistanceProfilingForEachTarget(inArr,targetArrT,t)
+		if(useBootStrap):
+			targetErrData = generateTrainingAndTestSetsForErrorHistogramForEachTarget(inArr,targetArrT,t)
+		else:
+			targetErrData = generateTrainingAndTestSetsForDistanceProfilingForEachTarget(inArr,targetArrT,t)
+		
 		tgtErrDataMap[t] = targetErrData
 		i = i + 1
 
@@ -162,8 +171,12 @@ def populateSamplesInErrorDataStructure(dataFile,inArr,measuredArr,outArr):
 		#reg = doFitForTarget(inArr,targetArr,t)
 		#regressionDict[t] = reg
 		#targetArrT = map(lambda t: list(t), targetArr)
-		targetArrT = listTo2DArray(targetArr) #=> convert target list to 2d list 
-		targetErrData = generateTrainingAndTestSetsForDistanceProfilingForEachTarget(inArr,targetArrT,t)
+		targetArrT = listTo2DArray(targetArr) #=> convert target list to 2d list
+		if(useBootStrap):
+                        targetErrData = generateTrainingAndTestSetsForErrorHistogramForEachTarget(inArr,targetArrT,t)
+                else:  
+                        targetErrData = generateTrainingAndTestSetsForDistanceProfilingForEachTarget(inArr,targetArrT,t) 
+		
 		tgtErrDataMap[t] = targetErrData
 		i = i + 1
 			
@@ -200,14 +213,14 @@ if __name__ == "__main__":
 	#print "measuredArrT :", measuredDataArrT
 
 	#populateSamplesInErrorDataStructure(dataFile,inputDataArr,measuredDataArrT,outputDataArrT)
-	populateSamplesInErrorDataStructure(dataFile,selectedInputDataArr,measuredDataArr,outputDataArr)
+	populateSamplesInErrorDataStructure(dataFile,selectedInputDataArr,measuredDataArr,outputDataArr,False)
 
 	
 	#populate regression function for each target and for samples sorted based on each feature
 	#print "here 2", getGlobalObject("inputColumnNameToIndexMapFromFile")
 	populateRegressionFunctionForEachTarget()
 	#print "here 3", getGlobalObject("inputColumnNameToIndexMapFromFile")
-        populatePredictionsForTestSamples()	
+        populatePredictionsForTestSamples(False)	
 	populateErrorProfileFunctions()
 
 	#prints

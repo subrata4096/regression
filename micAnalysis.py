@@ -12,7 +12,7 @@ from fields import *
 #global measuredColumnNameToIndexMapFromFile
 #global outputColumnNameToIndexMapFromFile
 
-mic_score_threshold_global = 0.0
+mic_score_threshold_global = 0.8
 
 def print_stats(mine,inputFeatureName,targetName,mic_score_threshold = 0.0):
     print "in=",inputFeatureName, " tareget=", targetName,"\tMIC", mine.mic(), "\tmic threshold: \t" , mic_score_threshold

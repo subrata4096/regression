@@ -1,0 +1,76 @@
+#!/usr/bin/python
+from sklearn import linear_model
+from sklearn import cross_validation
+from sklearn import preprocessing
+import numpy as np
+import sys
+import os
+from regressFit import *
+from micAnalysis import *
+from drawPlot import *
+from detectAnomaly import *
+from fields import *
+from pickleDump import *
+from analyze import *
+from errorDatastructure import *
+from errorAnalysis import *
+from errorAnalysisMain import *
+
+
+def createErrorHistogram():
+        tgtErrDataMap = getGlobalObject("TargetErrorDataMap")
+        for targetkey in tgtErrDataMap.keys():
+                tarErrData = tgtErrDataMap[targetkey]
+                for featureIndex in tarErrData.FeatureErrorDataMap.keys():
+                        featureErrData = tarErrData.FeatureErrorDataMap[featureIndex]
+                        testObsList = featureErrData.TestObservations
+                        errorSamples = []
+                        for testObs in testObsList:
+                                if(testObs.observeType == "TRAIN"):
+                                        #We will use ONLY "TEST" observations to predict and then calculate error
+                                        continue
+                                # keep same error samples in a different list in 1D format for histogram/distribution calculations (inefficient!)
+                                errorSamples.append(testObs.PredictionErrArr)
+
+			doHistogramPlot(errorSamples,targetkey,featureIndex,False)
+
+
+if __name__ == "__main__":
+	dataFile = sys.argv[1]
+	initializeGlobalObjects(dataFile)
+	productionDataFile = ""
+	print "DataFile: " , dataFile , "\n"        
+	print "Input variables", getGlobalObject("inputColumnNames")
+	print "Meassured variables", getGlobalObject("measuredColumnNames")
+	print "Output variables", getGlobalObject("outputColumnNames")
+	
+	#these are for figure dump
+	#dumpDir = setActiveDumpDirectory(dataFile)	
+	#setGlobalObject("activeDumpDirectory",dumpDir)	
+	#if(os.path.exists(dumpDir) == False):
+        #	os.mkdir(dumpDir)
+	
+	#get general dump dir
+	dumpDir = makeDumpDirectory(dataFile)	
+	setGlobalObject("activeDumpDirectory",dumpDir)
+
+	inputDataArr,measuredDataArr,outputDataArr = readInputMeasurementOutput(dataFile)
+	
+	selectedInputDataArr = selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputDataArr,mic_score_threshold_global)
+	populateSamplesInErrorDataStructure(dataFile,selectedInputDataArr,measuredDataArr,outputDataArr,True)
+
+	
+	populateRegressionFunctionForEachTarget()
+        
+	populatePredictionsForTestSamples(True) #pass this is a histogram profile flow	
+	createErrorHistogram()
+
+	#prints
+	#printFullErrorDataStructure()
+	#printErrorDistributionProfileMapForTargetAndFeatureMap()
+	#print getGlobalObject("selectedOriginalColIndexMap")
+	#dumpSelectedFeaturesMap(getSelectedColumnNames(getGlobalObject("selectedOriginalColIndexMap")),getGlobalObject("activeDumpDirectory"), dataFile)
+	#theSelectedDict = loadSelectedFeaturesMap(getGlobalObject("activeDumpDirectory"),True,dataFile)
+	#print "loaded ", theSelectedDict
+
+	

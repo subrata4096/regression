@@ -79,7 +79,7 @@ def doHistogramPlot(dataSamples,targetName,featureName,doSave):
 
 	ttl = "Error histogram: \n" + targetName + " for " + featureName 
 	fileName = targetName + "_" + featureName + ".png" 
-	saveFileName = os.path.join(activeDumpDirectory,fileName)
+	saveFileName = os.path.join(getGlobalObject("activeDumpDirectory"),fileName)
 
 	# the histogram of the data with histtype='step'
 	n, bins, patches = plt.hist(dataSamples, 20, histtype='stepfilled')
