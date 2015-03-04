@@ -167,7 +167,7 @@ def populateSamplesInErrorDataStructure(dataFile,inArr,measuredArr,outArr,useBoo
 
 	i = 0
 	for targetArr in outArr:
-		t = outputColumnNames[i]
+		t = getGlobalObject("outputColumnNames")[i]
 		#reg = doFitForTarget(inArr,targetArr,t)
 		#regressionDict[t] = reg
 		#targetArrT = map(lambda t: list(t), targetArr)
@@ -221,6 +221,8 @@ if __name__ == "__main__":
 	populateRegressionFunctionForEachTarget()
 	#print "here 3", getGlobalObject("inputColumnNameToIndexMapFromFile")
         populatePredictionsForTestSamples(False)	
+        print getGlobalObject("columnIndexToInArrIndexMap")
+        print getGlobalObject("inputColumnIndexToNameMapFromFile")
 	populateErrorProfileFunctions()
 
 	#prints

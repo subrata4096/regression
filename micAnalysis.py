@@ -21,6 +21,9 @@ def print_stats(mine,inputFeatureName,targetName,mic_score_threshold = 0.0):
     #print "MCN (eps=0)", mine.mcn(0)
     #print "MCN (eps=1-MIC)", mine.mcn_general()
 
+#def doMICAnalysisOfTargetVariables(inArr,fullTargetArr, mic_score_threshold):
+#for targetArr in fullTargetArr:
+		
 def doMICAnalysisOfInputVariables(inArr, targetArr,targetName, mic_score_threshold, targetQualityMap = None):
 	#if(targetQuality == None):
 	#	return inArr
@@ -29,6 +32,8 @@ def doMICAnalysisOfInputVariables(inArr, targetArr,targetName, mic_score_thresho
         #global measuredColumnNameToIndexMapFromFile
         #global outputColumnNameToIndexMapFromFile
 
+ 	print "\n\n\n doMICAnalysisOfInputVariables called \n\n"
+
 	selected_inArr = []
 	selected_inArr_indexes = []
 	selected_originalColumn_indexes = []
@@ -36,6 +41,7 @@ def doMICAnalysisOfInputVariables(inArr, targetArr,targetName, mic_score_thresho
 	inColMap = getGlobalObject("inputColumnIndexToNameMapFromFile") #keys are col index and vals are names
 	#selected_inArr.append([])
 	print "doMICAnalysisOfInputVariables: ", "inArr.shape: ", inArr.shape
+	print "doMICAnalysisOfInputVariables: ", "targetArr.shape: ", targetArr.shape
 
 	numOfFeatures = 0
 	try:
@@ -59,7 +65,8 @@ def doMICAnalysisOfInputVariables(inArr, targetArr,targetName, mic_score_thresho
 		#print getGlobalObject("inputColumnNameToIndexMapFromFile")
 		#inputFeatureName = getGlobalObject("inputColumnNameToIndexMapFromFile")[i]
 		#inputFeatureName = inColMap[i]
-		inputFeatureName = getInputParameterNameFromFeatureIndex(featureIndex)
+		#inputFeatureName = getInputParameterNameFromFeatureIndex(featureIndex)
+		inputFeatureName = getInputParameterNameFromColumnIndex(featureIndex)
 		print_stats(mine,inputFeatureName,targetName,mic_score_threshold)
 		if(targetQualityMap != None):
 			targetQualityMap.append(float(mine.mic()))
@@ -72,7 +79,8 @@ def doMICAnalysisOfInputVariables(inArr, targetArr,targetName, mic_score_thresho
 			selected_inArr_indexes.append(k) #keep the index corresponding to that column
 			colIdx = getColumnIndexFromFeatureIndex(featureIndex)
 			selected_originalColumn_indexes.append(colIdx) #keep the original column index corresponding to that column
-		k = k + 1	
+			#print "----------------- selected: ", inputFeatureName, colIdx, k
+			k = k + 1	
 		
 	selected_inArr = np.array(selected_inArr).transpose()
 	#print "\n **** selected: ==== \n", selected_inArr, selected_inArr_indexes,selected_originalColumn_indexes

@@ -5,6 +5,7 @@ from sklearn import preprocessing
 import numpy as np
 import pylab as plt
 import os
+import sys
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.axes import Axes
 from fields import *
@@ -98,9 +99,42 @@ def doHistogramPlot(dataSamples,targetName,featureName,doSave):
 		plt.savefig(saveFileName)
 
 def drawErrorDistPlot(errorSamples,Distances,targetName,featureName,doSave):
+	x = []
+	y = []
+	for d in Distances:
+		x.append(abs(d))	
+	for e in errorSamples:
+		y.append(abs(e))	
 	ttl = "Error with distance: \n" + targetName + " for " + featureName
 	print ttl 
-	plt.plot(Distances,errorSamples)
+	#plt.plot(Distances,errorSamples)
+	plt.plot(x,y)
 	plt.title(ttl)
         plt.show()
+
+def plotFromFile(fileName,xColNumber,yColNumber):
+	indexes = [xColNumber]
+	xdata = np.loadtxt(fileName, dtype=float,delimiter='\t', usecols=indexes, converters=None,skiprows=1)
+	print xdata
+	indexes = [yColNumber]
+	ydata = np.loadtxt(fileName, dtype=float,delimiter='\t', usecols=indexes, converters=None,skiprows=1)
+
+	d = np.genfromtxt(fileName, dtype=str,delimiter='\t')
+
+        names = d[0]
+	xName = names[xColNumber]
+	yName = names[yColNumber]
+
+	ttl = xName + " VS " + yName
+	plt.scatter(xdata,ydata, c='b', marker='o')
+	#plt.plot(xdata,ydata, c='r')
+	
+	plt.title(ttl)
+        plt.show()
+
+if __name__ == "__main__":
+	dataFile = sys.argv[1]
+	xColNum = int(sys.argv[2])
+	yColNum = int(sys.argv[3])
+	plotFromFile(dataFile,xColNum,yColNum)
 

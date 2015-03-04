@@ -47,11 +47,16 @@ def getInputParameterNameFromColumnIndex(columnIndex):
         return paramName
 
 def getColumnIndexFromFeatureIndex(featureIndex):
-        colIdxToInArrIdxMap = getGlobalObject("columnIndexToInArrIndexMap")
+	if(len(getGlobalObject("InArrIndexToColumnIndexMap")) > 0):
+        	return getGlobalObject("InArrIndexToColumnIndexMap")[featureIndex]
+	else:
+		print "here"
+		print getGlobalObject("columnIndexToInArrIndexMap")
+        	colIdxToInArrIdxMap = getGlobalObject("columnIndexToInArrIndexMap")
         #print colIdxToInArrIdxMap
-        for colIdx,inArrIdx in colIdxToInArrIdxMap.iteritems():
-                if(inArrIdx == featureIndex):
-                        return colIdx
+        	for colIdx,inArrIdx in colIdxToInArrIdxMap.iteritems():
+        		if(inArrIdx == featureIndex):
+              	          return colIdx
         return -1
 
 class globalObjectsContainerClass:
@@ -98,7 +103,11 @@ def is_input(s):
 def is_measure(s):
         pos = s.find("measure:")
         if(pos > -1):
-                return True
+		if(s.find("measure:timestamp") != -1):
+			print "We will not consider measure:timestamp as part of target. Skipping..\n"
+                	return False
+		else:
+			return True
         else:
                 return False
 def is_output(s):
@@ -134,7 +143,7 @@ def parseFields(fname):
                                 outputFields.append(header)
                         else:
                                 print "Something is wrong with field: " + header
-                                exit(0)
+                                #exit(0)
 
 	print "\n****** For file: " + fname
         print "--> Input fields: " + str(inputFields)
@@ -158,7 +167,7 @@ def parseFields(fname):
 #inputColumnNames = ['module:pub_input::dt','module:pub_input::lat','module:input:0:iStep']
 #inputColumnNames = ['module:pub_input::dt','module:pub_input::lat']
 #inputColumnNames = ['module:input:0:dt','module:input:0:lat']
-inputColumnNames = ['in1', 'in2', 'in3']
+#inputColumnNames = ['in1', 'in2', 'in3']
 #inputColumnNames = ['in1', 'in2']
 #measuredColumnNames = ['module:measure:PAPI:PAPI_BR_CN','module:measure:PAPI:PAPI_FP_OPS','module:measure:PAPI:PAPI_TOT_INS','module:measure:time:time']
 #measuredColumnNames = ['module:measure:time:time','module:measure:PAPI:PAPI_BR_CN','module:measure:PAPI:PAPI_FP_OPS','module:measure:PAPI:PAPI_TOT_INS']
@@ -169,13 +178,13 @@ inputColumnNames = ['in1', 'in2', 'in3']
 #measuredColumnNames = ['module:measure:PAPI:PAPI_TOT_INS','module:measure:time:time']
 #measuredColumnNames = ['module:measure:time:time','module:input:1:u_cut']
 #measuredColumnNames = ['module:measure:RAPL:Elapsed','module:measure:RAPL:EDP_S0']
-measuredColumnNames = ['m1','m2']
+#measuredColumnNames = ['m1','m2']
 #outputColumnNames = ['module:output:0:TotalAbsDiff','module:output:1:numCycles']
 #outputColumnNames = ['module:output:0:TotalAbsDiff','module:output:1:numCycles']
 #outputColumnNames = ['module:output:0:MaxRelDiff','module:output:0:TotalAbsDiff']
 #outputColumnNames = ['module:measure:PAPI:PAPI_BR_CN','module:measure:PAPI:PAPI_FP_OPS']
 #outputColumnNames = ['module:output:0:FOM','module:output:0:MaxAbsDiff','module:output:0:MaxRelDiff','module:output:0:TotalAbsDiff','module:output:1:numCycles']
-outputColumnNames = ['o1','o2','o3']
+#outputColumnNames = ['o1','o2','o3']
 #outputColumnNames = ['o1','o2']
 
 def initializeGlobalObjects(dataFileName):
@@ -188,6 +197,7 @@ def initializeGlobalObjects(dataFileName):
 	globalObjectsContainerClass.globalObjectMap["regressionDict"] = {}
         
 	globalObjectsContainerClass.globalObjectMap["columnIndexToInArrIndexMap"] = {}
+	globalObjectsContainerClass.globalObjectMap["InArrIndexToColumnIndexMap"] = {}
 	globalObjectsContainerClass.globalObjectMap["columnIndexToMsrArrIndexMap"] = {}
 	globalObjectsContainerClass.globalObjectMap["columnIndexToOutArrIndexMap"] = {}
 

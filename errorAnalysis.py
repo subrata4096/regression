@@ -263,7 +263,11 @@ def generateTrainingAndTestSetsForDistanceProfilingForEachTarget(inArr,targetArr
 
 		#do not use bootstrap resampling. according to document error_profiling.pdf), use first few from
 		#sorted list of params, as training set and far points as test set
-		trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.5,False)
+		#trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.9,False)  # 90% used for training
+		trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.7,False)  # 70% used for training 
+		#trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.5,False)   # 50% used for training
+		#trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.3,False)  # 30% used for training
+		#trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.1,False)  # 10% used for training
 		#trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.2,False)
 		#trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.66,False)
 
@@ -287,7 +291,9 @@ def generateTrainingAndTestSetsForDistanceProfilingForEachTarget(inArr,targetArr
        
 #takes, input parameter array, target array and target name
 def getRegressionFunctionForEachTarget(inArr, tarArr,tname):
+	#print "\n\n--inputArr",inArr,"-----end\n"
         #fit a polynomial regression of degree 2 using Lasso as underlying linear regression model
+        #reg = doPolyRegression(inArr, tarArr,tname,3,fitUse="Lasso")   # try for LINPACK and MATRIX MUL
         reg = doPolyRegression(inArr, tarArr,tname,2,fitUse="Lasso")   # works best
         #reg = doPolyRegression(inArr, tarArr,tname,2,fitUse="LinearRegression") #bad
         #reg = doPolyRegression(inArr, tarArr,tname,2,fitUse="RidgeRegression") #bad
@@ -299,6 +305,8 @@ def curveFitErrorSamplesWithDistance(targetkey,featureName,distanceList,errorLis
 	#errorList = [[3.0],[18.0],[38.0],[83.0]]
 	distanceArr = np.array(distanceList)
 	errArr = np.array(errorList)
+	print getGlobalObject("InArrIndexToColumnIndexMap")
+	print "regName = ", targetkey,"  ", featureName
 	regName = targetkey + "_" + featureName + "_err"
 	#print regName, distanceArr, errArr
 	curvFunc = getRegressionFunctionForEachTarget(distanceArr,errArr,regName)	    

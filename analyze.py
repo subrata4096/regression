@@ -243,15 +243,16 @@ def doFitForTarget(inArr,targetArr, tname):
     	#calculateStatisticOfTarget(targetArr)
 
 	#Do MIC analysis based on Science 2011 paper
-        selected_inArr,selected_inArr_indexs,selected_origCol_index = doMICAnalysisOfInputVariables(inArr, targetArr,tname,0.0)
+        #selected_inArr,selected_inArr_indexs,selected_origCol_index = doMICAnalysisOfInputVariables(inArr, targetArr,tname,0.0)
 	#print "sel list" , selected_inArr
 
 
-	if(len(selected_inArr) == 0):
-		print "No input captures the target:",tname
-		return None
+	#if(len(selected_inArr) == 0):
+	#	print "No input captures the target:",tname
+	#	return None
 
-	in_train, in_test, tar_train, tar_test = cross_validation.train_test_split(selected_inArr, targetArr, test_size=0.30, random_state=42)
+	#in_train, in_test, tar_train, tar_test = cross_validation.train_test_split(selected_inArr, targetArr, test_size=0.30, random_state=42)
+	in_train, in_test, tar_train, tar_test = cross_validation.train_test_split(inArr, targetArr, test_size=0.30, random_state=42)
 
 	#print in_train
 	#print tar_train
@@ -288,10 +289,23 @@ def doFitForTarget(inArr,targetArr, tname):
 
 
 def scikit_scripts(dataFile,inArr,measuredArr,outArr):
+
+	dimensionOfFULLMeasuredArr = len(measuredDataArr.shape)	
+	dimensionOfFULLoutputDataArr = len(outputDataArr.shape)
+        if(dimensionOfFULLMeasuredArr > 1):
+		measuredArr2D = measuredDataArr
+	else:
+		measuredArr2D = [measuredDataArr]
+	
+	
+        if(dimensionOfFULLoutputDataArr > 1):
+		outputArr2D = outputDataArr
+	else:
+		outputArr2D = [outputDataArr]
 	
 	regressDict = getGlobalObject("regressionDict") 
 	i = 0
-	for targetArr in measuredArr:
+	for targetArr in measuredArr2D:
 		t = getGlobalObject("measuredColumnNames")[i]
 		reg = doFitForTarget(inArr,targetArr,t)
 		#regressionDict[t] = reg
@@ -302,7 +316,7 @@ def scikit_scripts(dataFile,inArr,measuredArr,outArr):
 		i = i + 1
 
 	i = 0
-	for targetArr in outArr:
+	for targetArr in outputArr2D:
 		t = getGlobalObject("outputColumnNames")[i]
 		reg = doFitForTarget(inArr,targetArr,t)
 		regressDict[t] = reg
@@ -348,6 +362,19 @@ def readInputMeasurementOutput(dataFile):
 	setGlobalObject("outputColumnIndexToNameMapFromFile",featureIndexToNameMap_out)
 	setGlobalObject("columnIndexToOutArrIndexMap",colIdxToArrIdxMap_out)
 
+	dimensionOfFULLInputArr = len(inputDataArr.shape)
+	dimensionOfFULLMeasuredArr = len(measuredDataArr.shape)
+        dimensionOfFULLoutputDataArr = len(outputDataArr.shape)
+        
+	if(dimensionOfFULLInputArr < 2):
+                inputDataArr = np.array([inputDataArr])
+
+	if(dimensionOfFULLMeasuredArr < 2):
+                measuredDataArr = np.array([measuredDataArr])
+
+        if(dimensionOfFULLoutputDataArr < 2):
+                outputDataArr = np.array([outputDataArr])
+
 	return inputDataArr,measuredDataArr,outputDataArr
 
 #def updateFieldsIndexToNameMap(newMapOfSelectedIndex,field_type):
@@ -368,15 +395,17 @@ def readInputMeasurementOutput(dataFile):
 #	return indexToFieldNameUpdatedMap
 			
 		
-def updateColumnIndexToInArrIndexMap(selected_inArr_indexs,selected_origCol_indexs):
-	colIdxToInArrIdxMap = getGlobalObject("columnIndexToInArrIndexMap")	
-	#Now repopulate the mapping with modified map for selected columns (done through MIC amalysis)
-	i = 0
-	for colIdx in selected_origCol_indexs:
-		inArrIdx = selected_inArr_indexs[i]
-		colIdxToInArrIdxMap[colIdx] = inArrIdx
-		i = i + 1
-	#end for
+#def updateColumnIndexToInArrIndexMap(selected_inArr_indexs,selected_origCol_indexs):
+#	colIdxToInArrIdxMap = getGlobalObject("columnIndexToInArrIndexMap")	
+#	#Now repopulate the mapping with modified map for selected columns (done through MIC amalysis)
+#	i = 0
+#	for colIdx in selected_origCol_indexs:
+#		inArrIdx = selected_inArr_indexs[i]
+#		colIdxToInArrIdxMap[colIdx] = inArrIdx
+#		getGlobalObject("inputColumnIndexToNameMapFromFile")[inArrIdx] = colIdx	
+#		print "\n colidx",colIdx, " inArrIdx ", inArrIdx , "\n"
+#		i = i + 1
+#	#end for
 
 def selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputDataArr,mic_threshold):
 
@@ -386,45 +415,77 @@ def selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputData
 	selected_origCol_index_union.clear()
 	colIdxToInArrIdxMap = getGlobalObject("columnIndexToInArrIndexMap")
 	i = 0
+        dimensionOfFULLMeasuredArr = len(measuredDataArr.shape)
+	#print "Dimension of  measuredDataArr:  " , dimensionOfFULLMeasuredArr
 	#print "---------",getGlobalObject("measuredColumnNames")
-	for targetArr in measuredDataArr:
-		#print "i=",i
-		#print targetArr
-		t = getGlobalObject("measuredColumnNames")[i]
-		selected_inArr,selected_inArr_indexs,selected_origCol_indexs = doMICAnalysisOfInputVariables(inputDataArr, targetArr,t,mic_threshold)
-		updateColumnIndexToInArrIndexMap(selected_inArr_indexs,selected_origCol_indexs)
-		for idx in  selected_inArr_indexs:
-			selected_indexs_union[idx] = True
+        if(dimensionOfFULLMeasuredArr > 1):
+		for targetArr in measuredDataArr:
+			#print "i=",i
+			t = getGlobalObject("measuredColumnNames")[i]
+			#print t  , "   : :  " , targetArr
+			selected_inArr,selected_inArr_indexs,selected_origCol_indexs = doMICAnalysisOfInputVariables(inputDataArr, targetArr,t,mic_threshold)
+			#updateColumnIndexToInArrIndexMap(selected_inArr_indexs,selected_origCol_indexs)
+			for idx in  selected_inArr_indexs:
+				selected_indexs_union[idx] = True
 
-		for idx in  selected_origCol_indexs:
-                        selected_origCol_index_union[idx] = True
-		#end for
-		i = i + 1
-	
+			for idx in  selected_origCol_indexs:
+                        	selected_origCol_index_union[idx] = True
+			#end for
+			i = i + 1
+	else:
+		t = getGlobalObject("measuredColumnNames")[0]
+		targetArr = measuredDataArr
+		selected_inArr,selected_inArr_indexs,selected_origCol_indexs = doMICAnalysisOfInputVariables(inputDataArr, targetArr,t,mic_threshold)
+		#updateColumnIndexToInArrIndexMap(selected_inArr_indexs,selected_origCol_indexs)
+                for idx in  selected_inArr_indexs:
+                	selected_indexs_union[idx] = True
+
+                for idx in  selected_origCol_indexs:
+                	selected_origCol_index_union[idx] = True	
+	#end else
+
 	i = 0
 	#print "\n\n\n outpu data arr: ", outputDataArr, "\n\n"
-	for targetArr in outputDataArr:
-		#print "what is the target ? " , targetArr
-		t = getGlobalObject("outputColumnNames")[i]
+        dimensionOfFULLoutputDataArr = len(outputDataArr.shape)
+	if(dimensionOfFULLoutputDataArr > 1):
+		for targetArr in outputDataArr:
+			#print "what is the target ? " , targetArr
+			t = getGlobalObject("outputColumnNames")[i]
+                	selected_inArr,selected_inArr_indexs,selected_origCol_indexs = doMICAnalysisOfInputVariables(inputDataArr, targetArr,t,mic_threshold)
+			#updateColumnIndexToInArrIndexMap(selected_inArr_indexs,selected_origCol_indexs)
+			for idx in  selected_inArr_indexs:
+                        	selected_indexs_union[idx] = True
+
+			for idx in  selected_origCol_indexs:
+                        	selected_origCol_index_union[idx] = True
+			#end for
+			i = i + 1
+	else:
+		t = getGlobalObject("outputColumnNames")[0]
+                targetArr = outputDataArr
                 selected_inArr,selected_inArr_indexs,selected_origCol_indexs = doMICAnalysisOfInputVariables(inputDataArr, targetArr,t,mic_threshold)
-		updateColumnIndexToInArrIndexMap(selected_inArr_indexs,selected_origCol_indexs)
-		for idx in  selected_inArr_indexs:
+                #updateColumnIndexToInArrIndexMap(selected_inArr_indexs,selected_origCol_indexs)
+                for idx in  selected_inArr_indexs:
                         selected_indexs_union[idx] = True
+                                          
+                for idx in  selected_origCol_indexs:
+                        selected_origCol_index_union[idx] = True        
+        #end else                       
 
-		for idx in  selected_origCol_indexs:
-                        selected_origCol_index_union[idx] = True
-		#end for
-		i = i + 1
-
-	for selected_index in selected_indexs_union.keys():
+	indexInSelectedArr = 0
+	for selected_index in selected_origCol_index_union.keys():
+		print "========= selected input col index: " , getInputParameterNameFromColumnIndex(selected_index)
 		feature_Arr = inputDataArr[:,selected_index]
 		selected_feature_Arr.append(feature_Arr)
-	
+		getGlobalObject("columnIndexToInArrIndexMap")[selected_index] = indexInSelectedArr
+		getGlobalObject("InArrIndexToColumnIndexMap")[indexInSelectedArr] = selected_index
+		indexInSelectedArr = indexInSelectedArr + 1	
 	#update a new field index to name map for inputs
 	#setGlobalObject("inputIndexToFieldNameMap",updateFieldsIndexToNameMap(selected_indexs_union,"input"))
-
+         
 
 	selected_inArr = np.array(selected_feature_Arr).transpose()
+        #print selected_inArr
 	return selected_inArr
 
 
