@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python -W ignore::DeprecationWarning
 from sklearn import linear_model
 from sklearn import cross_validation
 from sklearn import preprocessing
@@ -56,11 +56,14 @@ if __name__ == "__main__":
 
 	inputDataArr,measuredDataArr,outputDataArr = readInputMeasurementOutput(dataFile)
 	
-	selectedInputDataArr = selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputDataArr,mic_score_threshold_global)
-	populateSamplesInErrorDataStructure(dataFile,selectedInputDataArr,measuredDataArr,outputDataArr,True)
+	with warnings.catch_warnings():
+    		warnings.simplefilter("ignore")
+    		fxn()	
+		selectedInputDataArr = selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputDataArr,mic_score_threshold_global)
+		populateSamplesInErrorDataStructure(dataFile,selectedInputDataArr,measuredDataArr,outputDataArr,True)
 
 	
-	populateRegressionFunctionForEachTarget()
+	populateRegressionFunctionForEachTarget(3)
         
 	populatePredictionsForTestSamples(True) #pass this is a histogram profile flow	
 	createErrorHistogram()

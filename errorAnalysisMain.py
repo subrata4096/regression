@@ -36,7 +36,7 @@ def listTo2DArray(theList):
 	
 
 #this function will fit the training set for each feature sample for each target and populate the regression function in DS
-def populateRegressionFunctionForEachTarget():
+def populateRegressionFunctionForEachTarget(degree):
 	tgtErrDataMap = getGlobalObject("TargetErrorDataMap")	
 	for targetkey in tgtErrDataMap.keys():
                 tarErrData = tgtErrDataMap[targetkey]
@@ -50,7 +50,8 @@ def populateRegressionFunctionForEachTarget():
 			inArr = trainObs.ParamArr
 			targetArr = trainObs.TargetArr
 			#fit the regression function based on training params and target
-			regressFunc = getRegressionFunctionForEachTarget(inArr,targetArr,targetkey)
+			regressFunc = getRegressionFunctionForEachTarget(inArr,targetArr,targetkey,degree)
+			#regressFunc = getRegressionFunctionForEachTarget(inArr,targetArr,targetkey,2)
 			#print "here:", targetkey, featureKey, regressFunc
 			featureErrData.RegressionFunction = regressFunc
 			#print str(tarErrData)
@@ -218,7 +219,7 @@ if __name__ == "__main__":
 	
 	#populate regression function for each target and for samples sorted based on each feature
 	#print "here 2", getGlobalObject("inputColumnNameToIndexMapFromFile")
-	populateRegressionFunctionForEachTarget()
+	populateRegressionFunctionForEachTarget(2)
 	#print "here 3", getGlobalObject("inputColumnNameToIndexMapFromFile")
         populatePredictionsForTestSamples(False)	
         print getGlobalObject("columnIndexToInArrIndexMap")

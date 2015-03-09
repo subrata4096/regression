@@ -1,6 +1,10 @@
 #!/usr/bin/python
 import os
 from abc import ABCMeta, abstractmethod
+import warnings
+
+def fxn():
+    warnings.warn("deprecated", DeprecationWarning)
 
 def makeDirectoriesRecursively(dirName):
 	try:
@@ -188,6 +192,8 @@ def parseFields(fname):
 #outputColumnNames = ['o1','o2']
 
 def initializeGlobalObjects(dataFileName):
+	
+        globalObjectsContainerClass.globalObjectMap["baseModuleName"] = ''
         globalObjectsContainerClass.globalObjectMap["activeDumpDirectory"] = ''
         
 	globalObjectsContainerClass.globalObjectMap["inputColumnNames"] = []

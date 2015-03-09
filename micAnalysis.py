@@ -12,7 +12,7 @@ from fields import *
 #global measuredColumnNameToIndexMapFromFile
 #global outputColumnNameToIndexMapFromFile
 
-mic_score_threshold_global = 0.8
+mic_score_threshold_global = 0.7
 
 def print_stats(mine,inputFeatureName,targetName,mic_score_threshold = 0.0):
     print "in=",inputFeatureName, " tareget=", targetName,"\tMIC", mine.mic(), "\tmic threshold: \t" , mic_score_threshold
@@ -21,10 +21,39 @@ def print_stats(mine,inputFeatureName,targetName,mic_score_threshold = 0.0):
     #print "MCN (eps=0)", mine.mcn(0)
     #print "MCN (eps=1-MIC)", mine.mcn_general()
 
+def chooseIndependantInputVariables(inArr):
+	#print inArr
+	selected_input_indexes = []
+	for i in range(inArr.shape[1]):
+		doSelect = True
+		for j in range(i):
+			if(i == j):
+				return
+			x = inArr[:,i]
+			y = inArr[:,j]
+			inputFeatureName1 = getInputParameterNameFromColumnIndex(i)
+			inputFeatureName2 = getInputParameterNameFromColumnIndex(j)
+                	#print "x: ", x
+                	x_scaled = preprocessing.scale(x)
+                	y_scaled = preprocessing.scale(y)
+                	#print "x: ", x_scaled
+                	#print "targetArr: ", targetArr 
+                	mine = MINE(alpha=0.6, c=15)
+                	mine.compute_score(x_scaled, y_scaled)
+			print "Correlation between ",inputFeatureName1,inputFeatureName2, " is ", mine.mic()  
+			if(float(mine.mic()) >= 0.9):
+				doSelect = False
+				print "\n ***** ==> will NOT select ", inputFeatureName1, " as it correlates with ", inputFeatureName2, "\n" 
+		#end for
+		if(doSelect):
+			selected_input_indexes.append(i)
+
+	return selected_input_indexes
+
 #def doMICAnalysisOfTargetVariables(inArr,fullTargetArr, mic_score_threshold):
 #for targetArr in fullTargetArr:
 		
-def doMICAnalysisOfInputVariables(inArr, targetArr,targetName, mic_score_threshold, targetQualityMap = None):
+def doMICAnalysisOfInputVariables(inArr, targetArr,targetName, mic_score_threshold,input_indexes_uncorrelated_features,targetQualityMap = None):
 	#if(targetQuality == None):
 	#	return inArr
 	#print inArr
@@ -32,7 +61,7 @@ def doMICAnalysisOfInputVariables(inArr, targetArr,targetName, mic_score_thresho
         #global measuredColumnNameToIndexMapFromFile
         #global outputColumnNameToIndexMapFromFile
 
- 	print "\n\n\n doMICAnalysisOfInputVariables called \n\n"
+ 	#print "\n\n\n doMICAnalysisOfInputVariables called \n\n"
 
 	selected_inArr = []
 	selected_inArr_indexes = []
@@ -40,8 +69,8 @@ def doMICAnalysisOfInputVariables(inArr, targetArr,targetName, mic_score_thresho
 
 	inColMap = getGlobalObject("inputColumnIndexToNameMapFromFile") #keys are col index and vals are names
 	#selected_inArr.append([])
-	print "doMICAnalysisOfInputVariables: ", "inArr.shape: ", inArr.shape
-	print "doMICAnalysisOfInputVariables: ", "targetArr.shape: ", targetArr.shape
+	#print "doMICAnalysisOfInputVariables: ", "inArr.shape: ", inArr.shape
+	#print "doMICAnalysisOfInputVariables: ", "targetArr.shape: ", targetArr.shape
 
 	numOfFeatures = 0
 	try:
@@ -55,6 +84,10 @@ def doMICAnalysisOfInputVariables(inArr, targetArr,targetName, mic_score_thresho
 	#for i in inColMap.keys():
 		#x = inArr[:,i]
 		#x = inArr[:,k]
+		# we will choose only uncorrelated features as input
+		if(featureIndex not in input_indexes_uncorrelated_features):
+			continue
+
 		x = inArr[:,featureIndex]
 		#print "x: ", x
 		x_scaled = preprocessing.scale(x)
@@ -79,7 +112,7 @@ def doMICAnalysisOfInputVariables(inArr, targetArr,targetName, mic_score_thresho
 			selected_inArr_indexes.append(k) #keep the index corresponding to that column
 			colIdx = getColumnIndexFromFeatureIndex(featureIndex)
 			selected_originalColumn_indexes.append(colIdx) #keep the original column index corresponding to that column
-			#print "----------------- selected: ", inputFeatureName, colIdx, k
+			print "----------------- selected: ", inputFeatureName, colIdx, k
 			k = k + 1	
 		
 	selected_inArr = np.array(selected_inArr).transpose()

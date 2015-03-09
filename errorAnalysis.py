@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python -W ignore::DeprecationWarning
 from sklearn import cross_validation
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import RidgeCV
@@ -80,14 +80,14 @@ def getSamplesFromBootstrap(inArr, resampleNumber, percentageInTrainSet, useBoot
 	numSamples = inArr.shape[0]
 	bs = cross_validation.Bootstrap(numSamples, resampleNumber, percentageInTrainSet, random_state=0)
 	#print bs
-	print inArr
+	#print inArr
         testTrainPairMap = {}
         bootStrapIndex = 0;
         for train_index, test_index in bs:
                 bootStrapIndex = bootStrapIndex + 1
                 trainList = []
                 testDataPoints = []
-                print("TRAIN:", train_index, "TEST:", test_index)
+                #print("TRAIN:", train_index, "TEST:", test_index)
                 for idx in train_index:
                         #print idx
                         trainList.append(inArr[idx])
@@ -118,7 +118,7 @@ def getSamplesFromSortedParams(inArr, resampleNumber, percentageInTrainSet, useB
 	bootStrapIndex = 0;
 	if(useBootstrap):
 		#print "\n\n== ERROR == ! Please call getSamplesFromBootstrap instead..\n\n"
-		print "\n\n == ARE YOU SURE? YOU ARE CALLING BOOTSTRAP FUNCTION FOR HISTOGRAM!! .. \n\n"
+		#print "\n\n == ARE YOU SURE? YOU ARE CALLING BOOTSTRAP FUNCTION FOR HISTOGRAM!! .. \n\n"
 		testTrainPairMap = getSamplesFromBootstrap(inArr,resampleNumber,percentageInTrainSet,useBootstrap)
 	else:
 		trainingSize = (int)(0.5 + (float)(numSamples * percentageInTrainSet))   #0.5 for rounding up of sample size
@@ -228,7 +228,7 @@ def generateTrainingAndTestSetsForErrorHistogramForEachTarget(inArr,targetArr,ta
         mergedArr = getMergedInputAndTargetArray(inArr,targetArr)
         numTotalColumns = mergedArr.shape[1]
         targetErrData = TargetErrorData(targetName)
-	trainAndTestSamples = getSamplesFromSortedParams(mergedArr,100,0.8,True) #use bootstrap
+	trainAndTestSamples = getSamplesFromSortedParams(mergedArr,100,0.9,True) #use bootstrap
         feErr = FeatureErrorData()
         feErr.name = targetName
         for key in trainAndTestSamples.keys():
@@ -264,8 +264,8 @@ def generateTrainingAndTestSetsForDistanceProfilingForEachTarget(inArr,targetArr
 		#do not use bootstrap resampling. according to document error_profiling.pdf), use first few from
 		#sorted list of params, as training set and far points as test set
 		#trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.9,False)  # 90% used for training
-		trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.7,False)  # 70% used for training 
-		#trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.5,False)   # 50% used for training
+		#trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.7,False)  # 70% used for training 
+		trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.5,False)   # 50% used for training
 		#trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.3,False)  # 30% used for training
 		#trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.1,False)  # 10% used for training
 		#trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.2,False)
@@ -290,11 +290,11 @@ def generateTrainingAndTestSetsForDistanceProfilingForEachTarget(inArr,targetArr
 	return targetErrData   
        
 #takes, input parameter array, target array and target name
-def getRegressionFunctionForEachTarget(inArr, tarArr,tname):
+def getRegressionFunctionForEachTarget(inArr, tarArr,tname,degree):
 	#print "\n\n--inputArr",inArr,"-----end\n"
         #fit a polynomial regression of degree 2 using Lasso as underlying linear regression model
         #reg = doPolyRegression(inArr, tarArr,tname,3,fitUse="Lasso")   # try for LINPACK and MATRIX MUL
-        reg = doPolyRegression(inArr, tarArr,tname,2,fitUse="Lasso")   # works best
+        reg = doPolyRegression(inArr, tarArr,tname,degree,fitUse="Lasso")   # works best
         #reg = doPolyRegression(inArr, tarArr,tname,2,fitUse="LinearRegression") #bad
         #reg = doPolyRegression(inArr, tarArr,tname,2,fitUse="RidgeRegression") #bad
         #print reg
@@ -309,7 +309,8 @@ def curveFitErrorSamplesWithDistance(targetkey,featureName,distanceList,errorLis
 	print "regName = ", targetkey,"  ", featureName
 	regName = targetkey + "_" + featureName + "_err"
 	#print regName, distanceArr, errArr
-	curvFunc = getRegressionFunctionForEachTarget(distanceArr,errArr,regName)	    
+	curvFunc = getRegressionFunctionForEachTarget(distanceArr,errArr,regName,2)	    
+	drawErrorDistPlotWithFittedCurve(errArr,distanceArr,targetkey,featureName,curvFunc,True)	
 	drawErrorDistPlot(errArr,distanceArr,targetkey,featureName,True)	
 	#testDist = [[11.0]]
 	#predVal = curvFunc.predict(testDist)
@@ -326,7 +327,7 @@ def curveFitErrorSamplesWithDistance(targetkey,featureName,distanceList,errorLis
 def calculateResultantError(errorMap):
 	errorObjectForFirstFeature = None
 	correlationAdjustedErrorTerms = {}
-	print "use the formula : sqrt[ {(|e1| + |c12e2| + |c13e3| + ..)}^2 + {(1-c12)e2}^2 + {(1-c13)e3}^2 + ...] "
+	#print "use the formula : sqrt[ {(|e1| + |c12e2| + |c13e3| + ..)}^2 + {(1-c12)e2}^2 + {(1-c13)e3}^2 + ...] "
 	for idx in errorMap.keys():
 		(corrCoeff,errorForFeature) = errorMap[idx] 
 		if(idx == 1):

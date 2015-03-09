@@ -332,6 +332,10 @@ def getArrayWithUniqueInputs(a):
 	return unique_a
 
 def readInputMeasurementOutput(dataFile):
+	filebaseModuleName = os.path.basename(dataFile)
+	a = filebaseModuleName.split('.')
+	baseModuleName = a[0]
+	setGlobalObject("baseModuleName", baseModuleName)
 	inputDataArr = []
         measuredDataArr = []
         outputDataArr = []
@@ -362,17 +366,17 @@ def readInputMeasurementOutput(dataFile):
 	setGlobalObject("outputColumnIndexToNameMapFromFile",featureIndexToNameMap_out)
 	setGlobalObject("columnIndexToOutArrIndexMap",colIdxToArrIdxMap_out)
 
-	dimensionOfFULLInputArr = len(inputDataArr.shape)
-	dimensionOfFULLMeasuredArr = len(measuredDataArr.shape)
-        dimensionOfFULLoutputDataArr = len(outputDataArr.shape)
+	dimensionOfFULLInputArr = len(inputDataArr.shape) if (len(inputDataArr) > 0) else None
+	dimensionOfFULLMeasuredArr = len(measuredDataArr.shape) if (len(measuredDataArr) > 0) else None
+        dimensionOfFULLoutputDataArr = len(outputDataArr.shape) if (len(outputDataArr) > 0) else None
         
-	if(dimensionOfFULLInputArr < 2):
+	if((dimensionOfFULLInputArr != None) and (dimensionOfFULLInputArr < 2)):
                 inputDataArr = np.array([inputDataArr])
 
-	if(dimensionOfFULLMeasuredArr < 2):
+	if((dimensionOfFULLMeasuredArr != None) and (dimensionOfFULLMeasuredArr < 2)):
                 measuredDataArr = np.array([measuredDataArr])
 
-        if(dimensionOfFULLoutputDataArr < 2):
+        if((dimensionOfFULLoutputDataArr != None )  and (dimensionOfFULLoutputDataArr < 2)):
                 outputDataArr = np.array([outputDataArr])
 
 	return inputDataArr,measuredDataArr,outputDataArr
@@ -408,22 +412,22 @@ def readInputMeasurementOutput(dataFile):
 #	#end for
 
 def selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputDataArr,mic_threshold):
-
+	input_index_for_uncorrelated_features = chooseIndependantInputVariables(inputDataArr)
 	selected_indexs_union = {}
 	selected_feature_Arr = []
 	selected_origCol_index_union = getGlobalObject("selectedOriginalColIndexMap")
 	selected_origCol_index_union.clear()
 	colIdxToInArrIdxMap = getGlobalObject("columnIndexToInArrIndexMap")
 	i = 0
-        dimensionOfFULLMeasuredArr = len(measuredDataArr.shape)
+        dimensionOfFULLMeasuredArr = len(measuredDataArr.shape) if (len(measuredDataArr) > 0) else None
 	#print "Dimension of  measuredDataArr:  " , dimensionOfFULLMeasuredArr
 	#print "---------",getGlobalObject("measuredColumnNames")
-        if(dimensionOfFULLMeasuredArr > 1):
+        if((dimensionOfFULLMeasuredArr != None) and (dimensionOfFULLMeasuredArr > 1)):
 		for targetArr in measuredDataArr:
 			#print "i=",i
 			t = getGlobalObject("measuredColumnNames")[i]
 			#print t  , "   : :  " , targetArr
-			selected_inArr,selected_inArr_indexs,selected_origCol_indexs = doMICAnalysisOfInputVariables(inputDataArr, targetArr,t,mic_threshold)
+			selected_inArr,selected_inArr_indexs,selected_origCol_indexs = doMICAnalysisOfInputVariables(inputDataArr, targetArr,t,mic_threshold,input_index_for_uncorrelated_features)
 			#updateColumnIndexToInArrIndexMap(selected_inArr_indexs,selected_origCol_indexs)
 			for idx in  selected_inArr_indexs:
 				selected_indexs_union[idx] = True
@@ -432,10 +436,10 @@ def selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputData
                         	selected_origCol_index_union[idx] = True
 			#end for
 			i = i + 1
-	else:
+	elif(dimensionOfFULLMeasuredArr != None):
 		t = getGlobalObject("measuredColumnNames")[0]
 		targetArr = measuredDataArr
-		selected_inArr,selected_inArr_indexs,selected_origCol_indexs = doMICAnalysisOfInputVariables(inputDataArr, targetArr,t,mic_threshold)
+		selected_inArr,selected_inArr_indexs,selected_origCol_indexs = doMICAnalysisOfInputVariables(inputDataArr, targetArr,t,mic_threshold,input_index_for_uncorrelated_features)
 		#updateColumnIndexToInArrIndexMap(selected_inArr_indexs,selected_origCol_indexs)
                 for idx in  selected_inArr_indexs:
                 	selected_indexs_union[idx] = True
@@ -446,12 +450,12 @@ def selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputData
 
 	i = 0
 	#print "\n\n\n outpu data arr: ", outputDataArr, "\n\n"
-        dimensionOfFULLoutputDataArr = len(outputDataArr.shape)
-	if(dimensionOfFULLoutputDataArr > 1):
+        dimensionOfFULLoutputDataArr = len(outputDataArr.shape) if (len(outputDataArr) > 0) else None
+	if((dimensionOfFULLoutputDataArr != None) and (dimensionOfFULLoutputDataArr > 1)):
 		for targetArr in outputDataArr:
 			#print "what is the target ? " , targetArr
 			t = getGlobalObject("outputColumnNames")[i]
-                	selected_inArr,selected_inArr_indexs,selected_origCol_indexs = doMICAnalysisOfInputVariables(inputDataArr, targetArr,t,mic_threshold)
+                	selected_inArr,selected_inArr_indexs,selected_origCol_indexs = doMICAnalysisOfInputVariables(inputDataArr, targetArr,t,mic_threshold,input_index_for_uncorrelated_features)
 			#updateColumnIndexToInArrIndexMap(selected_inArr_indexs,selected_origCol_indexs)
 			for idx in  selected_inArr_indexs:
                         	selected_indexs_union[idx] = True
@@ -460,10 +464,10 @@ def selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputData
                         	selected_origCol_index_union[idx] = True
 			#end for
 			i = i + 1
-	else:
+	elif(dimensionOfFULLoutputDataArr != None):
 		t = getGlobalObject("outputColumnNames")[0]
                 targetArr = outputDataArr
-                selected_inArr,selected_inArr_indexs,selected_origCol_indexs = doMICAnalysisOfInputVariables(inputDataArr, targetArr,t,mic_threshold)
+                selected_inArr,selected_inArr_indexs,selected_origCol_indexs = doMICAnalysisOfInputVariables(inputDataArr, targetArr,t,mic_threshold,input_index_for_uncorrelated_features)
                 #updateColumnIndexToInArrIndexMap(selected_inArr_indexs,selected_origCol_indexs)
                 for idx in  selected_inArr_indexs:
                         selected_indexs_union[idx] = True
