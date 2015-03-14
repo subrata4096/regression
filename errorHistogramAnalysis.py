@@ -30,9 +30,11 @@ def createErrorHistogram():
                                         #We will use ONLY "TEST" observations to predict and then calculate error
                                         continue
                                 # keep same error samples in a different list in 1D format for histogram/distribution calculations (inefficient!)
-                                errorSamples.append(testObs.PredictionErrArr)
-
-			doHistogramPlot(errorSamples,targetkey,featureIndex,False)
+                                #print testObs.PredictionErrArr
+				errorSamples.append(testObs.PredictionErrArr)
+                                tarErrData.errors.append(testObs.PredictionErrArr)
+				
+			#doHistogramPlot(errorSamples,targetkey,featureIndex,False)
 
 
 if __name__ == "__main__":
@@ -63,10 +65,18 @@ if __name__ == "__main__":
 		populateSamplesInErrorDataStructure(dataFile,selectedInputDataArr,measuredDataArr,outputDataArr,True)
 
 	
-	populateRegressionFunctionForEachTarget(3)
+	populateRegressionFunctionForEachTarget(2)
+	#populateRegressionFunctionForEachTarget(3)
         
 	populatePredictionsForTestSamples(True) #pass this is a histogram profile flow	
+	
+
 	createErrorHistogram()
+	
+	#print getGlobalObject("TargetErrorDataMap")["module:measure:PAPI:PAPI_TOT_INS"].errors
+	dumpTargetErrMap(getGlobalObject("TargetErrorDataMap"),getGlobalObject("activeDumpDirectory"),dataFile)
+	#tMap = loadTargetErrMap(getGlobalObject("activeDumpDirectory"),True,dataFile)
+	#print tMap["module:measure:PAPI:PAPI_TOT_INS"].errors
 
 	#prints
 	#printFullErrorDataStructure()

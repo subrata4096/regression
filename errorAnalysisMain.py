@@ -49,8 +49,8 @@ def populateRegressionFunctionForEachTarget(degree):
 	
 			inArr = trainObs.ParamArr
 			targetArr = trainObs.TargetArr
-			print featureKey , targetkey, "\n",  targetArr
-			print "----------------------------"
+			#print featureKey , targetkey, "\n",  targetArr
+			#print "----------------------------"
 			#fit the regression function based on training params and target
 			regressFunc = getRegressionFunctionForEachTarget(inArr,targetArr,targetkey,degree)
 			#regressFunc = getRegressionFunctionForEachTarget(inArr,targetArr,targetkey,2)
@@ -131,7 +131,7 @@ def populatePredictionsForTestSamples(forHistogramAnalysis):
                         	targetArr = testObs.TargetArr
 				predicted = regressFunc.predict(inArr)
 				testObs.PredictedArr = predicted
-				print targetkey, "target: ", targetArr, " predicted: ", predicted 
+				#print targetkey, "target: ", targetArr, " predicted: ", predicted 
 				#NOW CALCULATE ERROR --------------------------------
 				#calculate percentage error. Be acreful about devide by zero!!
 				error = (targetArr[0] - predicted[0])*1.0/float(targetArr[0]) if (targetArr[0] != 0) else (targetArr[0] - predicted[0])*1.0
@@ -233,10 +233,10 @@ if __name__ == "__main__":
 	#printErrorDistributionProfileMapForTargetAndFeatureMap()
 	#print getGlobalObject("selectedOriginalColIndexMap")
 	dumpSelectedFeaturesMap(getSelectedColumnNames(getGlobalObject("selectedOriginalColIndexMap")),getGlobalObject("activeDumpDirectory"), dataFile)
-	theSelectedDict = loadSelectedFeaturesMap(getGlobalObject("activeDumpDirectory"),True,dataFile)
+	#theSelectedDict = loadSelectedFeaturesMap(getGlobalObject("activeDumpDirectory"),True,dataFile)
 	print "loaded ", theSelectedDict
 
 	picklepath,cPicklepath = dumpErrorDistributionProfileMap(getGlobalObject("ErrorDistributionProfileMapForTargetAndFeature"),getGlobalObject("activeDumpDirectory"),dataFile)
-	errProfMap = loadErrorDistributionProfileMap(getGlobalObject("activeDumpDirectory"),True,dataFile)
+	#errProfMap = loadErrorDistributionProfileMap(getGlobalObject("activeDumpDirectory"),True,dataFile)
 	#printErrorDistributionProfileMapForTargetAndFeatureMap(errProfMap)
 	

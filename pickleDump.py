@@ -119,6 +119,43 @@ def loadGoodTargetMap(dumpDir,isCPickle,tsvFName):
         except IOError:
                 return None
 
+def dumpTargetErrMap(targetErrMap,dumpDir,tsvFName):
+        #print "\n\n ------------------------- colNameToIndexMap", colNameToIndexMap
+        onlyName = os.path.splitext(os.path.basename(tsvFName))[0]
+        filename = onlyName + "_targetErr"
+        picklepath = dumpDir + "/" + filename + ".pkl"
+        cPicklepath = dumpDir + "/" + filename + ".cpkl"
+        with open(picklepath, 'wb') as fid:
+                pickle.dump(targetErrMap, fid)
+
+        fid.close()
+        with open(cPicklepath, 'wb') as fid:
+                cPickle.dump(targetErrMap, fid)
+        fid.close()
+        return (picklepath,cPicklepath)
+
+def loadTargetErrMap(dumpDir,isCPickle,tsvFName):
+        onlyName = os.path.splitext(os.path.basename(tsvFName))[0]
+        baseDir = os.path.dirname(tsvFName)
+        filename = onlyName + "_targetErr"
+        pklFName = baseDir + "/" + filename
+        targetErrMap = None
+        try:
+                if(isCPickle):
+                        pklFName = pklFName + ".cpkl"
+                        with open(pklFName, 'rb') as fid:
+                                targetErrMap = cPickle.load(fid)
+                        fid.close()
+                        return targetErrMap
+                else:
+                        pklFName = pklFName + ".pkl"
+                        with open(pklFName, 'rb') as fid:
+                                targetErrMap = pickle.load(fid)
+                        fid.close()
+                        return targetErrMap
+        except IOError:
+                return None
+
 def loadErrorDistributionProfileMap(dumpDir, isCPickle,tsvFName):
 	onlyName = os.path.splitext(os.path.basename(tsvFName))[0]
 	baseDir = os.path.dirname(tsvFName)

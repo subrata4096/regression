@@ -78,6 +78,7 @@ class anomalyDetection:
 		self.regressionObjectDict = None
 		self.isValid = False
 		self.goodTargetMap = None
+		self.targetErrorMap = None
 
 	def loadAnalysisFiles(self,tsvFileName):
 		#self.errProfileMap = loadErrorDistributionProfileMap(self.errorProfPicklePath,True)
@@ -112,7 +113,13 @@ class anomalyDetection:
                         self.isValid = False
                         return
 
-		print self.goodTargetMap
+		#print self.goodTargetMap
+
+		self.targetErrorMap = loadTargetErrMap(self.dumpDirectory,True,tsvFileName)
+                if(self.targetErrorMap == None):
+                        print tsvFileName," Target Error Map could not be loaded"
+                        self.isValid = False
+                        return
 		
 		self.isValid = True
 			
@@ -141,7 +148,8 @@ class anomalyDetection:
 		#except OverflowError:
 		#	print "ERRROR           #######################################" 
 		
-		predictedValueErrorAdjusted = (predictedVal,predictedVal)
+		predictedValueErrorAdjusted = (predictedVal,predictedVal,predictedVal)
+
 
 		errorVal = predictedVal * rmsErr
 		
@@ -153,7 +161,7 @@ class anomalyDetection:
 		#	predictedValueErrorAdjusted = (predictedVal - abs(errorVal), predictedVal)
 		#else:
 		#	predictedValueErrorAdjusted = (predictedVal - abs(errorVal), predictedVal + abs(errorVal))
-		predictedValueErrorAdjusted = (predictedVal - abs(errorVal), predictedVal + abs(errorVal))
+		predictedValueErrorAdjusted = (predictedVal - abs(errorVal), predictedVal, predictedVal + abs(errorVal))
 
 		#print "Predicted val = ", predictedVal, " Valid range of value for = ", targetName, "  is = ", predictedValueErrorAdjusted
 		return predictedValueErrorAdjusted
@@ -167,7 +175,7 @@ class anomalyDetection:
 
 		errorVal = predictedVal * 0.5
 
-		predictedValueErrorAdjusted = (predictedVal - abs(errorVal), predictedVal + abs(errorVal))
+		predictedValueErrorAdjusted = (predictedVal - abs(errorVal), predictedVal, predictedVal + abs(errorVal))
 
 		return predictedValueErrorAdjusted
 

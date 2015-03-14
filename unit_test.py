@@ -16,32 +16,42 @@ def test_errorProfileMapLoad(cPicklepath):
 def testProductionFile(anomalyDetectObject,prodDataFile,msrMap,outMap,fDpt,lineNum,isBasic):
 	for targetName in msrMap.keys():
 		targetValue = msrMap[targetName]
-		testForEachTarget(anomalyDetectObject,targetName,targetValue,fDpt,lineNum,isBasic)
+		retVal = testForEachTarget(anomalyDetectObject,targetName,targetValue,fDpt,lineNum,isBasic)
+		if(retVal == False):
+			return
 
 	for targetName in outMap.keys():
                 targetValue = outMap[targetName]
                 testForEachTarget(anomalyDetectObject,targetName,targetValue,fDpt,lineNum,isBasic)
+		if(retVal == False):
+			return
 
 def testForEachTarget(anomalyDetectObject,targetName,targetValue,fDpt,lineNum,isBasic):
 	if(isBasic == False):
 		if(targetName not in anomalyDetectObject.goodTargetMap.keys()):
-			return	
+			return True	
 	#anomalyDetectObject.getPredictionErrorEstimation(targetName,fDpt)
 	if(isBasic == False):
 		predictedValueErrorAdjusted = anomalyDetectObject.getValidRangeOfTargetValue(targetName,fDpt)
-		if((targetValue < predictedValueErrorAdjusted[0]) or (targetValue > predictedValueErrorAdjusted[1])):
+		maxVariationInErr = max(anomalyDetectObject.targetErrorMap[targetName].errors)
+
+		varInErr = abs(float(predictedValueErrorAdjusted[1]*maxVariationInErr))
+
+		if((targetValue < (predictedValueErrorAdjusted[0] - varInErr)) or (targetValue > (predictedValueErrorAdjusted[2] + varInErr))):
 			print "\nADVANCED:Error for target=", targetName, "value=", targetValue, " at lineNum=", lineNum," predicted range = ", predictedValueErrorAdjusted, "\n"
-			#exit(0)
-		else:
-			print "\nADVANCED:Allright for target=", targetName, "value=", targetValue, " at lineNum=", lineNum
+			return False
+		#else:
+		#	print "\nADVANCED:Allright for target=", targetName, "value=", targetValue, " at lineNum=", lineNum
 		#	print "predicted range = ", predictedValueErrorAdjusted, "\n"
 	else:
 		predictedValueErrorAdjustedBasic = anomalyDetectObject.getValidRangeOfTargetValueBasic(targetName,fDpt)
-		if((targetValue < predictedValueErrorAdjustedBasic[0]) or (targetValue > predictedValueErrorAdjustedBasic[1])):
+		if((targetValue < predictedValueErrorAdjustedBasic[0]) or (targetValue > predictedValueErrorAdjustedBasic[2])):
 			print "\nBASIC:Error for target=", targetName, "value=", targetValue, " at lineNum=", lineNum," predicted range = ", predictedValueErrorAdjustedBasic, "\n"
+			return False
 	
-		else:
-			print "\nBASIC:Allright for target=", targetName, "value=", targetValue, " at lineNum=", lineNum
+		#else:
+		#	print "\nBASIC:Allright for target=", targetName, "value=", targetValue, " at lineNum=", lineNum
+	return True
 #def test_resultantError(anomalyDetectObject):
 #	targetName = "o3"
 #	prodDataPointMap = {}

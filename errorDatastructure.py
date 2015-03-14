@@ -116,9 +116,11 @@ class TargetErrorData:
 		self.name = ''
 		# featureName vs FeatureErrorData map
 		self.FeatureErrorDataMap = {}
+		self.errors = [] # only to be populated by histogram function and will be used in anomaly detection
 	def __init__(self,targetName):
 		self.name = targetName
 		self.FeatureErrorDataMap = {}
+		self.errors = []
 	def __str__(self):
 		s = "\tTargetErrorData = " + self.name
 		for fKeys in self.FeatureErrorDataMap.keys():

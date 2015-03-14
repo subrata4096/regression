@@ -252,7 +252,7 @@ def doFitForTarget(inArr,targetArr, tname):
 	#	return None
 
 	#in_train, in_test, tar_train, tar_test = cross_validation.train_test_split(selected_inArr, targetArr, test_size=0.30, random_state=42)
-	in_train, in_test, tar_train, tar_test = cross_validation.train_test_split(inArr, targetArr, test_size=0.3, random_state=42)
+	in_train, in_test, tar_train, tar_test = cross_validation.train_test_split(inArr, targetArr, test_size=0.2, random_state=42)
 
 	#print in_train
 	#print tar_train
@@ -261,11 +261,11 @@ def doFitForTarget(inArr,targetArr, tname):
 	#reg = doLinearRegression(in_train,tar_train)
 	#print "R2 score: ",reg.score(in_test, tar_test)
 
-	scaled_in_train = preprocessing.scale(in_train)
-	scaled_tar_train = preprocessing.scale(tar_train)
+	#scaled_in_train = preprocessing.scale(in_train)
+	#scaled_tar_train = preprocessing.scale(tar_train)
 	
-	scaled_in_test = preprocessing.scale(in_test)
-	scaled_tar_test = preprocessing.scale(tar_test)
+	#scaled_in_test = preprocessing.scale(in_test)
+	#scaled_tar_test = preprocessing.scale(tar_test)
 
 	#reg = doPolyRegression(in_train, tar_train,tname,2,fitUse="LinearRegression")
 	#print "R2 score: ",reg.score(in_test, tar_test)
