@@ -263,9 +263,9 @@ def generateTrainingAndTestSetsForDistanceProfilingForEachTarget(inArr,targetArr
 
 		#do not use bootstrap resampling. according to document error_profiling.pdf), use first few from
 		#sorted list of params, as training set and far points as test set
-		#trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.9,False)  # 90% used for training
+		trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.9,False)  # 90% used for training
 		#trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.7,False)  # 70% used for training 
-		trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.5,False)   # 50% used for training
+		#trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.5,False)   # 50% used for training
 		#trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.3,False)  # 30% used for training
 		#trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.1,False)  # 10% used for training
 		#trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.2,False)
@@ -305,7 +305,7 @@ def curveFitErrorSamplesWithDistance(targetkey,featureName,distanceList,errorLis
 	#errorList = [[3.0],[18.0],[38.0],[83.0]]
 	distanceArr = np.array(distanceList)
 	errArr = np.array(errorList)
-	print getGlobalObject("InArrIndexToColumnIndexMap")
+	#print getGlobalObject("InArrIndexToColumnIndexMap")
 	print "regName = ", targetkey,"  ", featureName
 	regName = targetkey + "_" + featureName + "_err"
 	#print regName, distanceArr, errArr
@@ -327,18 +327,23 @@ def curveFitErrorSamplesWithDistance(targetkey,featureName,distanceList,errorLis
 def calculateResultantError(errorMap):
 	errorObjectForFirstFeature = None
 	correlationAdjustedErrorTerms = {}
-	#print "use the formula : sqrt[ {(|e1| + |c12e2| + |c13e3| + ..)}^2 + {(1-c12)e2}^2 + {(1-c13)e3}^2 + ...] "
+	#print "use the formula : sqrt[ {1/n(|e1| + |c12e2| + |c13e3| + ..)}^2 + {(1-c12)e2}^2 + {(1-c13)e3}^2 + ...] "
+	# n = 1 + c12 + c13
+        n = 0.0
 	for idx in errorMap.keys():
 		(corrCoeff,errorForFeature) = errorMap[idx] 
 		if(idx == 1):
 			correlationAdjustedErrorTerms[1] = abs(errorForFeature)
+			n = n + 1.0
 		else:
 			#calculate the first term "(e1 + c12e2 + c13e3 + ..)" 
 			correlationAdjustedErrorTerms[1] = correlationAdjustedErrorTerms[1] + abs((corrCoeff)*(errorForFeature))
 			# now calculate other terms "(1-c12)e2" as "(1-c13)e3"
 			correlationAdjustedErrorTerms[idx] = abs((1 - corrCoeff)*(errorForFeature))
+			n = n + corrCoeff
 	#end for 
-	
+
+	correlationAdjustedErrorTerms[1] = float(correlationAdjustedErrorTerms[1]/n) # normalize	
 	#now calculate the RMS of these terms to get resultant error
 	sumOfSquares = 0.0
 	for key,value in correlationAdjustedErrorTerms.iteritems():
@@ -362,12 +367,12 @@ def getCorrelationBetweenErrorsWRTFirstFeature(productionErrorInfoDict):
 		if(i==1):
 			firstErrorSamples = errSamples
 			errorCorrMap[featureName] = (1.0,errorForFeature)
-			print "featreName =", featureName, " corrCoeff = " , "1.0" , " error term = " , errorForFeature
+			#print "featreName =", featureName, " corrCoeff = " , "1.0" , " error term = " , errorForFeature
 			continue
 		else:
 			corrCoeff = calculateCorrelationBetweenVectors(firstErrorSamples,errSamples)	
 			errorCorrMap[featureName] = (corrCoeff,errorForFeature)
-			print "featreName =", featureName, " corrCoeff = " , corrCoeff , " error term = " , errorForFeature
+			#print "featreName =", featureName, " corrCoeff = " , corrCoeff , " error term = " , errorForFeature
 	#END of for
 
 	return errorCorrMap
@@ -378,6 +383,9 @@ def getCorrelationBetweenErrorsWRTFirstFeature(productionErrorInfoDict):
 #returns: rmsError,if all err components were +ve, if all err components were -ve
 #if all components were positive, we will consider final result to be only positive and not +/- around predicted targetValue 
 def getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,featureDtPt,errProfMap=None):
+	#print "\ncalled\n"
+	#import traceback
+	#traceback.print_stack(file=sys.stdout)
 	featureErrMap = None
 	if(errProfMap == None):
 		featureErrMap = getGlobalObject("ErrorDistributionProfileMapForTargetAndFeature")[targetName]
@@ -389,7 +397,7 @@ def getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,featureD
 	errorTermsAllPositive = True
 	errorTermsAllNegative = True
 
-	print "TEST: featureErrorMap: ", featureErrMap 
+	#print "TEST: featureErrorMap: ", featureErrMap 
 	#print "TEST: featureDtPt: ", featureDtPt 
 
 	idx = 0
@@ -404,9 +412,9 @@ def getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,featureD
 		meanPoint = errProf.MeanPointOfTrainingSet
 		StdDev = errProf.StandardDeviationOfTrainingSet
 		distance = getDistanceAlongOneFeature(meanPoint,StdDev,value)
-
 		#get the curve/regression function which fits the variation of error with distance
 		errorForFeature = errProf.ErrorRegressFunction.predict(distance)
+		#print "targetName", targetName," featureName=",featureName, " mean=",meanPoint," StdDev=",StdDev," distance=",distance," errorForFeature=",errorForFeature
 		
 		if(errorForFeature > 0.0):
 			errorTermsAllNegative = False

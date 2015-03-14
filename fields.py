@@ -131,12 +131,14 @@ def parseFields(fname):
                 secondLine = f.readline()
                 headerline = firstLine.strip()
                 valueline = secondLine.strip()
+		#print headerline
                 headerFields = headerline.split("\t")
                 valueFields = valueline.split("\t")
                 numOfFields = len(headerFields)
                 for idx in range(numOfFields):
                         header = headerFields[idx]
                         value = valueFields[idx]
+			#print header, idx
                         if(False == is_number(value)):
                                 continue
                         elif(is_input(header)):
@@ -232,6 +234,8 @@ def initializeGlobalObjects(dataFileName):
         #This map keeps the calculated error profile for each target for each profile along with curve-fitted error function
 	#top level key is target name. 2nd level key is feature name. Then the content is "errorDistributionProfile"
 	globalObjectsContainerClass.globalObjectMap["ErrorDistributionProfileMapForTargetAndFeature"] = {}
+	
+	globalObjectsContainerClass.globalObjectMap["goodTargetMap"] = {}
 	
 	#This routine automatically infers input,measurement,output columns from there names, based on the Sight naming convetion
 	

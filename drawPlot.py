@@ -2,6 +2,8 @@
 from sklearn import linear_model
 from sklearn import cross_validation
 from sklearn import preprocessing
+from sklearn.grid_search import GridSearchCV
+from sklearn.neighbors.kde import KernelDensity
 import numpy as np
 import pylab as plt
 import os
@@ -69,6 +71,35 @@ def do3dPlot(inArr,targetArr,in_index1,in_index2,tname,reg=None):
         ax.w_zaxis.set_ticklabels([])
         plt.show()
 
+def doKDEBasedPlot(dataSamples,ttl):
+	dataSamples = np.array(dataSamples)
+	grid = GridSearchCV(KernelDensity(kernel='gaussian'),{'bandwidth': np.linspace(0.1, 1.0, 30)},cv=20) # 20-fold cross-validation
+	fitScore = grid.fit(dataSamples[:, None])
+	#print grid.best_params_, " fit score : " , fitScore
+	
+	kde = grid.best_estimator_
+	maxVal = max(dataSamples)
+        minVal = min(dataSamples)
+	#a = maxVal - 0.02
+	#b = maxVal + 0.01
+	#print "log-prob at 0 : ", kde.score(0)
+	#print "log-prob at", a, " : ", kde.score(a)
+	#print "log-prob at", b, " : ", kde.score(b)
+    
+	#x_grid = np.linspace(minVal, maxVal, 1000)
+	x_grid = np.linspace(-1.0, 1.0, 1000)
+	pdf = np.exp(kde.score_samples(x_grid[:, None]))
+	
+	#pdf = np.exp(kde.score_samples(dataSamples[:, None]))
+
+	fig, ax = plt.subplots()
+	ax.plot(x_grid, np.exp(pdf), linewidth=3, alpha=0.5, label='bw=%.2f' % kde.bandwidth)
+	#ax.plot(dataSamples, pdf, linewidth=3, alpha=0.5, label='bw=%.2f' % kde.bandwidth)
+	ax.hist(dataSamples, 30, fc='gray', histtype='stepfilled', alpha=0.3, normed=True)
+	ax.legend(loc='upper left')
+	plt.title(ttl)
+	plt.show()
+	
 def doHistogramPlot(dataSamples,targetName,featureName,doSave):
 	#
 	# first create a single histogram
@@ -99,7 +130,7 @@ def doHistogramPlot(dataSamples,targetName,featureName,doSave):
 	#appName = "Matrix Multiplication"
 	#appName = "Sparse Matrix Vector Multiplication"
 	#appName = "Black Scholes"
-	#appName = "FFmeg"
+	appName = "FFmeg"
 	dumpDir = "/home/mitra4/work/regression/gold_histograms/"
 	if(appName == "Sparse Matrix Vector Multiplication"):
 		dumpDir = dumpDir + "SPARSE_MATRIX_MUL"
@@ -107,6 +138,8 @@ def doHistogramPlot(dataSamples,targetName,featureName,doSave):
 		dumpDir = dumpDir + "LINPACK"
 	if(appName == "Matrix Multiplication"):
 		dumpDir = dumpDir + "MATRIX_MUL"
+	if(appName == "FFmeg"):
+		dumpDir = dumpDir + "FFmeg"
 
 	if(appName == "Sparse Matrix Vector Multiplication"):
 		dataSamples = [x / 10.0 for x in dataSamples]
@@ -119,7 +152,11 @@ def doHistogramPlot(dataSamples,targetName,featureName,doSave):
 	#ttl = "Error histogram: \n" + targetName + " for " + featureName 
 	ttl = appName + ": " + getGlobalObject("baseModuleName") + " - Observation: " + targetJustName
 
-	bins = [-0.35,-0.25,-0.15,-0.05,0.05,0.15,0.25,0.35]
+
+	doKDEBasedPlot(dataSamples,ttl)
+	return
+
+	#bins = [-0.35,-0.25,-0.15,-0.05,0.05,0.15,0.25,0.35]
 	#bins = np.arange(-0.3,-0.02,0.01) + np.array([-0.02,0.02]) +np.arange(0.02,0.3,0.01)
 	bin1 = np.arange(-0.3,-0.02,0.02)
 	#print bin1 
@@ -170,12 +207,13 @@ def doHistogramPlot(dataSamples,targetName,featureName,doSave):
         saveFileName3 = os.path.join(dumpDir,fileName3)
         saveFileName4 = os.path.join(dumpDir,fileName4)
 
+	doSave = False
 	if(doSave == False):
         	plt.show()
 		#plt.savefig(saveFileName)
 		#plt.savefig(saveFileName2, bbox_inches='tight')
-		plt.savefig(saveFileName3, bbox_inches='tight')
-                plt.close()
+		#plt.savefig(saveFileName3, bbox_inches='tight')
+                #plt.close()
 	else:
 		print "SaveFileName = " + saveFileName3
 		#plt.savefig(saveFileName, bbox_inches='tight')
@@ -186,7 +224,8 @@ def doHistogramPlot(dataSamples,targetName,featureName,doSave):
                 plt.close()
 
 def drawErrorDistPlotWithFittedCurve(errorSamples,Distances,targetName,featureName,curve,doSave):
-	doSave = True
+	#doSave = True
+	doSave = False
         #distList = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
 	sortedDist = np.sort(Distances)
 	maxDist = sortedDist[len(sortedDist) - 1] 
@@ -211,7 +250,8 @@ def drawErrorDistPlotWithFittedCurve(errorSamples,Distances,targetName,featureNa
         [x, y] = zip(*sorted(zip(x, y), key=lambda x: x[0]))
         plt.plot(x,y)
         plt.title(ttl)
-	fileName = "errVSdist_" + getGlobalObject("baseModuleName") + ":" + targetName + "_" + featureName + "_predicted.png"
+	fileName = "x"
+	#fileName = "errVSdist_" + getGlobalObject("baseModuleName") + ":" + targetName + "_" + featureName + "_predicted.png"
         saveFileName = os.path.join(dumpDir,fileName)
 	if(doSave == False):
                 plt.show()

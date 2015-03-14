@@ -120,7 +120,7 @@ def doPolyRegression(inArr, targetArr,tname,deg,fitUse="LinearRegression"):
 		polyReg = Pipeline([('poly', PolynomialFeatures(degree=deg)),('linear', Ridge())])
 	elif(fitUse == "Lasso"):
 		#polyReg = Pipeline([('poly', PolynomialFeatures(degree=deg)),('linear', Lasso(max_iter=10000,normalize=True))])
-		polyReg = Pipeline([('poly', PolynomialFeatures(degree=deg)),('linear', Lasso())])
+		polyReg = Pipeline([('poly', PolynomialFeatures(degree=deg)),('linear', Lasso(max_iter=2000))])
 	elif(fitUse == "ElasticNet"):
 		polyReg = Pipeline([('poly', PolynomialFeatures(degree=deg)),('linear', ElasticNet())])
 	#polyReg = Pipeline([('poly', PolynomialFeatures(degree=deg)),('linear', LinearRegression(normalize=True))])

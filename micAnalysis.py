@@ -62,6 +62,8 @@ def doMICAnalysisOfInputVariables(inArr, targetArr,targetName, mic_score_thresho
         #global outputColumnNameToIndexMapFromFile
 
  	#print "\n\n\n doMICAnalysisOfInputVariables called \n\n"
+	
+	goodTargetMap = getGlobalObject("goodTargetMap")
 
 	selected_inArr = []
 	selected_inArr_indexes = []
@@ -112,6 +114,8 @@ def doMICAnalysisOfInputVariables(inArr, targetArr,targetName, mic_score_thresho
 			selected_inArr_indexes.append(k) #keep the index corresponding to that column
 			colIdx = getColumnIndexFromFeatureIndex(featureIndex)
 			selected_originalColumn_indexes.append(colIdx) #keep the original column index corresponding to that column
+			#now add the target itself to goodTargetMap. For anomaly detection we will only use these targets
+			goodTargetMap[targetName] = True
 			print "----------------- selected: ", inputFeatureName, colIdx, k
 			k = k + 1	
 		

@@ -29,6 +29,44 @@ def searchForDumpedFiles(dirLoc,search_for_extension):
         return matches
 
 
+#def createFeatureDataPointFromProductionFile(productionFile):
+#	inColumnNames,msrColumnNames,outColumnNames = parseFields(productionFile)
+#
+#	#inputDataArr = readDataFile(dataFile,'input')
+#	#measuredDataArr = readDataFile(dataFile,'measured')
+#	#outputDataArr = readDataFile(dataFile,'output')
+#
+#	featureNameToIndexMap_in,featureIndexToNameMap_in,colIdxToArrIdxMap_in = getColumnNameToIndexMappingFromFile(productionFile,inColNames)	
+#	featureNameToIndexMap_msr,featureIndexToNameMap_msr,colIdxToArrIdxMap_msr = getColumnNameToIndexMappingFromFile(productionFile,msrColNames)	
+#	featureNameToIndexMap_out,featureIndexToNameMap_out,colIdxToArrIdxMap_out = getColumnNameToIndexMappingFromFile(productionFile,outColNames)	
+
+
+#	f = open(productionFile):
+#		lines = f.readLines()
+#	for line in lines:
+#		line = line.strip()
+#		if(line == ""):
+#			continue
+#		fields = line.split("\t")
+#		colIdx = 0
+#		for field in fields:
+#			if(colIdx in colIdxToArrIdxMap_in.keys()):
+#				arrIndex = colIdxToArrIdxMap_in[colIdx]
+#				name = featureIndexToNameMap_in[arrIndex]
+#				inMap[name] = float(field)
+#			if(colIdx in colIdxToArrIdxMap_msr.keys()):
+#                                arrIndex = colIdxToArrIdxMap_msr[colIdx]
+#                                name = featureIndexToNameMap_out[arrIndex]
+#                                msr[name] = float(field)
+#			if(colIdx in colIdxToArrIdxMap_out.keys()):
+#                                arrIndex = colIdxToArrIdxMap_out[colIdx]
+#                                name = featureIndexToNameMap_out[arrIndex]
+#                                out[name] = float(field)
+
+#		fDpt = FeatureDataPoint(inMap)
+		
+
+
 class anomalyDetection:
 	def __init__(self):
 		#self.errorProfPicklePath = ''
@@ -39,6 +77,7 @@ class anomalyDetection:
 		self.selectedFeatureSortedByInIndex = None
 		self.regressionObjectDict = None
 		self.isValid = False
+		self.goodTargetMap = None
 
 	def loadAnalysisFiles(self,tsvFileName):
 		#self.errProfileMap = loadErrorDistributionProfileMap(self.errorProfPicklePath,True)
@@ -67,6 +106,13 @@ class anomalyDetection:
 			self.isValid = False
 			return
 
+		self.goodTargetMap = loadGoodTargetMap(self.dumpDirectory,True,tsvFileName)
+		if(self.goodTargetMap == None):
+                        print tsvFileName," Good Target Map could not be loaded"
+                        self.isValid = False
+                        return
+
+		print self.goodTargetMap
 		
 		self.isValid = True
 			
@@ -74,7 +120,7 @@ class anomalyDetection:
 		dataPtWithSelectedFeature = errorDatastructure.getSelectedFeaturePtFromProductionDataPoint(productionPt,self.selectedFeatureMap)
 		rmsErr,errPosBias,errNegBias = getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,dataPtWithSelectedFeature,self.errProfileMap)
 
-        	print "Percentage of overall error = ", rmsErr, errPosBias,errNegBias
+        	#print "Percentage of overall error = ", rmsErr, errPosBias,errNegBias
 
 		return rmsErr,errPosBias,errNegBias
 
@@ -86,26 +132,49 @@ class anomalyDetection:
 		
 		rmsErr,errPosBias,errNegBias = getResultantErrorFromFeatureErrorsForATargetAtADatapoint(targetName,dataPtWithSelectedFeature,self.errProfileMap)
 		inArr = errorDatastructure.getSelectedInputArrFromSelectedDataPoint(dataPtWithSelectedFeature,self.selectedFeatureSortedByInIndex)	
-		
-		print "TEST : Selected input array is: ", inArr 
+		predictedVal = 0
+		#print "TEST : Selected input array is: ", inArr 
+		#d = [100,200,300,400,500,600,700,800,900,1000,2000,3000,4000,5000]
+		#drawErrorDistPlotWithFittedCurve([],d,targetName,"B",self.regressionObjectDict[targetName],False)
 		predictedVal = self.regressionObjectDict[targetName].predict(inArr)	
+		#try:
+		#except OverflowError:
+		#	print "ERRROR           #######################################" 
 		
 		predictedValueErrorAdjusted = (predictedVal,predictedVal)
 
 		errorVal = predictedVal * rmsErr
+		
+		print "predictedVal=", predictedVal
 
-		if(errPosBias):
-			predictedValueErrorAdjusted = (predictedVal, predictedVal + errorVal)
-		elif(errNegBias):
-			predictedValueErrorAdjusted = (predictedVal, predictedVal - errorVal)
-		else:
-			predictedValueErrorAdjusted = (predictedVal - errorVal, predictedVal + errorVal)
+		#if(errPosBias):
+		#	predictedValueErrorAdjusted = (predictedVal, predictedVal + abs(errorVal))
+		#elif(errNegBias):
+		#	predictedValueErrorAdjusted = (predictedVal - abs(errorVal), predictedVal)
+		#else:
+		#	predictedValueErrorAdjusted = (predictedVal - abs(errorVal), predictedVal + abs(errorVal))
+		predictedValueErrorAdjusted = (predictedVal - abs(errorVal), predictedVal + abs(errorVal))
 
-		print "Predicted val = ", predictedVal, " Valid range of value for = ", targetName, "  is = ", predictedValueErrorAdjusted
+		#print "Predicted val = ", predictedVal, " Valid range of value for = ", targetName, "  is = ", predictedValueErrorAdjusted
+		return predictedValueErrorAdjusted
+
+	def getValidRangeOfTargetValueBasic(self, targetName, productionPt):
+		dataPtWithSelectedFeature = errorDatastructure.getSelectedFeaturePtFromProductionDataPoint(productionPt,self.selectedFeatureMap)
+		inArr = errorDatastructure.getSelectedInputArrFromSelectedDataPoint(dataPtWithSelectedFeature,self.selectedFeatureSortedByInIndex)	
+		predictedVal = self.regressionObjectDict[targetName].predict(inArr)	
+		
+		print "predictedVal=", predictedVal
+
+		errorVal = predictedVal * 0.5
+
+		predictedValueErrorAdjusted = (predictedVal - abs(errorVal), predictedVal + abs(errorVal))
+
 		return predictedValueErrorAdjusted
 
 
 def getStackFromFileLocation(dumpDir,fileLoc):
+	baseName = os.path.basename(fileLoc)
+	return baseName
 	idx = fileLoc.find(dumpDir)
 	lengthStr = len(dumpDir)
 	stackStr = fileLoc[idx+lengthStr+1 : ]
@@ -123,22 +192,23 @@ class anomalyDetectionEngine:
                 dumpedFiles = []
                 dumpedFiles = searchForDumpedFiles(self.dumpDirectory, "*.tsv")
 		if(oneParticularFile != ""):
-			for file in dumpedFiles:
-				if(file.find(oneParticularFile) != -1):
-					dumpedFiles = [file]
-                for file in dumpedFiles:
+			for afile in dumpedFiles:
+				if(afile.find(oneParticularFile) != -1):
+					dumpedFiles = [afile]
+                for afile in dumpedFiles:
 			anoDetect = anomalyDetection()
 			anoDetect.dumpDirectory = self.dumpDirectory
-                        anoDetect.loadAnalysisFiles(file)
+                        anoDetect.loadAnalysisFiles(afile)
 			if(anoDetect.isValid):
-				stackStr = getStackFromFileLocation(self.dumpDirectory,file)
+				stackStr = getStackFromFileLocation(self.dumpDirectory,afile)
 				self.anomalyDetectionPerModuleObjectMap[stackStr] = anoDetect
 		print self.anomalyDetectionPerModuleObjectMap
 
 	def getAnomalyDetectionObject(self,filename):
 		#print filename
-		if filename in self.anomalyDetectionPerModuleObjectMap.keys():
-			return self.anomalyDetectionPerModuleObjectMap[filename]
+		baseName = os.path.basename(filename)
+		if baseName in self.anomalyDetectionPerModuleObjectMap.keys():
+			return self.anomalyDetectionPerModuleObjectMap[baseName]
 		else:
 			return None	
 

@@ -252,7 +252,7 @@ def doFitForTarget(inArr,targetArr, tname):
 	#	return None
 
 	#in_train, in_test, tar_train, tar_test = cross_validation.train_test_split(selected_inArr, targetArr, test_size=0.30, random_state=42)
-	in_train, in_test, tar_train, tar_test = cross_validation.train_test_split(inArr, targetArr, test_size=0.30, random_state=42)
+	in_train, in_test, tar_train, tar_test = cross_validation.train_test_split(inArr, targetArr, test_size=0.3, random_state=42)
 
 	#print in_train
 	#print tar_train
@@ -272,7 +272,11 @@ def doFitForTarget(inArr,targetArr, tname):
 	#reg = doPolyRegression(in_train, tar_train,tname,2,fitUse="RidgeRegression")
 	#print "R2 score: ",reg.score(in_test, tar_test)
 	reg = doPolyRegression(in_train, tar_train,tname,2,fitUse="Lasso")
-	print "R2 score: ",reg.score(in_test, tar_test)
+	regScore = reg.score(in_test, tar_test)
+	print "R2 score: ",regScore
+	if(regScore < 0.99):
+		del getGlobalObject("goodTargetMap")[tname]
+
 	#reg = doPolyRegression(in_train, tar_train,tname,2,fitUse="ElasticNet")
 	#print "R2 score: ",reg.score(in_test, tar_test)
 
@@ -288,8 +292,9 @@ def doFitForTarget(inArr,targetArr, tname):
 	return reg
 
 
-def scikit_scripts(dataFile,inArr,measuredArr,outArr):
-
+def scikit_scripts(dataFile,inArr,measuredDataArr,outputDataArr):
+	outputDataArr = np.array(outputDataArr)
+	measuredDataArr = np.array(measuredDataArr)
 	dimensionOfFULLMeasuredArr = len(measuredDataArr.shape)	
 	dimensionOfFULLoutputDataArr = len(outputDataArr.shape)
         if(dimensionOfFULLMeasuredArr > 1):
@@ -537,6 +542,7 @@ if __name__ == "__main__":
 	
 	dumpRegressorObjectDict(getGlobalObject("regressionDict"),getGlobalObject("activeDumpDirectory"),dataFile)
     	dumpSelectedFeaturesMap(getSelectedColumnNames(getGlobalObject("selectedOriginalColIndexMap")),getGlobalObject("activeDumpDirectory"),dataFile)
+	dumpGoodTargetMap(getGlobalObject("goodTargetMap"),getGlobalObject("activeDumpDirectory"),dataFile)
 	if(productionDataFile != ""):
 		prodInputArr = readDataFile(productionDataFile,'input')
         	prodInputArr = np.transpose(prodInputArr)
