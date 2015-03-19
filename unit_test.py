@@ -63,9 +63,9 @@ def testForEachTarget(anomalyDetectObject,targetName,targetValue,fDpt,lineNum,is
 		else:
 			probabilityOfAnomaly = getProbabilityOfAnError(anomalyDetectObject.targetErrorMap[targetName].errors, deviation)
 
-		print "probabilityOfAnomaly = ",probabilityOfAnomaly
+		#print "probabilityOfAnomaly = ",probabilityOfAnomaly
 		if(probabilityOfAnomaly > 0.5):
-			print "\nADVANCED:Error for target=", targetName, "value=", targetValue, " at lineNum=", lineNum," predicted range = ", predictedValueErrorAdjusted, "\n"
+			print "\nADVANCED:Error Prob= ", probabilityOfAnomaly," for target=", targetName, "value=", targetValue, " at lineNum=", lineNum," predicted range = ", predictedValueErrorAdjusted, "\n"
 			return False
 		#else:
 		#	print "\nADVANCED:Allright for target=", targetName, "value=", targetValue, " at lineNum=", lineNum
@@ -155,6 +155,7 @@ def createFeatureDataPointFromProductionFile(anomalyDetectObject,productionFile,
 if __name__ == "__main__" :
 	referenceDataFile = sys.argv[1]
 	productionDataFile = sys.argv[2]
+	fixedThresh = float(sys.argv[3])
 	dumpDir = makeDumpDirectory(referenceDataFile)
         setGlobalObject("activeDumpDirectory",dumpDir)
 	
@@ -167,6 +168,9 @@ if __name__ == "__main__" :
 	if(anoDetect == None):
 		print "\n\n ERROR!! No anomaly detection object was found for the ref file\n exiting...\n"
 		exit(0)
+
+	anoDetect.fixedThreshold =  fixedThresh
+
 	#anoDetect.errorProfPicklePath = getGlobalObject("activeDumpDirectory")
 	#anoDetect.usefulFeaturePicklePath = "/home/mitra4/work/regression/selInput.cpkl"
 	#anoDetect.dumpDirectory = getGlobalObject("activeDumpDirectory")

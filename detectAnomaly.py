@@ -72,6 +72,7 @@ class anomalyDetection:
 	def __init__(self):
 		#self.errorProfPicklePath = ''
 		#self.usefulFeaturePicklePath = ''
+		self.fixedThreshold = None
 		self.dumpDirectory = ''
 		self.errProfileMap = None
 		self.selectedFeatureMap = None
@@ -174,7 +175,8 @@ class anomalyDetection:
 		
 		#print "predictedVal=", predictedVal
 
-		errorVal = predictedVal * 0.1
+		#errorVal = predictedVal * 0.5
+		errorVal = predictedVal * self.fixedThreshold
 
 		predictedValueErrorAdjusted = (predictedVal - abs(errorVal), predictedVal, predictedVal + abs(errorVal))
 
@@ -186,7 +188,7 @@ def getProbabilityOfAnError(errSamples, deviation):
 	errSamples = errSamples - meanOfSamples # shift the samples to have zero mean 
 	meanOfSamples = np.mean(errSamples)
 	#print errSamples
-	print "meanOfSamples= ",meanOfSamples, " deviation= ", deviation
+	#print "meanOfSamples= ",meanOfSamples, " deviation= ", deviation
 	prob = 0
 	kernel = stats.gaussian_kde(errSamples)
 	#val = kernel.integrate_gaussian(np.mean(errSamples),np.std(errSamples))
@@ -194,8 +196,8 @@ def getProbabilityOfAnError(errSamples, deviation):
 	posDev = 1.0*deviation
 	anomalyProb = kernel.integrate_box_1d(negDev, posDev)
 	#val3 = kernel.integrate_box_1d(-0.0001, 0.0001)
-	val4 = kernel.integrate_box_1d(-1.0, 1.0)
-	print anomalyProb,val4
+	#val4 = kernel.integrate_box_1d(-1.0, 1.0)
+	#print anomalyProb,val4
 	return anomalyProb
 
 	#if(deviation == 0):
