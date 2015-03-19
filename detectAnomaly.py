@@ -5,6 +5,7 @@ from sklearn import preprocessing
 import numpy as np
 import sys
 import fnmatch
+from scipy import stats
 from regressFit import *
 from micAnalysis import *
 from drawPlot import *
@@ -153,7 +154,7 @@ class anomalyDetection:
 
 		errorVal = predictedVal * rmsErr
 		
-		print "predictedVal=", predictedVal
+		#print "predictedVal=", predictedVal
 
 		#if(errPosBias):
 		#	predictedValueErrorAdjusted = (predictedVal, predictedVal + abs(errorVal))
@@ -161,7 +162,7 @@ class anomalyDetection:
 		#	predictedValueErrorAdjusted = (predictedVal - abs(errorVal), predictedVal)
 		#else:
 		#	predictedValueErrorAdjusted = (predictedVal - abs(errorVal), predictedVal + abs(errorVal))
-		predictedValueErrorAdjusted = (predictedVal - abs(errorVal), predictedVal, predictedVal + abs(errorVal))
+		predictedValueErrorAdjusted = (abs(predictedVal) - abs(errorVal), abs(predictedVal), abs(predictedVal) + abs(errorVal),abs(rmsErr))
 
 		#print "Predicted val = ", predictedVal, " Valid range of value for = ", targetName, "  is = ", predictedValueErrorAdjusted
 		return predictedValueErrorAdjusted
@@ -171,13 +172,57 @@ class anomalyDetection:
 		inArr = errorDatastructure.getSelectedInputArrFromSelectedDataPoint(dataPtWithSelectedFeature,self.selectedFeatureSortedByInIndex)	
 		predictedVal = self.regressionObjectDict[targetName].predict(inArr)	
 		
-		print "predictedVal=", predictedVal
+		#print "predictedVal=", predictedVal
 
-		errorVal = predictedVal * 0.5
+		errorVal = predictedVal * 0.1
 
 		predictedValueErrorAdjusted = (predictedVal - abs(errorVal), predictedVal, predictedVal + abs(errorVal))
 
 		return predictedValueErrorAdjusted
+
+
+def getProbabilityOfAnError(errSamples, deviation):
+	meanOfSamples = np.mean(errSamples)
+	errSamples = errSamples - meanOfSamples # shift the samples to have zero mean 
+	meanOfSamples = np.mean(errSamples)
+	#print errSamples
+	print "meanOfSamples= ",meanOfSamples, " deviation= ", deviation
+	prob = 0
+	kernel = stats.gaussian_kde(errSamples)
+	#val = kernel.integrate_gaussian(np.mean(errSamples),np.std(errSamples))
+	negDev = -1.0*deviation
+	posDev = 1.0*deviation
+	anomalyProb = kernel.integrate_box_1d(negDev, posDev)
+	#val3 = kernel.integrate_box_1d(-0.0001, 0.0001)
+	val4 = kernel.integrate_box_1d(-1.0, 1.0)
+	print anomalyProb,val4
+	return anomalyProb
+
+	#if(deviation == 0):
+	#	return 0.0
+	#elif(deviation < meanOfSamples):
+	#	countA = 0
+	#	countB = 0
+	#	for e in errSamples:
+	#		if(e < meanOfSamples):
+	#			countB = countB + 1
+	#		if(e < deviation):
+	#			countA = countA + 1
+	#	#end for
+	#	prob = 1 - float(countA/countB)
+	#	return prob
+	#elif(deviation >= meanOfSamples):
+	#	countA = 0
+        #        countB = 0
+        #        for e in errSamples:
+        #                if(e > meanOfSamples):
+        #                        countB = countB + 1
+        #                if(e > deviation):
+        #                        countA = countA + 1
+                #end for
+        #        prob = 1 - float(countA/countB)
+        #        return prob
+
 
 
 def getStackFromFileLocation(dumpDir,fileLoc):

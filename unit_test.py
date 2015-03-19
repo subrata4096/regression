@@ -18,13 +18,14 @@ def testProductionFile(anomalyDetectObject,prodDataFile,msrMap,outMap,fDpt,lineN
 		targetValue = msrMap[targetName]
 		retVal = testForEachTarget(anomalyDetectObject,targetName,targetValue,fDpt,lineNum,isBasic)
 		if(retVal == False):
-			return
+			return False
 
 	for targetName in outMap.keys():
                 targetValue = outMap[targetName]
                 testForEachTarget(anomalyDetectObject,targetName,targetValue,fDpt,lineNum,isBasic)
 		if(retVal == False):
-			return
+			return False
+	return True
 
 def testForEachTarget(anomalyDetectObject,targetName,targetValue,fDpt,lineNum,isBasic):
 	if(isBasic == False):
@@ -33,11 +34,37 @@ def testForEachTarget(anomalyDetectObject,targetName,targetValue,fDpt,lineNum,is
 	#anomalyDetectObject.getPredictionErrorEstimation(targetName,fDpt)
 	if(isBasic == False):
 		predictedValueErrorAdjusted = anomalyDetectObject.getValidRangeOfTargetValue(targetName,fDpt)
-		maxVariationInErr = max(anomalyDetectObject.targetErrorMap[targetName].errors)
+		
+		#maxVariationInErr = max(anomalyDetectObject.targetErrorMap[targetName].errors)
+		#meanVariationInErr = np.mean(anomalyDetectObject.targetErrorMap[targetName].errors)
 
-		varInErr = abs(float(predictedValueErrorAdjusted[1]*maxVariationInErr))
+		#varInErr = abs(float(predictedValueErrorAdjusted[1]*maxVariationInErr))
+		#varInErr = abs(float(predictedValueErrorAdjusted[1]*meanVariationInErr))
 
-		if((targetValue < (predictedValueErrorAdjusted[0] - varInErr)) or (targetValue > (predictedValueErrorAdjusted[2] + varInErr))):
+		#if((targetValue < (predictedValueErrorAdjusted[0] - varInErr)) or (targetValue > (predictedValueErrorAdjusted[2] + varInErr))):
+			#print "\nADVANCED:Error for target=", targetName, "value=", targetValue, " at lineNum=", lineNum," predicted range = ", predictedValueErrorAdjusted, "\n"
+			#return False
+		deviationError = 0
+		probabilityOfAnomaly = 0
+		extrapolationError = abs(predictedValueErrorAdjusted[3])
+		observedErr = float(float(abs(abs(targetValue) - abs(predictedValueErrorAdjusted[1])))/abs(predictedValueErrorAdjusted[1])) 
+		deviation = abs(observedErr - extrapolationError)
+		#if(abs(targetValue) < abs(predictedValueErrorAdjusted[0])):
+		#	deviationError = abs(predictedValueErrorAdjusted[0]) - abs(targetValue)
+		#	probabilityOfAnomaly = getProbabilityOfAnError(anomalyDetectObject.targetErrorMap[targetName].errors, deviationError)
+		#elif(abs(targetValue) > abs(predictedValueErrorAdjusted[2])):
+		#	deviationError = abs(targetValue) - abs(predictedValueErrorAdjusted[2])
+		#	probabilityOfAnomaly = getProbabilityOfAnError(anomalyDetectObject.targetErrorMap[targetName].errors, deviationError)
+		#else:
+		#	probabilityOfAnomaly = getProbabilityOfAnError(anomalyDetectObject.targetErrorMap[targetName].errors,1.0)
+		if(abs(observedErr) < abs(extrapolationError)):
+			probabilityOfAnomaly = 0
+			getProbabilityOfAnError(anomalyDetectObject.targetErrorMap[targetName].errors, deviation)
+		else:
+			probabilityOfAnomaly = getProbabilityOfAnError(anomalyDetectObject.targetErrorMap[targetName].errors, deviation)
+
+		print "probabilityOfAnomaly = ",probabilityOfAnomaly
+		if(probabilityOfAnomaly > 0.5):
 			print "\nADVANCED:Error for target=", targetName, "value=", targetValue, " at lineNum=", lineNum," predicted range = ", predictedValueErrorAdjusted, "\n"
 			return False
 		#else:
@@ -119,7 +146,9 @@ def createFeatureDataPointFromProductionFile(anomalyDetectObject,productionFile,
                 fDpt = FeatureDataPoint(inMap)
 		#print "\n\n --------------------\n", msr
 
-		testProductionFile(anomalyDetectObject,productionFile,msr,out,fDpt,lineNum,isBasic)
+		retVal = testProductionFile(anomalyDetectObject,productionFile,msr,out,fDpt,lineNum,isBasic)
+		if(retVal == False):
+			return
 
 
 
@@ -135,6 +164,9 @@ if __name__ == "__main__" :
 
 	#anoDetect = anomalyDetection()
 	anoDetect = anoDetectEngine.getAnomalyDetectionObject(referenceDataFile)
+	if(anoDetect == None):
+		print "\n\n ERROR!! No anomaly detection object was found for the ref file\n exiting...\n"
+		exit(0)
 	#anoDetect.errorProfPicklePath = getGlobalObject("activeDumpDirectory")
 	#anoDetect.usefulFeaturePicklePath = "/home/mitra4/work/regression/selInput.cpkl"
 	#anoDetect.dumpDirectory = getGlobalObject("activeDumpDirectory")
