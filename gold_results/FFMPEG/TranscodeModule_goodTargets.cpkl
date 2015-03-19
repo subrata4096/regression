@@ -1,0 +1,14 @@
+(dp1
+S'measure:PAPI_L2_DCM'
+p2
+I01
+sS'measure:benchtime'
+p3
+I01
+sS'measure:time'
+p4
+I01
+sS'measure:PAPI_FP_INS'
+p5
+I01
+s.

@@ -1,0 +1,14 @@
+(dp1
+S'module:measure:time:time'
+p2
+I01
+sS'module:measure:PAPI:PAPI_TOT_INS'
+p3
+I01
+sS'module:measure:PAPI:PAPI_BR_CN'
+p4
+I01
+sS'module:measure:PAPI:PAPI_FP_OPS'
+p5
+I01
+s.

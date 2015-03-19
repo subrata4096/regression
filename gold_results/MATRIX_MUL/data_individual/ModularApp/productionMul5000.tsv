@@ -1,0 +1,2 @@
+module:input:0:dim1	 module:input:0:dim2	module:input:0:dim3	module:measure:PAPI:PAPI_L2_DCM	module:measure:PAPI:PAPI_L2_DC_MR	module:measure:PAPI:PAPI_TOT_INS	module:measure:time:time	module:measure:timestamp:End	module:measure:timestamp:Start	module:output:0:rssUsage	module:output:0:vmUsage
+5000	5000	5000	691357165	0.02220892848656679	15376428070543	2592.955195	1425452762.020093	1425450169.064847	583360	586076

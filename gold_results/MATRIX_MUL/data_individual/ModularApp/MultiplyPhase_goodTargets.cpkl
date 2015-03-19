@@ -1,0 +1,17 @@
+(dp1
+S'module:measure:PAPI:PAPI_TOT_INS'
+p2
+I01
+sS'module:output:0:vmUsage'
+p3
+I01
+sS'module:output:0:rssUsage'
+p4
+I01
+sS'module:measure:time:time'
+p5
+I01
+sS'module:measure:PAPI:PAPI_L2_DCM'
+p6
+I01
+s.
