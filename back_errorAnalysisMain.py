@@ -77,10 +77,8 @@ def populateErrorProfileFunctions():
 				# also keep same error samples in a different list in 1D format for histogram/distribution calculations (inefficient!)
                                 errorSamples.append(testObs.PredictionErrArr)
 			
-
 			#featureName = getInputParameterNameFromColumnIndex(featureIndex)
 			featureName = getInputParameterNameFromFeatureIndex(featureIndex)
-			#print targetkey,":",featureName," errorList: " ,  errorList
 			errDistProfile = curveFitErrorSamplesWithDistance(targetkey,featureName,distanceList,errorList,errorSamples)	
 			#we already have errDistProfile populated in the map. So skip everything below	
 			#if targetkey in ErrorDistributionProfileMapForTargetAndFeature.keys():
@@ -97,7 +95,6 @@ def populatePredictionsForTestSamples(forHistogramAnalysis):
 	for targetkey in tgtErrDataMap.keys():
                 tarErrData = tgtErrDataMap[targetkey]
                 for featureIndex in tarErrData.FeatureErrorDataMap.keys():
-                	#print "----------------------------------"
                         featureErrData = tarErrData.FeatureErrorDataMap[featureIndex]
                         testObsList = featureErrData.TestObservations
                         regressFunc = featureErrData.RegressionFunction
@@ -131,10 +128,10 @@ def populatePredictionsForTestSamples(forHistogramAnalysis):
                         	targetArr = testObs.TargetArr
 				predicted = regressFunc.predict(inArr)
 				testObs.PredictedArr = predicted
+				#print "target: ", targetArr, " predicted: ", predicted 
 				#NOW CALCULATE ERROR --------------------------------
 				#calculate percentage error. Be acreful about devide by zero!!
 				error = (targetArr[0] - predicted[0])*1.0/float(targetArr[0]) if (targetArr[0] != 0) else (targetArr[0] - predicted[0])*1.0
-				#print "inArr: ", inArr, "    :   target: ", targetArr, " predicted: ", predicted," error: ", error 
 				#now also store this error in the same DataStructure. Will be used for distance based profiling
 				testObs.PredictionErrArr = error
 
@@ -151,56 +148,23 @@ def getSelectedRowKey(featureIndex,numFeatures,row):
 			continue
 		keyStr = keyStr + ":" + str(row[i])
 	return keyStr
-	
-def isTwoRowKeysSimilar(rowKey,baseRowKey):
-	if(rowKey == ""):
-		# to handle the case of single column input
-		return True
-	if(baseRowKey == ""):
-		#for the first iteration
-		return False
-	rowKeyFields = rowKey.split(":")
-	baseRowKeyFields = baseRowKey.split(":")
-	similar = True
-	l = len(rowKeyFields)
-	for i in range(l):
-		if((baseRowKeyFields[i] == "") or (rowKeyFields[i] == "")):
-			continue
-		a = float(baseRowKeyFields[i])
-		b = float(rowKeyFields[i])
-		if((a == 0) and (b != 0)):
-			return False
-		if((a == 0) and (b == 0)):
-			continue
-		diff = abs(float(b - a)/float(a))
-		#print "values to compare: " , baseRowKeyFields[i], rowKeyFields[i], " diff: ", diff
-		if(diff > 0.1):
-			return False
-	#end for
-	return True
-
+		
 def findControlledSubsetReadings(featureIndex,numFeatures,sortedArr):
 	i = 0
 	#print featureIndex, numFeatures
 	rowKey = "1-1-1"
 	inDict = {}
 	selectedArr = []
-	baseRowKey = ""
 	for row in sortedArr:
-		#print row
                 rowKey = getSelectedRowKey(featureIndex,numFeatures,row)
-		isSimilar = isTwoRowKeysSimilar(rowKey, baseRowKey)
-                #if rowKey in inDict.keys():
-                if (isSimilar):
-			if(i > 0):
-				#print "rowKey", rowKey, "  row " , row 
-                        	selectedArr.append(row)
+                if rowKey in inDict.keys():
+			#print "rowKey", rowKey, "  row " , row 
+                        selectedArr.append(row)
                 else:
 			if(i==0):
 				#print "rowKey", rowKey, "  row " , row 
                         	inDict[rowKey] = True
                         	selectedArr.append(row)
-				baseRowKey = rowKey
          	i = i + 1
 
 	selectedArr = np.array(selectedArr)
@@ -232,10 +196,9 @@ def generateControlledTrainingAndTestSetsForDistanceProfilingForEachTarget(inArr
                 #do not use bootstrap resampling. according to document error_profiling.pdf), use first few from
                 #sorted list of params, as training set and far points as test set
                 #trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.9,False)  # 90% used for training
-                #trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.7,False)  # 70% used for training 
+                trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.7,False)  # 70% used for training 
                 #trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.5,False)   # 50% used for training
-                #trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.4,False)  # 30% used for training
-                trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.3,False)  # 30% used for training
+                #trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.3,False)  # 30% used for training
                 #trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.1,False)  # 10% used for training
                 #trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.2,False)
                 #trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.66,False)
@@ -335,27 +298,24 @@ if __name__ == "__main__":
 	populateSamplesInErrorDataStructure(dataFile,selectedInputDataArr,measuredDataArr,outputDataArr,False)
 
 	
-	#printFullErrorDataStructure()
 	#populate regression function for each target and for samples sorted based on each feature
 	#print "here 2", getGlobalObject("inputColumnNameToIndexMapFromFile")
 	populateRegressionFunctionForEachTarget(3)
 	#print "here 3", getGlobalObject("inputColumnNameToIndexMapFromFile")
         populatePredictionsForTestSamples(False)	
-        
-	print getGlobalObject("columnIndexToInArrIndexMap")
+        print getGlobalObject("columnIndexToInArrIndexMap")
         print getGlobalObject("inputColumnIndexToNameMapFromFile")
-	
 	populateErrorProfileFunctions()
 
 	#prints
 	#printFullErrorDataStructure()
 	#printErrorDistributionProfileMapForTargetAndFeatureMap()
 	#print getGlobalObject("selectedOriginalColIndexMap")
-	dumpSelectedFeaturesMap(getSelectedColumnNames(getGlobalObject("selectedOriginalColIndexMap")),getGlobalObject("activeDumpDirectory"), dataFile)
+	#dumpSelectedFeaturesMap(getSelectedColumnNames(getGlobalObject("selectedOriginalColIndexMap")),getGlobalObject("activeDumpDirectory"), dataFile)
 	#theSelectedDict = loadSelectedFeaturesMap(getGlobalObject("activeDumpDirectory"),True,dataFile)
 	#print "loaded ", theSelectedDict
 
-	picklepath,cPicklepath = dumpErrorDistributionProfileMap(getGlobalObject("ErrorDistributionProfileMapForTargetAndFeature"),getGlobalObject("activeDumpDirectory"),dataFile)
+	#picklepath,cPicklepath = dumpErrorDistributionProfileMap(getGlobalObject("ErrorDistributionProfileMapForTargetAndFeature"),getGlobalObject("activeDumpDirectory"),dataFile)
 	#errProfMap = loadErrorDistributionProfileMap(getGlobalObject("activeDumpDirectory"),True,dataFile)
 	#printErrorDistributionProfileMapForTargetAndFeatureMap(errProfMap)
 	

@@ -101,7 +101,21 @@ def is_number(s):
 def is_input(s):
         pos = s.find("input:")
         if(pos > -1):
-                return True
+		if(s.find("input::eKinetic") != -1):
+			print "We will not consider input::eKinetic as part of inputs. Skipping..\n"
+                	return False
+		elif(s.find("input::ePotential") != -1):
+			print "We will not consider input::ePotential as part of inputs. Skipping..\n"
+                	return False
+		elif(s.find("input::momStdDev") != -1):
+			print "We will not consider input::momStdDev as part of inputs. Skipping..\n"
+                	return False
+		elif(s.find("input::posStdDev") != -1):
+			print "We will not consider input::posStdDev as part of inputs. Skipping..\n"
+                	return False
+		else:
+                	return True
+
         else:
                 return False
 def is_measure(s):

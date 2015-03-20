@@ -14,7 +14,8 @@ from pickleDump import *
 from analyze import *
 from errorDatastructure import *
 from errorAnalysis import *
-from errorAnalysisMain import *
+#from errorAnalysisMain import *
+from errorAnalysisControlled import *
 
 
 def createErrorHistogram():
@@ -34,7 +35,7 @@ def createErrorHistogram():
 				errorSamples.append(testObs.PredictionErrArr)
                                 tarErrData.errors.append(testObs.PredictionErrArr)
 				
-			#doHistogramPlot(errorSamples,targetkey,featureIndex,False)
+			doHistogramPlot(errorSamples,targetkey,featureIndex,False)
 
 
 if __name__ == "__main__":

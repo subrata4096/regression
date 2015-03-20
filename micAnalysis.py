@@ -27,12 +27,18 @@ def chooseIndependantInputVariables(inArr):
 	for i in range(inArr.shape[1]):
 		doSelect = True
 		for j in range(i):
+
+			#Subrata for now choosing all inputs! commentout "break" later when you need it.
+			#break  # comment out this to select only independant inputs
+
 			if(i == j):
 				return
 			x = inArr[:,i]
 			y = inArr[:,j]
-			inputFeatureName1 = getInputParameterNameFromColumnIndex(i)
-			inputFeatureName2 = getInputParameterNameFromColumnIndex(j)
+			#inputFeatureName1 = getInputParameterNameFromColumnIndex(i)
+			inputFeatureName1 = getInputParameterNameFromFeatureIndex(i)
+			#inputFeatureName2 = getInputParameterNameFromColumnIndex(j)
+			inputFeatureName2 = getInputParameterNameFromFeatureIndex(j)
                 	#print "x: ", x
                 	x_scaled = preprocessing.scale(x)
                 	y_scaled = preprocessing.scale(y)
@@ -41,7 +47,7 @@ def chooseIndependantInputVariables(inArr):
                 	mine = MINE(alpha=0.6, c=15)
                 	mine.compute_score(x_scaled, y_scaled)
 			print "Correlation between ",inputFeatureName1,inputFeatureName2, " is ", mine.mic()  
-			if(float(mine.mic()) >= 0.9):
+			if(float(mine.mic()) >= 0.99):
 				doSelect = False
 				print "\n ***** ==> will NOT select ", inputFeatureName1, " as it correlates with ", inputFeatureName2, "\n" 
 		#end for
@@ -101,7 +107,8 @@ def doMICAnalysisOfInputVariables(inArr, targetArr,targetName, mic_score_thresho
 		#inputFeatureName = getGlobalObject("inputColumnNameToIndexMapFromFile")[i]
 		#inputFeatureName = inColMap[i]
 		#inputFeatureName = getInputParameterNameFromFeatureIndex(featureIndex)
-		inputFeatureName = getInputParameterNameFromColumnIndex(featureIndex)
+		#inputFeatureName = getInputParameterNameFromColumnIndex(featureIndex)
+		inputFeatureName = getInputParameterNameFromFeatureIndex(featureIndex)
 		print_stats(mine,inputFeatureName,targetName,mic_score_threshold)
 		if(targetQualityMap != None):
 			targetQualityMap.append(float(mine.mic()))

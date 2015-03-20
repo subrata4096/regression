@@ -11,7 +11,9 @@ from sklearn.cross_validation import LeavePOut
 from sklearn.metrics.pairwise import *
 import scipy
 from scipy.spatial.distance import *
-from scipy.stats.stats import pearsonr 
+from scipy.stats.stats import pearsonr
+from minepy import MINE
+from sklearn import preprocessing 
 import numpy as np
 from micAnalysis import *
 
@@ -62,7 +64,24 @@ def calculateCorrelationBetweenVectors(x,y):
 	#The p-value roughly indicates the probability of an uncorrelated system producing datasets that have a Pearson correlation at least as extreme as the one computed from these datasets. 
 	#The p-values are not entirely reliable but are probably reasonable for datasets larger than 500 or so.
 	#print "X = " , x, "\nY = ", y
-	corr, p_value = pearsonr(x, y)	
+	#corr, p_value = pearsonr(x, y)
+	commonSize = 0
+	if(len(x) < len(y)):
+		commonSize = len(x)
+	else:
+		commonSize = len(y)
+	x_sorted = np.sort(x)
+	y_sorted = np.sort(y)
+	
+	x_sorted = x_sorted[ : (commonSize - 1)]
+	y_sorted = y_sorted[ : (commonSize - 1)]
+	
+	x_scaled = preprocessing.scale(x_sorted)
+	y_scaled = preprocessing.scale(y_sorted)
+
+	mine = MINE(alpha=0.6, c=15)
+        mine.compute_score(x_scaled, y_scaled)	
+	corr = float(mine.mic())
 	#return 
 	#print "correlation :", corr
 	return corr
@@ -263,8 +282,8 @@ def generateTrainingAndTestSetsForDistanceProfilingForEachTarget(inArr,targetArr
 
 		#do not use bootstrap resampling. according to document error_profiling.pdf), use first few from
 		#sorted list of params, as training set and far points as test set
-		trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.9,False)  # 90% used for training
-		#trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.7,False)  # 70% used for training 
+		#trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.9,False)  # 90% used for training
+		trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.7,False)  # 70% used for training 
 		#trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.5,False)   # 50% used for training
 		#trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.3,False)  # 30% used for training
 		#trainAndTestSamples = getSamplesFromSortedParams(sortedArr,1,0.1,False)  # 10% used for training
@@ -299,6 +318,17 @@ def getRegressionFunctionForEachTarget(inArr, tarArr,tname,degree):
         #reg = doPolyRegression(inArr, tarArr,tname,2,fitUse="RidgeRegression") #bad
         #print reg
         return reg
+
+
+def getRegressionFunctionForError(inArr, tarArr,tname,degree):
+        #print "\n\n--inputArr",inArr,"-----end\n"
+        #fit a polynomial regression of degree 2 using Lasso as underlying linear regression model
+        #reg = doPolyRegression(inArr, tarArr,tname,3,fitUse="Lasso")   # try for LINPACK and MATRIX MUL
+        #reg = doPolyRegression(inArr, tarArr,tname,degree,fitUse="Lasso")   # works best
+        reg = doPolyRegression(inArr, tarArr,tname,degree,fitUse="LinearRegression") #bad
+        #reg = doPolyRegression(inArr, tarArr,tname,degree,fitUse="RidgeRegression") #bad
+        #print reg
+        return reg
  
 def curveFitErrorSamplesWithDistance(targetkey,featureName,distanceList,errorList,errorSamples):
 	#distanceList = [[1.0],[4.0],[6.0],[9.0]]
@@ -309,7 +339,8 @@ def curveFitErrorSamplesWithDistance(targetkey,featureName,distanceList,errorLis
 	print "regName = ", targetkey,"  ", featureName
 	regName = targetkey + "_" + featureName + "_err"
 	#print regName, distanceArr, errArr
-	curvFunc = getRegressionFunctionForEachTarget(distanceArr,errArr,regName,2)	    
+	curvFunc = getRegressionFunctionForError(distanceArr,errArr,regName,2)	    
+	#curvFunc = getRegressionFunctionForEachTarget(distanceArr,errArr,regName,2)	    
 	drawErrorDistPlotWithFittedCurve(errArr,distanceArr,targetkey,featureName,curvFunc,True)	
 	drawErrorDistPlot(errArr,distanceArr,targetkey,featureName,True)	
 	#testDist = [[11.0]]

@@ -10,20 +10,20 @@ def dumpModel(tsvFName,target, model):
 	locDir = os.path.dirname(tsvFName)
         onlyName = os.path.splitext(os.path.basename(tsvFName))[0]
         #print onlyName,  target
-        outName  = onlyName + "_" + target + ".pkl"
+        #outName  = onlyName + "_" + target + ".pkl"
         outName2  = onlyName + "_" + target + ".cpkl"
-        fullpath = os.path.join(locDir, outName)
+        #fullpath = os.path.join(locDir, outName)
         fullpath2 = os.path.join(locDir, outName2)
-        print fullpath
-	with open(fullpath, 'wb') as fid:
-    		pickle.dump(model, fid)
+        print fullpath2
+	#with open(fullpath, 'wb') as fid:
+    	#	pickle.dump(model, fid)
 
-        fid.close()    
+        #fid.close()    
 	with open(fullpath2, 'wb') as fid:
                 cPickle.dump(model, fid)
 
         fid.close()
-	return fullpath
+	return fullpath2
 # load it again
 def loadModel(pklFName):
 	with open(pklFName, 'rb') as fid:
@@ -36,10 +36,10 @@ def dumpErrorDistributionProfileMap(errDistMap, dumpDir,tsvFName):
         filename = onlyName + "_errMapDump"	
 	picklepath = dumpDir + "/" + filename + ".pkl"
 	cPicklepath = dumpDir + "/" + filename + ".cpkl"
-	with open(picklepath, 'wb') as fid:
-                pickle.dump(errDistMap, fid)
+	#with open(picklepath, 'wb') as fid:
+         #       pickle.dump(errDistMap, fid)
 
-        fid.close()
+        #fid.close()
         with open(cPicklepath, 'wb') as fid:
                 cPickle.dump(errDistMap, fid)
         fid.close()
@@ -51,10 +51,10 @@ def dumpSelectedFeaturesMap(colNameToIndexMap,dumpDir,tsvFName):
 	filename = onlyName + "_selectedFeatures"
 	picklepath = dumpDir + "/" + filename + ".pkl"
 	cPicklepath = dumpDir + "/" + filename + ".cpkl"
-        with open(picklepath, 'wb') as fid:
-                pickle.dump(colNameToIndexMap, fid)
+        #with open(picklepath, 'wb') as fid:
+         #       pickle.dump(colNameToIndexMap, fid)
 
-        fid.close()
+        #fid.close()
         with open(cPicklepath, 'wb') as fid:
                 cPickle.dump(colNameToIndexMap, fid)
         fid.close()
@@ -88,10 +88,10 @@ def dumpGoodTargetMap(goodTargetMap,dumpDir,tsvFName):
         filename = onlyName + "_goodTargets"
         picklepath = dumpDir + "/" + filename + ".pkl"
         cPicklepath = dumpDir + "/" + filename + ".cpkl"
-        with open(picklepath, 'wb') as fid:
-                pickle.dump(goodTargetMap, fid)
+        #with open(picklepath, 'wb') as fid:
+        #        pickle.dump(goodTargetMap, fid)
 
-        fid.close()
+        #fid.close()
         with open(cPicklepath, 'wb') as fid:
                 cPickle.dump(goodTargetMap, fid)
         fid.close()
@@ -125,10 +125,10 @@ def dumpTargetErrMap(targetErrMap,dumpDir,tsvFName):
         filename = onlyName + "_targetErr"
         picklepath = dumpDir + "/" + filename + ".pkl"
         cPicklepath = dumpDir + "/" + filename + ".cpkl"
-        with open(picklepath, 'wb') as fid:
-                pickle.dump(targetErrMap, fid)
+        #with open(picklepath, 'wb') as fid:
+        #        pickle.dump(targetErrMap, fid)
 
-        fid.close()
+        #fid.close()
         with open(cPicklepath, 'wb') as fid:
                 cPickle.dump(targetErrMap, fid)
         fid.close()
@@ -184,10 +184,10 @@ def dumpRegressorObjectDict(regressionObjectDict,dumpDir,tsvFName):
         filename = onlyName + "_regressionObjectDict"	
 	picklepath = dumpDir + "/" + filename + ".pkl"
 	cPicklepath = dumpDir + "/" + filename + ".cpkl"
-        with open(picklepath, 'wb') as fid:
-                pickle.dump(regressionObjectDict, fid)
+        #with open(picklepath, 'wb') as fid:
+        #        pickle.dump(regressionObjectDict, fid)
 
-        fid.close()
+        #fid.close()
         with open(cPicklepath, 'wb') as fid:
                 cPickle.dump(regressionObjectDict, fid)
         fid.close()

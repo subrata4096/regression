@@ -16,8 +16,6 @@ global inputColumnNames
 global measuredColumnNames
 global outputColumnNames
 
-codeDir = "/p/lscratchd/mitra3/regression"
-
 doSaveGlobal = True
 doSkipDraw = False
 def doPlot(inArr,targetArr,in_index1,tname,reg=None):
@@ -95,16 +93,11 @@ def doKDEBasedPlot(dataSamples,targetName,featureName,doSave):
         #appName = "Linpack"
         #appName = "Matrix Multiplication"
         #appName = "Sparse Matrix Vector Multiplication"
-        #appName = "Black Scholes"
-        appName = "FFmpeg"
+        appName = "Black Scholes"
+        #appName = "FFmeg"
         #appName = "PageRank"
         #appName = "PageRank"
-
-	if(os.getenv("APPNAME") != None):
-                appName = os.getenv("APPNAME")
-        print "\nappName = " , appName , "\n"
-
-        dumpDir = codeDir + "/gold_histograms/"
+        dumpDir = "/home/mitra4/work/regression/gold_histograms/"
         if(appName == "Sparse Matrix Vector Multiplication"):
                 dumpDir = dumpDir + "SPARSE_MATRIX_MUL"
         if(appName == "Linpack"):
@@ -118,12 +111,6 @@ def doKDEBasedPlot(dataSamples,targetName,featureName,doSave):
 
 	if(appName == "Black Scholes"):
                 dumpDir = dumpDir + "BLACKSCHOLES"
-
-	if(appName == "LULESH"):
-                dumpDir = dumpDir + "LULESH"
-
-	if(appName == "CoMD"):
-                dumpDir = dumpDir + "CoMD"
 
 	if(appName == "Sparse Matrix Vector Multiplication"):
                 dataSamples = [x / 10.0 for x in dataSamples]
@@ -158,27 +145,20 @@ def doKDEBasedPlot(dataSamples,targetName,featureName,doSave):
     
 	#x_grid = np.linspace(minVal, maxVal, 1000)
 	x_grid = np.linspace(-4.0, 4.0, 5000)
-	pdf = kde.score_samples(x_grid[:, None])
-	#pdf = np.exp(kde.score_samples(x_grid[:, None]))
+	pdf = np.exp(kde.score_samples(x_grid[:, None]))
 	
 	#pdf = np.exp(kde.score_samples(dataSamples[:, None]))
 
 	fig, ax = plt.subplots()
-	fig1 = plt.figure(frameon=False)
 	#ax.plot(x_grid, np.exp(pdf), linewidth=3, alpha=0.5, label='bw=%.2f' % kde.bandwidth)
 	#ax.plot(x_grid, np.exp(pdf), linewidth=3, color='b')
-	#ax.fill(x_grid, np.exp(pdf), fc='g',alpha=0.75)
-	ax.fill(x_grid, pdf, fc='g',alpha=0.75)
+	ax.fill(x_grid, np.exp(pdf), fc='g',alpha=0.75)
 	#ax.plot(dataSamples, pdf, linewidth=3, alpha=0.5, label='bw=%.2f' % kde.bandwidth)
 	#ax.hist(dataSamples, 30, fc='gray', histtype='stepfilled', alpha=0.3, normed=True)
 	#ax.legend(loc='upper left')
-	plt.title(ttl,fontsize=20)
-        plt.xlabel('% Error in prediction',fontsize=20)
-        plt.ylabel('Density',fontsize=20)
-	#plt.xticks(np.arange(min(x), max(x)+1, 20.0))
-	plt.yticks(np.linspace(y[0], y[len(y)-2], 5))
-	plt.xticks(fontsize=14)
-	plt.yticks(fontsize=14)
+	plt.title(ttl)
+        plt.xlabel('% Error in prediction')
+        plt.ylabel('Density')
 
 	#doSave = False
         if(doSave == False):
@@ -235,14 +215,9 @@ def doHistogramPlot(dataSamples,targetName,featureName,doSave):
 	#appName = "Linpack"
 	#appName = "Matrix Multiplication"
 	#appName = "Sparse Matrix Vector Multiplication"
-	#appName = "Black Scholes"
-        appName = "FFmpeg"
+	appName = "Black Scholes"
 	#appName = "PageRank"
-	if(os.getenv("APPNAME") != None):
-		appName = os.getenv("APPNAME")
-	print "\nappName = " , appName , "\n"
-
-	dumpDir = codeDir + "/gold_histograms/"
+	dumpDir = "/home/mitra4/work/regression/gold_histograms/"
 	if(appName == "Sparse Matrix Vector Multiplication"):
 		dumpDir = dumpDir + "SPARSE_MATRIX_MUL"
 	if(appName == "Linpack"):
@@ -253,11 +228,6 @@ def doHistogramPlot(dataSamples,targetName,featureName,doSave):
 		dumpDir = dumpDir + "FFmpeg"
 	if(appName == "PageRank"):
                 dumpDir = dumpDir + "PAGE_RANK"
-	if(appName == "LULESH"):
-                dumpDir = dumpDir + "LULESH"
-
-        if(appName == "CoMD"):
-                dumpDir = dumpDir + "CoMD"
 
 	if(appName == "Sparse Matrix Vector Multiplication"):
 		dataSamples = [x / 10.0 for x in dataSamples]
@@ -313,13 +283,9 @@ def doHistogramPlot(dataSamples,targetName,featureName,doSave):
 	# add a line showing the expected distribution
 	#y = plt.normpdf( bins, mu, sigma)
 	#l = plt.plot(bins, y, 'k--', linewidth=1.5)
-	plt.title(ttl,fontsize=20)
-	plt.xlabel('% Error in prediction',fontsize=20)
-	plt.ylabel('Frequency',fontsize=20)
-	#plt.xticks(np.arange(min(x), max(x)+1, 20.0))
-	plt.yticks(np.linspace(y[0], y[len(y)-2], 4))
-	plt.xticks(fontsize=14)
-	plt.yticks(fontsize=14)
+	plt.title(ttl)
+	plt.xlabel('% Error in prediction')
+	plt.ylabel('Frequency')
 	#plt.yticks(np.arange(0,1,0.1))
 	
 	binLength = len(bins)
@@ -382,14 +348,9 @@ def drawErrorDistPlotWithFittedCurve(errorSamples,Distances,targetName,featureNa
         #appName = "Linpack"
         #appName = "Matrix Multiplication"
         #appName = "Sparse Matrix Vector Multiplication"
-        #appName = "Black Scholes"
-        appName = "FFmpeg"
+        appName = "Black Scholes"
         #appName = "PageRank"
-	if(os.getenv("APPNAME") != None):
-                appName = os.getenv("APPNAME")
-        print "\nappName = " , appName , "\n"
-
-        dumpDir = codeDir + "/gold_distanceplots/"
+        dumpDir = "/home/mitra4/work/regression/gold_distanceplots/"
         if(appName == "Sparse Matrix Vector Multiplication"):
                 dumpDir = dumpDir + "SPARSE_MATRIX_MUL"
         if(appName == "Linpack"):
@@ -402,12 +363,6 @@ def drawErrorDistPlotWithFittedCurve(errorSamples,Distances,targetName,featureNa
                 dumpDir = dumpDir + "PAGE_RANK"
 	if(appName == "Black Scholes"):
                 dumpDir = dumpDir + "BLACKSCHOLES"
-	
-	if(appName == "LULESH"):
-                dumpDir = dumpDir + "LULESH"
-
-        if(appName == "CoMD"):
-                dumpDir = dumpDir + "CoMD"
 	
 	fileName1 = "errDist_" + getGlobalObject("baseModuleName") + ":" + targetName + "_" + featureName + "_fitted.png"
         fileName2 = "errDist_" + getGlobalObject("baseModuleName") + ":" + targetName + "_" + featureName + "_tight_fitted.png"
@@ -441,17 +396,10 @@ def drawErrorDistPlotWithFittedCurve(errorSamples,Distances,targetName,featureNa
         [x, y] = zip(*sorted(zip(x, y), key=lambda x: x[0]))
 	print "x: ", x
         print "y: ", y
-	fig = plt.figure(frameon=False)
-        plt.plot(x,y,linewidth=2.0)
-        plt.title(ttl,fontsize=22)
-	plt.xlabel('Normalized extrapolation distance',fontsize=22)
-        plt.ylabel('% Error in prediction',fontsize=22)
-	plt.plot(x,y)
-	#plt.xticks(np.arange(min(x), max(x)+1, 20.0))
-	plt.yticks(np.linspace(y[0], y[len(y)-2], 4))
-	plt.xticks(fontsize=16)
-	plt.yticks(fontsize=16)
-
+        plt.plot(x,y)
+        plt.title(ttl)
+	plt.xlabel('Normalized extrapolation distance')
+        plt.ylabel('% Error in prediction')
 	#fileName = "x"
 	#fileName = "errVSdist_" + getGlobalObject("baseModuleName") + ":" + targetName + "_" + featureName + "_predicted.png"
         #saveFileName = os.path.join(dumpDir,fileName)
@@ -491,14 +439,9 @@ def drawErrorDistPlot(errorSamples,Distances,targetName,featureName,doSave):
         #appName = "Linpack"
         #appName = "Matrix Multiplication"
         #appName = "Sparse Matrix Vector Multiplication"
-        #appName = "Black Scholes"
-        appName = "FFmpeg"
-
-	if(os.getenv("APPNAME") != None):
-                appName = os.getenv("APPNAME")
-        print "\nappName = " , appName , "\n"
-
-        dumpDir = codeDir + "/gold_distanceplots/"
+        appName = "Black Scholes"
+        #appName = "FFmpeg"
+        dumpDir = "/home/mitra4/work/regression/gold_distanceplots/"
         if(appName == "Sparse Matrix Vector Multiplication"):
                 dumpDir = dumpDir + "SPARSE_MATRIX_MUL"
         if(appName == "Linpack"):
@@ -511,11 +454,6 @@ def drawErrorDistPlot(errorSamples,Distances,targetName,featureName,doSave):
                 dumpDir = dumpDir + "PAGE_RANK"
 	if(appName == "Black Scholes"):
                 dumpDir = dumpDir + "BLACKSCHOLES"
-	if(appName == "LULESH"):
-                dumpDir = dumpDir + "LULESH"
-
-        if(appName == "CoMD"):
-                dumpDir = dumpDir + "CoMD"
 
         fileName1 = "errDist_" + getGlobalObject("baseModuleName") + ":" + targetName + "_" + featureName + ".png"
         fileName2 = "errDist_" + getGlobalObject("baseModuleName") + ":" + targetName + "_" + featureName + "_tight.png"
@@ -571,16 +509,11 @@ def drawErrorDistPlot(errorSamples,Distances,targetName,featureName,doSave):
 	[x, y] = zip(*sorted(zip(x, y), key=lambda x: x[0]))
 	print "x: ", x
 	print "y: ", y
-	fig = plt.figure(frameon=False)
-	plt.plot(x,y,linewidth=2.0)
+	plt.plot(x,y)
 	#plt.scatter(x,y, c='b', marker='o')
-	plt.title(ttl,fontsize=22)
-	plt.xlabel('Normalized extrapolation distance',fontsize=22)
-        plt.ylabel('% Error in prediction',fontsize=22)
-	#plt.xticks(np.arange(min(x), max(x)+1, 20.0))
-	plt.yticks(np.linspace(y[0], y[len(y)-2], 4))
-	plt.xticks(fontsize=16)
-	plt.yticks(fontsize=16)
+	plt.title(ttl)
+	plt.xlabel('Normalized extrapolation distance')
+        plt.ylabel('% Error in prediction')
 	#fileName = "errVSdist_" + getGlobalObject("baseModuleName") + ":" + targetName + "_" + featureName + "_actual.png"
         #saveFileName = os.path.join(dumpDir,fileName)
         if(doSave == False):

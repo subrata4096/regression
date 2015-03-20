@@ -179,6 +179,8 @@ def readDataFile(fName,field_type):
 		return []
 	realdata = np.loadtxt(fName, dtype=float,delimiter='\t', usecols=indexes, converters=None,skiprows=1)
 	#print realdata[0]
+	if(len(realdata.shape) < 2):                            
+  ------	realdata = np.reshape(realdata, (-1, 1))
 	data = np.transpose( realdata)
 	return data
 
@@ -274,8 +276,10 @@ def doFitForTarget(inArr,targetArr, tname):
 	reg = doPolyRegression(in_train, tar_train,tname,2,fitUse="Lasso")
 	regScore = reg.score(in_test, tar_test)
 	print "R2 score: ",regScore
-	if(regScore < 0.99):
-		del getGlobalObject("goodTargetMap")[tname]
+	#print getGlobalObject("goodTargetMap")
+	if(regScore < 0.9):
+		if(tname in getGlobalObject("goodTargetMap").keys()):
+			del getGlobalObject("goodTargetMap")[tname]
 
 	#reg = doPolyRegression(in_train, tar_train,tname,2,fitUse="ElasticNet")
 	#print "R2 score: ",reg.score(in_test, tar_test)
@@ -310,22 +314,24 @@ def scikit_scripts(dataFile,inArr,measuredDataArr,outputDataArr):
 	
 	regressDict = getGlobalObject("regressionDict") 
 	i = 0
-	for targetArr in measuredArr2D:
-		t = getGlobalObject("measuredColumnNames")[i]
-		reg = doFitForTarget(inArr,targetArr,t)
-		#regressionDict[t] = reg
-		#NOTE: temorary comment
-		#fname = dumpModel(dataFile,t,reg)
-                #regLoad = loadModel(fname)
-		regressDict[t] = reg
-		i = i + 1
+	if(len(getGlobalObject("measuredColumnNames")) > 0):
+		for targetArr in measuredArr2D:
+			t = getGlobalObject("measuredColumnNames")[i]
+			reg = doFitForTarget(inArr,targetArr,t)
+			#regressionDict[t] = reg
+			#NOTE: temorary comment
+			#fname = dumpModel(dataFile,t,reg)
+                	#regLoad = loadModel(fname)
+			regressDict[t] = reg
+			i = i + 1
 
 	i = 0
-	for targetArr in outputArr2D:
-		t = getGlobalObject("outputColumnNames")[i]
-		reg = doFitForTarget(inArr,targetArr,t)
-		regressDict[t] = reg
-		i = i + 1
+	if(len(getGlobalObject("outputColumnNames")) > 0):
+		for targetArr in outputArr2D:
+			t = getGlobalObject("outputColumnNames")[i]
+			reg = doFitForTarget(inArr,targetArr,t)
+			regressDict[t] = reg
+			i = i + 1
 			
 
 #def skll_scripts(inArr,dataArr):
@@ -484,7 +490,9 @@ def selectImportantFeaturesByMICAnalysis(inputDataArr,measuredDataArr,outputData
 	indexInSelectedArr = 0
 	for selected_index in selected_origCol_index_union.keys():
 		print "========= selected input col index: " , getInputParameterNameFromColumnIndex(selected_index)
-		feature_Arr = inputDataArr[:,selected_index]
+		fIndex = getGlobalObject("columnIndexToInArrIndexMap")[selected_index]  
+		#feature_Arr = inputDataArr[:,selected_index]
+		feature_Arr = inputDataArr[:,fIndex]
 		selected_feature_Arr.append(feature_Arr)
 		getGlobalObject("columnIndexToInArrIndexMap")[selected_index] = indexInSelectedArr
 		getGlobalObject("InArrIndexToColumnIndexMap")[indexInSelectedArr] = selected_index
